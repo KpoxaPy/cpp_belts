@@ -1,0 +1,17 @@
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/c_cpp_settings.json
+*.code-workspace
+*.exe
+
+output.txt
+out.o
+
+# Local History for Visual Studio Code
+.history/
+build/
+build-ubuntu/
+*.7z

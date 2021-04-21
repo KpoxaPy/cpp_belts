@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "iosfwd": "cpp",
+        "*.tcc": "cpp",
+        "charconv": "cpp",
+        "variant": "cpp",
+        "type_traits": "cpp",
+        "iostream": "cpp",
+        "string_view": "cpp",
+        "optional": "cpp",
+        "deque": "cpp",
+        "vector": "cpp"
+    }
+}

@@ -1,0 +1,115 @@
+{
+  "routing_settings": {
+    "bus_wait_time": 490,
+    "bus_velocity": 280
+  },
+  "base_requests": [
+    {
+      "type": "Stop",
+      "name": "Vnukovo",
+      "latitude": 55.572308,
+      "longitude": 37.58821,
+      "road_distances": {
+        "Troparyovo": 315031,
+        "Kiyevskoye sh 10": 736717,
+        "Kiyevskoye sh 20": 85080,
+        "Kiyevskoye sh 30": 426639,
+        "Kiyevskoye sh 40": 141884,
+        "Kiyevskoye sh 50": 224766,
+        "Kiyevskoye sh 60": 902131,
+        "Kiyevskoye sh 70": 328591,
+        "Kiyevskoye sh 80": 805100,
+        "Kiyevskoye sh 90": 855121,
+        "Kiyevskoye sh 100": 737402
+      }
+    },
+    {
+      "type": "Stop",
+      "name": "Kiyevskoye sh 10",
+      "latitude": 55.575724434343435,
+      "longitude": 37.58821,
+      "road_distances": {
+        "Troparyovo": 525298,
+        "Kiyevskoye sh 20": 106788,
+        "Kiyevskoye sh 30": 490517,
+        "Kiyevskoye sh 40": 322450,
+        "Kiyevskoye sh 50": 600182,
+        "Kiyevskoye sh 60": 550985,
+        "Kiyevskoye sh 70": 677645,
+        "Kiyevskoye sh 80": 728727,
+        "Kiyevskoye sh 90": 463120,
+        "Kiyevskoye sh 100": 445277
+      }
+    },
+    {
+      "type": "Stop",
+      "name": "Kiyevskoye sh 20",
+      "latitude": 55.57914086868687,
+      "longitude": 37.58821,
+      "road_distances": {
+        "Troparyovo": 172308,
+        "Kiyevskoye sh 30": 105345,
+        "Kiyevskoye sh 40": 667602,
+        "Kiyevskoye sh 50": 645868,
+        "Kiyevskoye sh 60": 246041,
+        "Kiyevskoye sh 70": 22704,
+        "Kiyevskoye sh 80": 235980,
+        "Kiyevskoye sh 90": 407045,
+        "Kiyevskoye sh 100": 937377
+      }
+    },
+    {
+      "type": "Stop",
+      "name": "Kiyevskoye sh 30",
+      "latitude": 55.582557303030306,
+      "longitude": 37.58821,
+      "road_distances": {
+        "Troparyovo": 73536,
+        "Kiyevskoye sh 40": 910439,
+        "Kiyevskoye sh 50": 36945,
+        "Kiyevskoye sh 60": 353820,
+        "Kiyevskoye sh 70": 772561,
+        "Kiyevskoye sh 80": 484228,
+        "Kiyevskoye sh 90": 509332,
+        "Kiyevskoye sh 100": 152038
+      }
+    },
+    {
+      "type": "Stop",
+      "name": "Kiyevskoye sh 40",
+      "latitude": 55.585973737373735,
+      "longitude": 37.58821,
+      "road_distances": {
+        "Troparyovo": 934646,
+        "Kiyevskoye sh 50": 87601,
+        "Kiyevskoye sh 60": 501890,
+        "Kiyevskoye sh 70": 758953,
+        "Kiyevskoye sh 80": 692055,
+        "Kiyevskoye sh 90": 929215,
+        "Kiyevskoye sh 100": 242694
+      }
+    },
+    {
+      "type": "Stop",
+      "name": "Kiyevskoye sh 50",
+      "latitude": 55.58939017171717,
+      "longitude": 37.58821,
+      "road_distances": {
+        "Troparyovo": 547802,
+        "Kiyevskoye sh 60": 282245,
+        "Kiyevskoye sh 70": 26703,
+        "Kiyevskoye sh 80": 479166,
+        "Kiyevskoye sh 90": 74238,
+        "Kiyevskoye sh 100": 324219
+      }
+    },
+    {
+      "type": "Stop",
+      "name": "Kiyevskoye sh 60",
+      "latitude": 55.592806606060606,
+      "longitude": 37.58821,
+      "road_distances": {
+        "Troparyovo": 232275,
+        "Kiyevskoye sh 70": 184654,
+        "Kiyevskoye sh 80": 535966,
+        "Kiyevsko ... 331214984, "type": "Route", "from": "Pr Vernadskogo 80", "to": "Leningradskiy pr 40"}, {"id": 108545282, "type": "Route", "from": "Luzhniki", "to": "Ostozhenka 80"}, {"id": 643728460, "type": "Route", "from": "Mokhovaya ul 40", "to": "Leningradskoye sh 60"}, {"id": 1667920325, "type": "Route", "from": "Mokhovaya ul 80", "to": "Mokhovaya ul 90"}, {"id": 473138352, "type": "Route", "from": "Leningradskoye sh 70", "to": "Tverskaya ul 20"}, {"id": 329835687, "type": "Route", "from": "Pr Vernadskogo 20", "to": "Pr Vernadskogo 60"}, {"id": 2009707501, "type": "Bus", "name": "8CW6eSJ4lTCroM0IVgmRx"}, {"id": 1081198808, "type": "Stop", "name": "Komsomolskiy pr 50"}, {"id": 1330702332, "type": "Route", "from": "Ostozhenka 10", "to": "Kiyevskoye sh 70"}, {"id": 1428159404, "type": "Route", "from": "Mokhovaya ul 10", "to": "Leningradskoye sh 70"}, {"id": 1788694290, "type": "Stop", "name": "Ostozhenka 20"}, {"id": 1062381085, "type": "Route", "from": "Leningradskiy pr 80", "to": "Pr Vernadskogo 30"}, {"id": 202681168, "type": "Route", "from": "Ostozhenka 50", "to": "Kiyevskoye sh 30"}, {"id": 374544086, "type": "Route", "from": "Mokhovaya ul 10", "to": "Leningradskoye sh 50"}, {"id": 160574442, "type": "Route", "from": "Mokhovaya ul 30", "to": "Pr Vernadskogo 20"}, {"id": 1545834698, "type": "Stop", "name": "WdmGixisOoczPC4VfWJRww"}, {"id": 1323880811, "type": "Route", "from": "Sokol", "to": "Leningradskiy pr 10"}, {"id": 1514571894, "type": "Stop", "name": "H3C"}, {"id": 754309856, "type": "Stop", "name": "Pr Vernadskogo 80"}, {"id": 89991388, "type": "Route", "from": "Kiyevskoye sh 20", "to": "Mezhdunarodnoye sh 20"}, {"id": 1081198808, "type": "Stop", "name": "Komsomolskiy pr 50"}, {"id": 1398978723, "type": "Route", "from": "Troparyovo", "to": "Luzhniki"}, {"id": 1981920322, "type": "Route", "from": "Mokhovaya ul 80", "to": "Leningradskoye sh 20"}, {"id": 1948114126, "type": "Stop", "name": "Pr Vernadskogo 70"}, {"id": 1087764886, "type": "Route", "from": "Komsomolskiy pr 60", "to": "Leningradskoye sh 30"}, {"id": 566443448, "type": "Route", "from": "Komsomolskiy pr 20", "to": "Pr Vernadskogo 30"}, {"id": 1688170086, "type": "Route", "from": "Komsomolskiy pr 30", "to": "Vnukovo"}]}
