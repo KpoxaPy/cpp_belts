@@ -6,8 +6,8 @@
         {
             "label": "build all",
             "type": "shell",
-            "command": "mingw32-make.exe -C ./build/ all ; mingw32-make.exe -C ./build package",
-            "problemMatcher": [],
+            "command": "mingw32-make.exe -C ./build/ all",
+            "problemMatcher": ["$gcc"],
             "group": {
                 "kind": "build",
                 "isDefault": true
