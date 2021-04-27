@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iosfwd>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -115,9 +116,8 @@ public:
 
   template <typename T>
   const T& Expect() const {
-    auto t = CurrentToken();
-    if (t.Is<T>()) {
-      return t.As<T>();
+    if (auto t = CurrentToken().TryAs<T>(); t) {
+      return *t;
     }
     throw LexerError("Unexpected current token");
   }
@@ -125,7 +125,7 @@ public:
   template <typename T, typename U>
   void Expect(const U& value) const {
     auto t = Expect<T>();
-    if (t.value != value) {
+    if (!(t.value == value)) {
       std::ostringstream ss;
       ss << "Unexpected token value \"" << t.value << "\", expected \"" << value << "\"";
       throw LexerError(ss.str());
