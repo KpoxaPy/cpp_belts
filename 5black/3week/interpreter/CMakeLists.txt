@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.18)
 
 project(main)
 
+set(ADDITIONAL_HDRS
+  test_runner.h
+)
+
 set(PROJECT_HDRS
   comparators.h
   lexer.h
@@ -9,7 +13,6 @@ set(PROJECT_HDRS
   object.h
   parse.h
   statement.h
-  test_runner.h
 )
 
 set(PROJECT_SRCS
@@ -33,6 +36,8 @@ endif()
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+
+include_directories(${CMAKE_SOURCE_DIR})
 
 add_executable(main
   ${PROJECT_SRCS}
