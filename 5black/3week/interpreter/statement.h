@@ -205,13 +205,13 @@ private:
 
 class ClassDefinition : public Statement {
 public:
-  explicit ClassDefinition(ObjectHolder cls);
+  explicit ClassDefinition(ObjectHolder class_holder);
 
   ObjectHolder Execute(Runtime::Closure& closure) override;
 
 private:
-  ObjectHolder cls;
-  const std::string& class_name;
+  ObjectHolder class_holder_;
+  const std::string& class_name_;
 };
 
 class IfElse : public Statement {

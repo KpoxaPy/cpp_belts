@@ -12,11 +12,13 @@ set(PROJECT_HDRS
   object_holder.h
   object.h
   parse.h
+  runtime_error.h
   statement.h
 )
 
 set(PROJECT_SRCS
   comparators.cpp
+  lexer_test.cpp
   lexer.cpp
   mython.cpp
   object_holder_test.cpp

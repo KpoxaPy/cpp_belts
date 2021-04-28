@@ -1,40 +1,52 @@
 #include "statement.h"
-#include "object.h"
 
 #include <iostream>
 #include <sstream>
+
+#include "object.h"
+#include "runtime_error.h"
 
 using namespace std;
 
 namespace Ast {
 
 using Runtime::Closure;
+using Runtime::RuntimeError;
 
-ObjectHolder Assignment::Execute(Closure& closure) {
+ObjectHolder Assignment::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-Assignment::Assignment(std::string var, std::unique_ptr<Statement> rv) {
+Assignment::Assignment(std::string /* var */, std::unique_ptr<Statement> /* rv */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-VariableValue::VariableValue(std::string var_name) {
+VariableValue::VariableValue(std::string /* var_name */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-VariableValue::VariableValue(std::vector<std::string> dotted_ids) {
+VariableValue::VariableValue(std::vector<std::string> /* dotted_ids */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-ObjectHolder VariableValue::Execute(Closure& closure) {
+ObjectHolder VariableValue::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-unique_ptr<Print> Print::Variable(std::string var) {
+unique_ptr<Print> Print::Variable(std::string /* var */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-Print::Print(unique_ptr<Statement> argument) {
+Print::Print(unique_ptr<Statement> /* argument */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-Print::Print(vector<unique_ptr<Statement>> args) {
+Print::Print(vector<unique_ptr<Statement>> /* args */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-ObjectHolder Print::Execute(Closure& closure) {
+ObjectHolder Print::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
 ostream* Print::output = &cout;
@@ -44,41 +56,54 @@ void Print::SetOutputStream(ostream& output_stream) {
 }
 
 MethodCall::MethodCall(
-  std::unique_ptr<Statement> object
-  , std::string method
-  , std::vector<std::unique_ptr<Statement>> args
+  std::unique_ptr<Statement> /* object */
+  , std::string /* method */
+  , std::vector<std::unique_ptr<Statement>> /* args */
 )
+{
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ObjectHolder MethodCall::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ObjectHolder Stringify::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ObjectHolder Add::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ObjectHolder Sub::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ObjectHolder Mult::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ObjectHolder Div::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ObjectHolder Compound::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ObjectHolder Return::Execute(Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
+}
+
+ClassDefinition::ClassDefinition(ObjectHolder class_holder)
+  : class_holder_(class_holder)
+  , class_name_(class_holder_.TryAs<Runtime::Class>()->GetName())
 {
 }
 
-ObjectHolder MethodCall::Execute(Closure& closure) {
-}
-
-ObjectHolder Stringify::Execute(Closure& closure) {
-}
-
-ObjectHolder Add::Execute(Closure& closure) {
-}
-
-ObjectHolder Sub::Execute(Closure& closure) {
-}
-
-ObjectHolder Mult::Execute(Runtime::Closure& closure) {
-}
-
-ObjectHolder Div::Execute(Runtime::Closure& closure) {
-}
-
-ObjectHolder Compound::Execute(Closure& closure) {
-}
-
-ObjectHolder Return::Execute(Closure& closure) {
-}
-
-ClassDefinition::ClassDefinition(ObjectHolder class_) {
-}
-
-ObjectHolder ClassDefinition::Execute(Runtime::Closure& closure) {
+ObjectHolder ClassDefinition::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
 FieldAssignment::FieldAssignment(
@@ -90,35 +115,43 @@ FieldAssignment::FieldAssignment(
 {
 }
 
-ObjectHolder FieldAssignment::Execute(Runtime::Closure& closure) {
+ObjectHolder FieldAssignment::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
 IfElse::IfElse(
-  std::unique_ptr<Statement> condition,
-  std::unique_ptr<Statement> if_body,
-  std::unique_ptr<Statement> else_body
+  std::unique_ptr<Statement> /* condition */,
+  std::unique_ptr<Statement> /* if_body */,
+  std::unique_ptr<Statement> /* else_body */
 )
 {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-ObjectHolder IfElse::Execute(Runtime::Closure& closure) {
+ObjectHolder IfElse::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-ObjectHolder Or::Execute(Runtime::Closure& closure) {
+ObjectHolder Or::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-ObjectHolder And::Execute(Runtime::Closure& closure) {
+ObjectHolder And::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-ObjectHolder Not::Execute(Runtime::Closure& closure) {
+ObjectHolder Not::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
 Comparison::Comparison(
-  Comparator cmp, unique_ptr<Statement> lhs, unique_ptr<Statement> rhs
+  Comparator /* cmp */, unique_ptr<Statement> /* lhs */, unique_ptr<Statement> /* rhs */
 ) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
-ObjectHolder Comparison::Execute(Runtime::Closure& closure) {
+ObjectHolder Comparison::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
 NewInstance::NewInstance(
@@ -132,7 +165,8 @@ NewInstance::NewInstance(
 NewInstance::NewInstance(const Runtime::Class& class_) : NewInstance(class_, {}) {
 }
 
-ObjectHolder NewInstance::Execute(Runtime::Closure& closure) {
+ObjectHolder NewInstance::Execute(Runtime::Closure& /* closure */) {
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
 

@@ -11,11 +11,11 @@ using namespace std;
 namespace Runtime {
 
 bool Equal(ObjectHolder /* lhs */, ObjectHolder /* rhs */) {
-  return false; // FIXME
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
 bool Less(ObjectHolder /* lhs */, ObjectHolder /* rhs */) {
-  return false; // FIXME
+  throw RuntimeError("Not implemented yet"); // FIXME
 }
 
 } /* namespace Runtime */

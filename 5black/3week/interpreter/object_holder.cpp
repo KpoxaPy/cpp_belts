@@ -40,6 +40,11 @@ ObjectHolder::operator bool() const {
 }
 
 bool IsTrue(ObjectHolder object) {
+  if (!object) {
+    return false;
+  }
+
+  return object->IsTrue();
 }
 
 }
