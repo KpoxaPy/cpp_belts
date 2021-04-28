@@ -13,8 +13,47 @@ bool String::IsTrue() const {
   return GetValue().length() > 0;
 }
 
+ObjectHolder String::Add(ObjectHolder rhs) const {
+  if (auto obj = rhs.TryAs<String>(); obj) {
+    return ObjectHolder::Own(String(GetValue() + obj->GetValue()));
+  }
+  throw RuntimeError("Strings can be added to strings only");
+}
+
 bool Number::IsTrue() const {
   return GetValue() == 0;
+}
+
+ObjectHolder Number::Add(ObjectHolder rhs) const {
+  if (auto obj = rhs.TryAs<Number>(); obj) {
+    return ObjectHolder::Own(Number(GetValue() + obj->GetValue()));
+  }
+  throw RuntimeError("Numbers can be added to numbers only");
+}
+
+ObjectHolder Number::Sub(ObjectHolder rhs) const {
+  if (auto obj = rhs.TryAs<Number>(); obj) {
+    return ObjectHolder::Own(Number(GetValue() - obj->GetValue()));
+  }
+  throw RuntimeError("Numbers can be substituted with numbers only");
+}
+
+ObjectHolder Number::Mult(ObjectHolder rhs) const {
+  if (auto obj = rhs.TryAs<Number>(); obj) {
+    return ObjectHolder::Own(Number(GetValue() * obj->GetValue()));
+  }
+  throw RuntimeError("Numbers can be multiplied by numbers only");
+}
+
+ObjectHolder Number::Div(ObjectHolder rhs) const {
+  if (auto obj = rhs.TryAs<Number>(); obj) {
+    auto right = obj->GetValue();
+    if (right == 0) {
+      throw RuntimeError("Division by zero!");
+    }
+    return ObjectHolder::Own(Number(GetValue() / right));
+  }
+  throw RuntimeError("Numbers can be divided by numbers only");
 }
 
 void Bool::Print(std::ostream& os) {
@@ -49,7 +88,7 @@ const Method* Class::GetMethod(const std::string& name) const {
 }
 
 void Class::Print(ostream& /* os */) {
-  throw RuntimeError("Not implemented yet"); // FIXME
+  throw RuntimeError("Class::Print is not implemented yet"); // FIXME
 }
 
 bool Class::IsTrue() const {
@@ -61,7 +100,7 @@ const std::string& Class::GetName() const {
 }
 
 void ClassInstance::Print(std::ostream& /* os */) {
-  throw RuntimeError("Not implemented yet"); // FIXME
+  throw RuntimeError("ClassInstance::Print is not implemented yet"); // FIXME
 }
 
 bool ClassInstance::IsTrue() const {
@@ -69,7 +108,7 @@ bool ClassInstance::IsTrue() const {
 }
 
 bool ClassInstance::HasMethod(const std::string& /* method */, size_t /* argument_count */) const {
-  throw RuntimeError("Not implemented yet"); // FIXME
+  throw RuntimeError("ClassInstance::HasMethod is not implemented yet"); // FIXME
 }
 
 const Closure& ClassInstance::Fields() const {
@@ -86,7 +125,7 @@ ClassInstance::ClassInstance(const Class& cls)
 }
 
 ObjectHolder ClassInstance::Call(const std::string& /* method */, const std::vector<ObjectHolder>& /* actual_args */) {
-  throw RuntimeError("Not implemented yet"); // FIXME
+  throw RuntimeError("ClassInstance::Call is not implemented yet"); // FIXME
 }
 
 } /* namespace Runtime */

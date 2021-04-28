@@ -27,6 +27,7 @@ set(PROJECT_SRCS
   object.cpp
   parse_test.cpp
   parse.cpp
+  runtime_error.cpp
   statement_test.cpp
   statement.cpp
 )

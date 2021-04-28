@@ -104,6 +104,26 @@ void TestMove() {
   }
 }
 
+void TestCopy() {
+  {
+    ASSERT_EQUAL(Logger::instance_count, 0);
+    Logger logger;
+
+    auto one = ObjectHolder::Share(logger);
+
+    {
+      ObjectHolder two = one;
+
+      ASSERT_EQUAL(Logger::instance_count, 1);
+      ASSERT(one.Get() == &logger);
+      ASSERT(two.Get() == &logger);
+    }
+
+    ASSERT(one.Get() == &logger);
+    ASSERT_EQUAL(Logger::instance_count, 1);
+  }
+}
+
 void TestNullptr() {
   ObjectHolder oh;
   ASSERT(!oh);
@@ -114,6 +134,7 @@ void RunObjectHolderTests(TestRunner& tr) {
   RUN_TEST(tr, Runtime::TestNonowning);
   RUN_TEST(tr, Runtime::TestOwning);
   RUN_TEST(tr, Runtime::TestMove);
+  RUN_TEST(tr, Runtime::TestCopy);
   RUN_TEST(tr, Runtime::TestNullptr);
 }
 

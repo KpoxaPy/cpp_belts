@@ -77,8 +77,8 @@ public:
   static void SetOutputStream(std::ostream& output_stream);
 
 private:
-  std::vector<std::unique_ptr<Statement>> args;
-  static std::ostream* output;
+  std::vector<std::unique_ptr<Statement>> args_;
+  static std::ostream* output_;
 };
 
 struct MethodCall : Statement {
@@ -177,17 +177,17 @@ class Compound : public Statement {
 public:
   template <typename ...Args>
   explicit Compound(Args&& ...args) {
-    (statements.push_back(std::forward<Args>(args)), ...);
+    (statements_.push_back(std::forward<Args>(args)), ...);
   }
 
   void AddStatement(std::unique_ptr<Statement> stmt) {
-    statements.push_back(std::move(stmt));
+    statements_.push_back(std::move(stmt));
   }
 
   ObjectHolder Execute(Runtime::Closure& closure) override;
 
 private:
-  std::vector<std::unique_ptr<Statement>> statements;
+  std::vector<std::unique_ptr<Statement>> statements_;
 };
 
 class Return : public Statement {

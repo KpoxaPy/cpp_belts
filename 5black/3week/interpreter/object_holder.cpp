@@ -47,4 +47,44 @@ bool IsTrue(ObjectHolder object) {
   return object->IsTrue();
 }
 
+void Print(ObjectHolder object, std::ostream& stream) {
+  if (object) {
+    object->Print(stream);
+  } else {
+    stream << "None";
+  }
+}
+
+ObjectHolder Add(ObjectHolder lhs, ObjectHolder rhs) {
+  if (!lhs || !rhs) {
+    throw RuntimeError("Cannot operate with None");
+  }
+
+  return lhs->Add(rhs);
+}
+
+ObjectHolder Sub(ObjectHolder lhs, ObjectHolder rhs) {
+  if (!lhs || !rhs) {
+    throw RuntimeError("Cannot operate with None");
+  }
+
+  return lhs->Sub(rhs);
+}
+
+ObjectHolder Mult(ObjectHolder lhs, ObjectHolder rhs) {
+  if (!lhs || !rhs) {
+    throw RuntimeError("Cannot operate with None");
+  }
+
+  return lhs->Mult(rhs);
+}
+
+ObjectHolder Div(ObjectHolder lhs, ObjectHolder rhs) {
+  if (!lhs || !rhs) {
+    throw RuntimeError("Cannot operate with None");
+  }
+
+  return lhs->Div(rhs);
+}
+
 }

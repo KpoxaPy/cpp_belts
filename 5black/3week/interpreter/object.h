@@ -21,9 +21,27 @@ namespace Runtime {
 class Object {
 public:
   virtual ~Object() = default;
+
   virtual void Print(std::ostream& os) = 0;
+
   virtual bool IsTrue() const {
     throw RuntimeError("Cannot cast Object to bool");
+  }
+
+  virtual ObjectHolder Add(ObjectHolder) const {
+    throw RuntimeError("Cannot add to anything");
+  }
+
+  virtual ObjectHolder Sub(ObjectHolder) const {
+    throw RuntimeError("Cannot add to anything");
+  }
+
+  virtual ObjectHolder Mult(ObjectHolder) const {
+    throw RuntimeError("Cannot add to anything");
+  }
+
+  virtual ObjectHolder Div(ObjectHolder) const {
+    throw RuntimeError("Cannot add to anything");
   }
 };
 
@@ -49,12 +67,17 @@ class String : public ValueObject<std::string> {
 public:
   using ValueObject<std::string>::ValueObject;
   bool IsTrue() const override;
+  ObjectHolder Add(ObjectHolder rhs) const override;
 };
 
 class Number : public ValueObject<int> {
 public:
   using ValueObject<int>::ValueObject;
   bool IsTrue() const override;
+  ObjectHolder Add(ObjectHolder rhs) const override;
+  ObjectHolder Sub(ObjectHolder rhs) const override;
+  ObjectHolder Mult(ObjectHolder rhs) const override;
+  ObjectHolder Div(ObjectHolder rhs) const override;
 };
 
 class Bool : public ValueObject<bool> {

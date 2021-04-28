@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <ostream>
 
 class TestRunner;
 
@@ -53,6 +54,13 @@ private:
 using Closure = std::unordered_map<std::string, ObjectHolder>;
 
 bool IsTrue(ObjectHolder object);
+
+void Print(ObjectHolder object, std::ostream& stream);
+
+ObjectHolder Add(ObjectHolder lhs, ObjectHolder rhs);
+ObjectHolder Sub(ObjectHolder lhs, ObjectHolder rhs);
+ObjectHolder Mult(ObjectHolder lhs, ObjectHolder rhs);
+ObjectHolder Div(ObjectHolder lhs, ObjectHolder rhs);
 
 void RunObjectHolderTests(TestRunner& tr);
 
