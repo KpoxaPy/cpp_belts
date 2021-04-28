@@ -10,10 +10,12 @@ using namespace std;
 
 namespace Runtime {
 
-bool Equal(ObjectHolder lhs, ObjectHolder rhs) {
+bool Equal(ObjectHolder /* lhs */, ObjectHolder /* rhs */) {
+  return false; // FIXME
 }
 
-bool Less(ObjectHolder lhs, ObjectHolder rhs) {
+bool Less(ObjectHolder /* lhs */, ObjectHolder /* rhs */) {
+  return false; // FIXME
 }
 
 } /* namespace Runtime */
