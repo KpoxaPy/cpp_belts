@@ -194,16 +194,28 @@ ObjectHolder FieldAssignment::Execute(Runtime::Closure& closure) {
 }
 
 IfElse::IfElse(
-  std::unique_ptr<Statement> /* condition */,
-  std::unique_ptr<Statement> /* if_body */,
-  std::unique_ptr<Statement> /* else_body */
+  std::unique_ptr<Statement> condition,
+  std::unique_ptr<Statement> if_body,
+  std::unique_ptr<Statement> else_body
 )
+  : condition_(std::move(condition))
+  , if_body_(std::move(if_body))
+  , else_body_(std::move(else_body))
 {
-  throw RuntimeError("IfElse::IfElse is not implemented yet"); // FIXME
+  if (!condition_ || !if_body_) {
+    throw RuntimeError("Malformed condition or if_body");
+  }
 }
 
-ObjectHolder IfElse::Execute(Runtime::Closure& /* closure */) {
-  throw RuntimeError("IfElse::Execute is not implemented yet"); // FIXME
+ObjectHolder IfElse::Execute(Runtime::Closure& closure) {
+  auto cond_res_holder = condition_->Execute(closure);
+  if (auto cond = cond_res_holder->IsTrue(); cond) {
+    return if_body_->Execute(closure);
+  }
+  if (else_body_) {
+    return else_body_->Execute(closure);
+  }
+  return ObjectHolder::None();
 }
 
 ObjectHolder Or::Execute(Runtime::Closure& closure) {

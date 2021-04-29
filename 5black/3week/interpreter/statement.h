@@ -231,7 +231,7 @@ public:
   ObjectHolder Execute(Runtime::Closure& closure) override;
 
 private:
-  std::unique_ptr<Statement> condition, if_body, else_body;
+  std::unique_ptr<Statement> condition_, if_body_, else_body_;
 };
 
 class Comparison : public Statement {
