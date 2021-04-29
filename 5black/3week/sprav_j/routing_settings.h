@@ -1,0 +1,11 @@
+#pragma once
+
+#include "json.h"
+
+struct RoutingSettings {
+  RoutingSettings() = default;
+  RoutingSettings(const Json::Map& dict);
+
+  double bus_wait_time = 1;
+  double bus_velocity = 1;
+};
