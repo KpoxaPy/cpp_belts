@@ -4,8 +4,8 @@
 
 namespace Runtime {
 
-bool Equal(ObjectHolder lhs, ObjectHolder rhs);
 bool Less(ObjectHolder lhs, ObjectHolder rhs);
+bool Equal(ObjectHolder lhs, ObjectHolder rhs);
 
 inline bool NotEqual(ObjectHolder lhs, ObjectHolder rhs) {
   return !Equal(lhs, rhs);

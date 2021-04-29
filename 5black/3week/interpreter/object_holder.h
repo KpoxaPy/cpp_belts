@@ -62,6 +62,10 @@ ObjectHolder Sub(ObjectHolder lhs, ObjectHolder rhs);
 ObjectHolder Mult(ObjectHolder lhs, ObjectHolder rhs);
 ObjectHolder Div(ObjectHolder lhs, ObjectHolder rhs);
 
+ObjectHolder Or(ObjectHolder lhs, ObjectHolder rhs);
+ObjectHolder And(ObjectHolder lhs, ObjectHolder rhs);
+ObjectHolder Not(ObjectHolder arg);
+
 void RunObjectHolderTests(TestRunner& tr);
 
 } /* namespace Runtime */

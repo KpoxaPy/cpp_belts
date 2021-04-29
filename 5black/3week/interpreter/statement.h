@@ -107,6 +107,9 @@ struct NewInstance : Statement {
 class UnaryOperation : public Statement {
 public:
   UnaryOperation(std::unique_ptr<Statement> argument) : argument(std::move(argument)) {
+    if (!this->argument) {
+      throw Runtime::RuntimeError("argument is malformed");
+    }
   }
 
 protected:
@@ -125,6 +128,9 @@ public:
     : lhs(std::move(lhs))
     , rhs(std::move(rhs))
   {
+    if (!this->lhs || !this->rhs) {
+      throw Runtime::RuntimeError("arguments are malformed");
+    }
   }
 
 protected:
@@ -241,8 +247,8 @@ public:
   ObjectHolder Execute(Runtime::Closure& closure) override;
 
 private:
-  Comparator comparator;
-  std::unique_ptr<Statement> left, right;
+  Comparator comparator_;
+  std::unique_ptr<Statement> left_, right_;
 };
 
 void RunUnitTests(TestRunner& tr);

@@ -127,39 +127,24 @@ ObjectHolder MethodCall::Execute(Closure& closure) {
 }
 
 ObjectHolder Stringify::Execute(Closure& closure) {
-  if (!argument) {
-    throw RuntimeError("argument is malformed");
-  }
   ostringstream ss;
   Runtime::Print(argument->Execute(closure), ss);
   return ObjectHolder::Own(Runtime::String(ss.str()));
 }
 
 ObjectHolder Add::Execute(Closure& closure) {
-  if (!lhs || !rhs) {
-    throw RuntimeError("arguments are malformed");
-  }
   return Runtime::Add(lhs->Execute(closure), rhs->Execute(closure));
 }
 
 ObjectHolder Sub::Execute(Closure& closure) {
-  if (!lhs || !rhs) {
-    throw RuntimeError("arguments are malformed");
-  }
   return Runtime::Sub(lhs->Execute(closure), rhs->Execute(closure));
 }
 
 ObjectHolder Mult::Execute(Closure& closure) {
-  if (!lhs || !rhs) {
-    throw RuntimeError("arguments are malformed");
-  }
   return Runtime::Mult(lhs->Execute(closure), rhs->Execute(closure));
 }
 
 ObjectHolder Div::Execute(Closure& closure) {
-  if (!lhs || !rhs) {
-    throw RuntimeError("arguments are malformed");
-  }
   return Runtime::Div(lhs->Execute(closure), rhs->Execute(closure));
 }
 
@@ -198,7 +183,6 @@ FieldAssignment::FieldAssignment(
 }
 
 ObjectHolder FieldAssignment::Execute(Runtime::Closure& closure) {
-  
   if (auto holder = object.Execute(closure); holder) {
     if (auto inst = holder.TryAs<Runtime::ClassInstance>(); inst) {
       auto& fields = inst->Fields();
@@ -215,33 +199,40 @@ IfElse::IfElse(
   std::unique_ptr<Statement> /* else_body */
 )
 {
-  throw RuntimeError("Not implemented yet"); // FIXME
+  throw RuntimeError("IfElse::IfElse is not implemented yet"); // FIXME
 }
 
 ObjectHolder IfElse::Execute(Runtime::Closure& /* closure */) {
   throw RuntimeError("IfElse::Execute is not implemented yet"); // FIXME
 }
 
-ObjectHolder Or::Execute(Runtime::Closure& /* closure */) {
-  throw RuntimeError("Or::Execute is not implemented yet"); // FIXME
+ObjectHolder Or::Execute(Runtime::Closure& closure) {
+  return Runtime::Or(lhs->Execute(closure), rhs->Execute(closure));
 }
 
-ObjectHolder And::Execute(Runtime::Closure& /* closure */) {
-  throw RuntimeError("And::Execute is not implemented yet"); // FIXME
+ObjectHolder And::Execute(Runtime::Closure& closure) {
+  return Runtime::And(lhs->Execute(closure), rhs->Execute(closure));
 }
 
-ObjectHolder Not::Execute(Runtime::Closure& /* closure */) {
-  throw RuntimeError("Not::Execute is not implemented yet"); // FIXME
+ObjectHolder Not::Execute(Runtime::Closure& closure) {
+  return Runtime::Not(argument->Execute(closure));
 }
 
 Comparison::Comparison(
-  Comparator /* cmp */, unique_ptr<Statement> /* lhs */, unique_ptr<Statement> /* rhs */
-) {
-  throw RuntimeError("Comparison::Comparison is not implemented yet"); // FIXME
+  Comparator cmp, unique_ptr<Statement> lhs, unique_ptr<Statement> rhs
+)
+  : comparator_(std::move(cmp))
+  , left_(std::move(lhs))
+  , right_(std::move(rhs))
+{
+  if (!left_ || !right_) {
+    throw RuntimeError("arguments are malformed");
+  }
 }
 
-ObjectHolder Comparison::Execute(Runtime::Closure& /* closure */) {
-  throw RuntimeError("Not::Execute is not implemented yet"); // FIXME
+ObjectHolder Comparison::Execute(Runtime::Closure& closure) {
+  bool result = comparator_(left_->Execute(closure), right_->Execute(closure));
+  return ObjectHolder::Own(Runtime::Bool{result});
 }
 
 NewInstance::NewInstance(
@@ -255,9 +246,21 @@ NewInstance::NewInstance(
 NewInstance::NewInstance(const Runtime::Class& class_) : NewInstance(class_, {}) {
 }
 
-ObjectHolder NewInstance::Execute(Runtime::Closure& /* closure */) {
-  return ObjectHolder::Own(Runtime::ClassInstance(class_));
-  // FIXME add __init__ call
+ObjectHolder NewInstance::Execute(Runtime::Closure& closure) {
+  auto h = ObjectHolder::Own(Runtime::ClassInstance(class_));
+  auto inst = h.TryAs<Runtime::ClassInstance>();
+
+  std::vector<ObjectHolder> actual_args;
+  actual_args.reserve(args.size());
+  for (auto& arg : args) {
+    actual_args.emplace_back(arg->Execute(closure));
+  }
+
+  if (inst->HasMethod("__init__", args.size())) {
+    inst->Call("__init__", actual_args);
+  }
+
+  return h;
 }
 
 

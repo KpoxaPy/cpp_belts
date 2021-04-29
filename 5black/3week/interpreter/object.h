@@ -43,6 +43,14 @@ public:
   virtual ObjectHolder Div(ObjectHolder) {
     throw RuntimeError("Cannot add to anything");
   }
+
+  virtual bool Less(ObjectHolder) {
+    throw RuntimeError("Cannot compare less to anything");
+  }
+
+  virtual bool Equal(ObjectHolder) {
+    throw RuntimeError("Cannot compare equal to anything");
+  }
 };
 
 template <typename T>
@@ -68,6 +76,8 @@ public:
   using ValueObject<std::string>::ValueObject;
   bool IsTrue() const override;
   ObjectHolder Add(ObjectHolder rhs) override;
+  bool Less(ObjectHolder rhs) override;
+  bool Equal(ObjectHolder rhs) override;
 };
 
 class Number : public ValueObject<int> {
@@ -78,6 +88,8 @@ public:
   ObjectHolder Sub(ObjectHolder rhs) override;
   ObjectHolder Mult(ObjectHolder rhs) override;
   ObjectHolder Div(ObjectHolder rhs) override;
+  bool Less(ObjectHolder rhs) override;
+  bool Equal(ObjectHolder rhs) override;
 };
 
 class Bool : public ValueObject<bool> {

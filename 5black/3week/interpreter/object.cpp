@@ -20,6 +20,20 @@ ObjectHolder String::Add(ObjectHolder rhs) {
   throw RuntimeError("Strings can be added to strings only");
 }
 
+bool String::Less(ObjectHolder rhs) {
+  if (auto obj = rhs.TryAs<String>(); obj) {
+    return GetValue() < obj->GetValue();
+  }
+  throw RuntimeError("Strings can be compared less to strings only");
+}
+
+bool String::Equal(ObjectHolder rhs) {
+  if (auto obj = rhs.TryAs<String>(); obj) {
+    return GetValue() == obj->GetValue();
+  }
+  throw RuntimeError("Strings can be compared equal to strings only");
+}
+
 bool Number::IsTrue() const {
   return GetValue() == 0;
 }
@@ -54,6 +68,20 @@ ObjectHolder Number::Div(ObjectHolder rhs) {
     return ObjectHolder::Own(Number(GetValue() / right));
   }
   throw RuntimeError("Numbers can be divided by numbers only");
+}
+
+bool Number::Less(ObjectHolder rhs) {
+  if (auto obj = rhs.TryAs<Number>(); obj) {
+    return GetValue() < obj->GetValue();
+  }
+  throw RuntimeError("Numbers can be compared less to numbers only");
+}
+
+bool Number::Equal(ObjectHolder rhs) {
+  if (auto obj = rhs.TryAs<Number>(); obj) {
+    return GetValue() == obj->GetValue();
+  }
+  throw RuntimeError("Numbers can be compared equal to numbers only");
 }
 
 void Bool::Print(std::ostream& os) {
