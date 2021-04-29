@@ -13,7 +13,7 @@ bool String::IsTrue() const {
   return GetValue().length() > 0;
 }
 
-ObjectHolder String::Add(ObjectHolder rhs) const {
+ObjectHolder String::Add(ObjectHolder rhs) {
   if (auto obj = rhs.TryAs<String>(); obj) {
     return ObjectHolder::Own(String(GetValue() + obj->GetValue()));
   }
@@ -24,28 +24,28 @@ bool Number::IsTrue() const {
   return GetValue() == 0;
 }
 
-ObjectHolder Number::Add(ObjectHolder rhs) const {
+ObjectHolder Number::Add(ObjectHolder rhs) {
   if (auto obj = rhs.TryAs<Number>(); obj) {
     return ObjectHolder::Own(Number(GetValue() + obj->GetValue()));
   }
   throw RuntimeError("Numbers can be added to numbers only");
 }
 
-ObjectHolder Number::Sub(ObjectHolder rhs) const {
+ObjectHolder Number::Sub(ObjectHolder rhs) {
   if (auto obj = rhs.TryAs<Number>(); obj) {
     return ObjectHolder::Own(Number(GetValue() - obj->GetValue()));
   }
   throw RuntimeError("Numbers can be substituted with numbers only");
 }
 
-ObjectHolder Number::Mult(ObjectHolder rhs) const {
+ObjectHolder Number::Mult(ObjectHolder rhs) {
   if (auto obj = rhs.TryAs<Number>(); obj) {
     return ObjectHolder::Own(Number(GetValue() * obj->GetValue()));
   }
   throw RuntimeError("Numbers can be multiplied by numbers only");
 }
 
-ObjectHolder Number::Div(ObjectHolder rhs) const {
+ObjectHolder Number::Div(ObjectHolder rhs) {
   if (auto obj = rhs.TryAs<Number>(); obj) {
     auto right = obj->GetValue();
     if (right == 0) {
@@ -88,7 +88,7 @@ const Method* Class::GetMethod(const std::string& name) const {
 }
 
 void Class::Print(ostream& /* os */) {
-  throw RuntimeError("Class::Print is not implemented yet"); // FIXME
+  throw RuntimeError("Class::Print is not implemented yet"); // TODO maybe not needed?
 }
 
 bool Class::IsTrue() const {
@@ -99,16 +99,25 @@ const std::string& Class::GetName() const {
   return name_;
 }
 
-void ClassInstance::Print(std::ostream& /* os */) {
-  throw RuntimeError("ClassInstance::Print is not implemented yet"); // FIXME
+void ClassInstance::Print(std::ostream& os) {
+  if (HasMethod("__str__", 0)) {
+    auto h = Call("__str__", {});
+    h->Print(os);
+  } else {
+    os << this;
+  }
 }
 
 bool ClassInstance::IsTrue() const {
   return true;
 }
 
-bool ClassInstance::HasMethod(const std::string& /* method */, size_t /* argument_count */) const {
-  throw RuntimeError("ClassInstance::HasMethod is not implemented yet"); // FIXME
+ObjectHolder ClassInstance::Add(ObjectHolder rhs) {
+  return Call("__add__", {std::move(rhs)});
+}
+
+bool ClassInstance::HasMethod(const std::string& method, size_t argument_count) const {
+  return CheckMethod(class_.GetMethod(method), argument_count);
 }
 
 const Closure& ClassInstance::Fields() const {
@@ -124,8 +133,26 @@ ClassInstance::ClassInstance(const Class& cls)
 {
 }
 
-ObjectHolder ClassInstance::Call(const std::string& /* method */, const std::vector<ObjectHolder>& /* actual_args */) {
-  throw RuntimeError("ClassInstance::Call is not implemented yet"); // FIXME
+ObjectHolder ClassInstance::Call(const std::string& method, const std::vector<ObjectHolder>& actual_args) {
+  auto method_ptr = class_.GetMethod(method);
+  if (!CheckMethod(method_ptr, actual_args.size())) {
+    throw RuntimeError("There's no such method to call with this params!");
+  }
+
+  Closure c{{"self", ObjectHolder::Share(*this)}};
+  for (size_t i = 0; i < actual_args.size(); ++i) {
+    c[method_ptr->formal_params[i]] = std::move(actual_args[i]);
+  }
+  return method_ptr->body->Execute(c);
+}
+
+bool ClassInstance::CheckMethod(const Method* method_ptr, size_t argument_count) const {
+  if (!method_ptr || !method_ptr->body) {
+    return false;
+  }
+  // TODO check whether we need exact params count for actual params, or we can
+  // have more than actual?
+  return method_ptr->formal_params.size() == argument_count;
 }
 
 } /* namespace Runtime */

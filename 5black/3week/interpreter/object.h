@@ -28,19 +28,19 @@ public:
     throw RuntimeError("Cannot cast Object to bool");
   }
 
-  virtual ObjectHolder Add(ObjectHolder) const {
+  virtual ObjectHolder Add(ObjectHolder) {
     throw RuntimeError("Cannot add to anything");
   }
 
-  virtual ObjectHolder Sub(ObjectHolder) const {
+  virtual ObjectHolder Sub(ObjectHolder) {
     throw RuntimeError("Cannot add to anything");
   }
 
-  virtual ObjectHolder Mult(ObjectHolder) const {
+  virtual ObjectHolder Mult(ObjectHolder) {
     throw RuntimeError("Cannot add to anything");
   }
 
-  virtual ObjectHolder Div(ObjectHolder) const {
+  virtual ObjectHolder Div(ObjectHolder) {
     throw RuntimeError("Cannot add to anything");
   }
 };
@@ -67,17 +67,17 @@ class String : public ValueObject<std::string> {
 public:
   using ValueObject<std::string>::ValueObject;
   bool IsTrue() const override;
-  ObjectHolder Add(ObjectHolder rhs) const override;
+  ObjectHolder Add(ObjectHolder rhs) override;
 };
 
 class Number : public ValueObject<int> {
 public:
   using ValueObject<int>::ValueObject;
   bool IsTrue() const override;
-  ObjectHolder Add(ObjectHolder rhs) const override;
-  ObjectHolder Sub(ObjectHolder rhs) const override;
-  ObjectHolder Mult(ObjectHolder rhs) const override;
-  ObjectHolder Div(ObjectHolder rhs) const override;
+  ObjectHolder Add(ObjectHolder rhs) override;
+  ObjectHolder Sub(ObjectHolder rhs) override;
+  ObjectHolder Mult(ObjectHolder rhs) override;
+  ObjectHolder Div(ObjectHolder rhs) override;
 };
 
 class Bool : public ValueObject<bool> {
@@ -113,6 +113,7 @@ public:
 
   void Print(std::ostream& os) override;
   bool IsTrue() const override;
+  ObjectHolder Add(ObjectHolder rhs) override;
 
   ObjectHolder Call(const std::string& method, const std::vector<ObjectHolder>& actual_args);
   bool HasMethod(const std::string& method, size_t argument_count) const;
@@ -123,6 +124,8 @@ public:
 private:
   const Class& class_;
   Closure fields_;
+
+  bool CheckMethod(const Method* method_ptr, size_t argument_count) const;
 };
 
 void RunObjectsTests(TestRunner& test_runner);
