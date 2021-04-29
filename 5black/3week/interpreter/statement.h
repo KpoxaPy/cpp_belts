@@ -199,21 +199,24 @@ private:
 class Return : public Statement {
 public:
   explicit Return(std::unique_ptr<Statement> statement)
-    : statement(std::move(statement))
+    : statement_(std::move(statement))
   {
+    if (!statement_) {
+      throw Runtime::RuntimeError("Statement is malformed");
+    }
   }
 
   ObjectHolder Execute(Runtime::Closure& closure) override;
 
 private:
-  std::unique_ptr<Statement> statement;
+  std::unique_ptr<Statement> statement_;
 };
 
 class ClassDefinition : public Statement {
 public:
   explicit ClassDefinition(ObjectHolder class_holder);
 
-  ObjectHolder Execute(Runtime::Closure& closure) override;
+  ObjectHolder Execute(Runtime::Closure&) override;
 
 private:
   ObjectHolder class_holder_;

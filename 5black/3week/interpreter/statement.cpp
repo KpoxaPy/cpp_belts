@@ -34,14 +34,15 @@ VariableValue::VariableValue(std::vector<std::string> dotted_ids)
 }
 
 ObjectHolder VariableValue::Execute(Closure& closure) {
+  Closure* closure_ptr = &closure;
   ostringstream ss;
 
   const size_t last = dotted_ids.size() - 1;
   for (size_t i = 0; i <= last; ++i) {
     ss << (i == 0 ? "" : ".") << dotted_ids[i];
 
-    auto it = closure.find(dotted_ids[i]);
-    if (it == closure.end()) {
+    auto it = closure_ptr->find(dotted_ids[i]);
+    if (it == closure_ptr->end()) {
       break;
     }
     
@@ -50,7 +51,7 @@ ObjectHolder VariableValue::Execute(Closure& closure) {
     }
 
     if (auto inst = it->second.TryAs<Runtime::ClassInstance>(); inst) {
-      closure = inst->Fields();
+      closure_ptr = &inst->Fields();
     }
   }
 
@@ -123,7 +124,9 @@ ObjectHolder MethodCall::Execute(Closure& closure) {
   for (auto& arg : args) {
     actual_args.emplace_back(arg->Execute(closure));
   }
-  return inst->Call(method, actual_args);
+  auto h = inst->Call(method, actual_args);
+  h.SetReturnState(false);
+  return h;
 }
 
 ObjectHolder Stringify::Execute(Closure& closure) {
@@ -153,14 +156,19 @@ ObjectHolder Compound::Execute(Closure& closure) {
     if (!stmt) {
       throw RuntimeError("Malformed statement");
     }
-    stmt->Execute(closure);
+    auto h = stmt->Execute(closure);
+    if (h.IsReturnState()) {
+      return h;
+    }
   }
 
-  return ObjectHolder::None(); // FIXME make execution flow
+  return ObjectHolder::None();
 }
 
-ObjectHolder Return::Execute(Closure& /* closure */) {
-  throw RuntimeError("Return::Execute is not implemented yet"); // FIXME
+ObjectHolder Return::Execute(Closure& closure) {
+  auto h = statement_->Execute(closure);
+  h.SetReturnState(true);
+  return h;
 }
 
 ClassDefinition::ClassDefinition(ObjectHolder class_holder)
@@ -169,8 +177,8 @@ ClassDefinition::ClassDefinition(ObjectHolder class_holder)
 {
 }
 
-ObjectHolder ClassDefinition::Execute(Runtime::Closure& /* closure */) {
-  throw RuntimeError("ClassDefinition::Execute is not implemented yet"); // FIXME
+ObjectHolder ClassDefinition::Execute(Runtime::Closure&) {
+  return class_holder_;
 }
 
 FieldAssignment::FieldAssignment(

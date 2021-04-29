@@ -39,6 +39,14 @@ ObjectHolder::operator bool() const {
   return Get();
 }
 
+bool ObjectHolder::IsReturnState() const {
+  return return_state_;
+}
+
+void ObjectHolder::SetReturnState(bool state) {
+  return_state_ = state;
+}
+
 bool IsTrue(ObjectHolder object) {
   if (!object) {
     return false;

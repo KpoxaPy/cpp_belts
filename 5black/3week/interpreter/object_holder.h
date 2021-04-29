@@ -44,11 +44,15 @@ public:
 
   explicit operator bool() const;
 
+  bool IsReturnState() const;
+  void SetReturnState(bool state);
+
 private:
   ObjectHolder(std::shared_ptr<Object> data) : data(std::move(data)) {
   }
 
   std::shared_ptr<Object> data;
+  bool return_state_ = false;
 };
 
 using Closure = std::unordered_map<std::string, ObjectHolder>;
