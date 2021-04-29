@@ -97,16 +97,33 @@ void Print::SetOutputStream(ostream& output_stream) {
 }
 
 MethodCall::MethodCall(
-  std::unique_ptr<Statement> /* object */
-  , std::string /* method */
-  , std::vector<std::unique_ptr<Statement>> /* args */
+  std::unique_ptr<Statement> object
+  , std::string method
+  , std::vector<std::unique_ptr<Statement>> args
 )
+  : object(std::move(object))
+  , method(std::move(method))
+  , args(std::move(args))
 {
-  throw RuntimeError("MethodCall::MethodCall is not implemented yet"); // FIXME
 }
 
-ObjectHolder MethodCall::Execute(Closure& /* closure */) {
-  throw RuntimeError("MethodCall::Execute is not implemented yet"); // FIXME
+ObjectHolder MethodCall::Execute(Closure& closure) {
+  auto object_holder = object->Execute(closure);
+  if (!object_holder) {
+    throw RuntimeError("Cannot call method, object is None");
+  }
+
+  auto inst = object_holder.TryAs<Runtime::ClassInstance>();
+  if (!inst) {
+    throw RuntimeError("Cannot call method, object is not class instance");
+  }
+
+  std::vector<ObjectHolder> actual_args;
+  actual_args.reserve(args.size());
+  for (auto& arg : args) {
+    actual_args.emplace_back(arg->Execute(closure));
+  }
+  return inst->Call(method, actual_args);
 }
 
 ObjectHolder Stringify::Execute(Closure& closure) {

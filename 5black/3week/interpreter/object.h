@@ -105,6 +105,8 @@ private:
   std::string name_;
   std::unordered_map<std::string, Method> methods_;
   const Class* parent_;
+
+  const Method* GetMethodHere(const std::string& name) const;
 };
 
 class ClassInstance : public Object {

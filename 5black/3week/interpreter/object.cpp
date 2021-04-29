@@ -81,9 +81,14 @@ Class::Class(std::string name, std::vector<Method> methods, const Class* parent)
 }
 
 const Method* Class::GetMethod(const std::string& name) const {
-  if (auto it = methods_.find(name); it != methods_.end()) {
-    return &it->second;
+  if (auto m = GetMethodHere(name); m) {
+    return m;
   }
+
+  if (parent_) {
+    return parent_->GetMethod(name);
+  }
+
   return nullptr;
 }
 
@@ -93,6 +98,13 @@ void Class::Print(ostream& /* os */) {
 
 bool Class::IsTrue() const {
   return true;
+}
+
+const Method* Class::GetMethodHere(const std::string& name) const {
+  if (auto it = methods_.find(name); it != methods_.end()) {
+    return &it->second;
+  }
+  return nullptr;
 }
 
 const std::string& Class::GetName() const {
