@@ -5,8 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "logging": { "engineLogging": true },
-
+      // "logging": { "engineLogging": true },
       "name": "(gdb) Launch",
       "type": "cppdbg",
       "request": "launch",
@@ -17,7 +16,6 @@
       "cwd": "${workspaceFolder}",
       "externalConsole": false,
       "MIMode": "gdb",
-      "miDebuggerPath": "C:\\Users\\KpoxaPy\\bin\\mingw64\\bin\\gdb.exe",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
