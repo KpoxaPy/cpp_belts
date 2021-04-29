@@ -217,7 +217,7 @@ IfElse::IfElse(
 
 ObjectHolder IfElse::Execute(Runtime::Closure& closure) {
   auto cond_res_holder = condition_->Execute(closure);
-  if (auto cond = cond_res_holder->IsTrue(); cond) {
+  if (auto cond = IsTrue(cond_res_holder); cond) {
     return if_body_->Execute(closure);
   }
   if (else_body_) {

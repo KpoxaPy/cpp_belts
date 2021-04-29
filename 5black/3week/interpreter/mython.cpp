@@ -18,20 +18,33 @@ using namespace std;
 
 void TestAll();
 
-void RunMythonProgram(istream& input, ostream& output) {
+void RunMythonProgram(istream& input, ostream& output, bool debug = false) {
+  std::string s(std::istreambuf_iterator<char>(input), {});
+  istringstream input_s(s);
+  if (debug) {
+    std::cerr << "Input program:\n" << s << "\n\n";
+  }
+
   Ast::Print::SetOutputStream(output);
 
-  Parse::Lexer lexer(input);
-  auto program = ParseProgram(lexer);
+  try {
+    Parse::Lexer lexer(input_s);
+    auto program = ParseProgram(lexer);
 
-  Runtime::Closure closure;
-  program->Execute(closure);
+    Runtime::Closure closure;
+    program->Execute(closure);
+  } catch (std::exception& e) {
+    if (debug) {
+      cerr << "Program excepted: " << e.what() << "\n";
+    }
+    throw;
+  }
 }
 
 int main() {
   TestAll();
 
-  RunMythonProgram(cin, cout);
+  RunMythonProgram(cin, cout, true);
 
   return 0;
 }
@@ -116,6 +129,85 @@ print y.value
   ASSERT_EQUAL(output.str(), "2\n3\n");
 }
 
+void TestCase6() {
+  istringstream input(R"(
+x = 4
+y = 5
+
+if x > y:
+  print "x > y"
+else:
+  print "x <= y"
+
+if x > 0:
+  if y < 0:
+    print "y < 0"
+  else:
+    print "y >= 0"
+else:
+  print 'x <= 0'
+
+x = 3
+y = -3
+
+if x > 0:
+  if y < 0:
+    print "y < 0"
+else:
+  print 'x <= 0'
+
+x = -4
+y = -4
+
+if x > 0:
+  if y < 0:
+    print "y < 0"
+else:
+  print 'x <= 0'
+
+x = ""
+
+if x:
+  print '"" is True'
+else:
+  print '"" is False'
+
+x = 'non-empty string'
+
+if x:
+  print 'non-empty string is True'
+else:
+  print 'non-empty string is False'
+
+x = 0
+
+if x:
+  print '0 is True'
+else:
+  print '0 is False'
+
+x = 100
+
+if x:
+  print '100 is True'
+else:
+  print '100 is False'
+
+x = None
+
+if x:
+  print 'None is True'
+else:
+  print 'None is False'
+)");
+
+
+  ostringstream output;
+  RunMythonProgram(input, output);
+
+  ASSERT_EQUAL(output.str(), "x <= y\ny >= 0\ny < 0\nx <= 0\n\"\" is False\nnon-empty string is True\n0 is False\n100 is True\nNone is False\n");
+}
+
 void TestAll() {
   TestRunner tr;
   Runtime::RunObjectHolderTests(tr);
@@ -128,4 +220,5 @@ void TestAll() {
   RUN_TEST(tr, TestAssignments);
   RUN_TEST(tr, TestArithmetics);
   RUN_TEST(tr, TestVariablesArePointers);
+  RUN_TEST(tr, TestCase6);
 }

@@ -35,7 +35,7 @@ bool String::Equal(ObjectHolder rhs) {
 }
 
 bool Number::IsTrue() const {
-  return GetValue() == 0;
+  return GetValue() != 0;
 }
 
 ObjectHolder Number::Add(ObjectHolder rhs) {
