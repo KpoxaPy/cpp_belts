@@ -96,15 +96,15 @@ ObjectHolder Div(ObjectHolder lhs, ObjectHolder rhs) {
 }
 
 ObjectHolder Or(ObjectHolder lhs, ObjectHolder rhs) {
-  return ObjectHolder::Own(Bool{lhs->IsTrue() || rhs->IsTrue()});
+  return ObjectHolder::Own(Bool{IsTrue(lhs) || IsTrue(rhs)});
 }
 
 ObjectHolder And(ObjectHolder lhs, ObjectHolder rhs) {
-  return ObjectHolder::Own(Bool{lhs->IsTrue() && rhs->IsTrue()});
+  return ObjectHolder::Own(Bool{IsTrue(lhs) && IsTrue(rhs)});
 }
 
 ObjectHolder Not(ObjectHolder arg) {
-  return ObjectHolder::Own(Bool{!arg->IsTrue()});
+  return ObjectHolder::Own(Bool{!IsTrue(arg)});
 }
 
 }
