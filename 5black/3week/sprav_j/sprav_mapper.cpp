@@ -201,14 +201,14 @@ void PointProjector::Process() {
     for (size_t i = 0; i < x_compress_data_.size(); ++i) {
       x_compress_map_[x_compress_data_[i]] = i;
     }
-    x_step = co_width / (x_compress_data_.size() - 1);
+    x_step = co_width / max(static_cast<size_t>(1), x_compress_data_.size() - 1);
   }
   if (mapper_.GetSettings().enableYcoordCompress) {
     CompressCoordsFor(y_compress_data_, [](const Stop& s){ return s.lat; });
     for (size_t i = 0; i < y_compress_data_.size(); ++i) {
       y_compress_map_[y_compress_data_[i]] = i;
     }
-    y_step = co_height / (y_compress_data_.size() - 1);
+    y_step = co_height / max(static_cast<size_t>(1), y_compress_data_.size() - 1);
   }
 }
 
