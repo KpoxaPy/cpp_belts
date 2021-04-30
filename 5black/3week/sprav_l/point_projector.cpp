@@ -197,8 +197,10 @@ bool PointProjector::CheckWhetherStopsAdjacent(size_t id1, size_t id2) const {
         break;
       }
 
-      if (it == bus.stops.begin() && bus.is_roundtrip && *prev(prev(bus.stops.end())) == id2) {
-        return true;
+      if (it == bus.stops.begin()) {
+        if (bus.is_roundtrip && *prev(prev(bus.stops.end())) == id2) {
+          return true;
+        }
       } else if (*prev(it) == id2) {
         return true;
       }
