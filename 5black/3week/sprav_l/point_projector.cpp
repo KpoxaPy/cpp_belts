@@ -2,11 +2,17 @@
 
 #include "sprav_mapper.h"
 
+using namespace std;
+
 PointProjector::PointProjector(const SpravMapper& mapper)
     : mapper_(mapper) {}
 
 void PointProjector::PushStop(const Stop& s) {
   CalcStatsForZoom(s);
+
+  for (auto bus_id : s.buses) {
+    buses_.insert(bus_id);
+  }
 
   if (mapper_.GetSettings().enableXcoordCompress) {
     x_compress_data_.push_back({s.id});
@@ -17,20 +23,8 @@ void PointProjector::PushStop(const Stop& s) {
 }
 
 void PointProjector::Process() {
-  double padding = mapper_.GetSettings().padding;
-  double co_width = mapper_.GetSettings().width - 2 * padding;
-  double co_height = mapper_.GetSettings().height - 2 * padding;
-
-  if (mapper_.GetSettings().enableXcoordCompress) {
-    CompressCoordsFor(x_compress_data_, [](const Stop& s){ return s.lon; });
-    x_compress_map_ = GetCompressMapFor(x_compress_data_);
-    x_step = co_width / max(static_cast<size_t>(1), x_compress_data_.size() - 1);
-  }
-  if (mapper_.GetSettings().enableYcoordCompress) {
-    CompressCoordsFor(y_compress_data_, [](const Stop& s){ return s.lat; });
-    y_compress_map_ = GetCompressMapFor(y_compress_data_);
-    y_step = co_height / max(static_cast<size_t>(1), y_compress_data_.size() - 1);
-  }
+  UniformCoords();
+  CompressCoords();
 }
 
 Svg::Point PointProjector::operator()(const Stop& s) const {
@@ -73,10 +67,82 @@ void PointProjector::CalcStatsForZoom(const Stop& s) {
   } else {
     zoom_coef = 0;
   }
-
 }
 
-bool PointProjector::CheckWhetherStopsAdjacent(size_t id1, size_t id2) {
+void PointProjector::UniformCoords() {
+  for (auto bus_id : buses_) {
+    const Bus& bus = mapper_.GetSprav()->GetBus(bus_id);
+    auto bearing_stops_ = FindBearingStops(bus);
+
+    UNUSED(bearing_stops_);
+  }
+}
+
+PointProjector::BearingStops PointProjector::FindBearingStops(const Bus& bus) const {
+  BearingStops stops;
+
+  unordered_map<size_t, size_t> stops_rate;
+
+  for (auto it = bus.stops.begin(); it != bus.stops.end(); ++it) {
+    const Stop& stop = mapper_.GetSprav()->GetStop(*it);
+
+    auto rate_it = stops_rate.find(stop.id);
+    if (rate_it == stops_rate.end()) {
+      rate_it = stops_rate.emplace(stop.id, 0).first;
+    }
+
+    rate_it->second += 1;
+
+    if (it == bus.stops.begin()) {
+      rate_it->second += 2;
+    }
+
+    if (stop.buses.size() > 1) {
+      rate_it->second += 2;
+    }
+  }
+
+  if (!bus.is_roundtrip) {
+    for (auto it = bus.stops.rbegin(); it != bus.stops.rend(); ++it) {
+      const Stop& stop = mapper_.GetSprav()->GetStop(*it);
+      auto rate_it = stops_rate.find(stop.id);
+
+      rate_it->second += 1;
+
+      if (it == bus.stops.rbegin()) {
+        rate_it->second += 2;
+      }
+    }
+  }
+
+  for (auto [stop_id, rate] : stops_rate) {
+    if (rate > 2) {
+      stops.insert(stop_id);
+    }
+  }
+
+  return stops;
+}
+
+void PointProjector::CompressCoords() {
+  double padding = mapper_.GetSettings().padding;
+  double co_width = mapper_.GetSettings().width - 2 * padding;
+  double co_height = mapper_.GetSettings().height - 2 * padding;
+
+  if (mapper_.GetSettings().enableXcoordCompress) {
+    CompressCoordsFor(x_compress_data_, [](const Stop& s){ return s.lon; });
+    x_compress_map_ = GetCompressMapFor(x_compress_data_);
+    x_step = co_width / max(static_cast<size_t>(1), x_compress_data_.size() - 1);
+  }
+
+  if (mapper_.GetSettings().enableYcoordCompress) {
+    CompressCoordsFor(y_compress_data_, [](const Stop& s){ return s.lat; });
+    y_compress_map_ = GetCompressMapFor(y_compress_data_);
+    y_step = co_height / max(static_cast<size_t>(1), y_compress_data_.size() - 1);
+  }
+}
+
+bool PointProjector::CheckWhetherStopsAdjacent(size_t id1, size_t id2) const {
   if (id1 == id2) {
     return false;
   }
@@ -121,7 +187,7 @@ bool PointProjector::CheckWhetherStopsAdjacent(size_t id1, size_t id2) {
   return false;
 }
 
-void PointProjector::CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord) {
+void PointProjector::CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord) const {
   data.sort([this, &get_coord](unordered_set<size_t> lhs, unordered_set<size_t> rhs) {
     return get_coord(mapper_.GetSprav()->GetStop(*lhs.begin()))
       < get_coord(mapper_.GetSprav()->GetStop(*rhs.begin()));
@@ -154,7 +220,7 @@ void PointProjector::CompressCoordsFor(CoordCompressInitData& data, std::functio
   }
 }
 
-PointProjector::CoordCompressMap PointProjector::GetCompressMapFor(const CoordCompressInitData& data) {
+PointProjector::CoordCompressMap PointProjector::GetCompressMapFor(const CoordCompressInitData& data) const {
   CoordCompressMap map;
   size_t i = 0;
   for (auto it = data.begin(); it != data.end(); ++i, ++it) {

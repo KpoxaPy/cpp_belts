@@ -9,10 +9,14 @@
 
 class SpravMapper;
 class Stop;
+class Bus;
 
 class PointProjector {
   using CoordCompressInitData = std::list<std::unordered_set<size_t>>;
   using CoordCompressMap = std::unordered_map<size_t, size_t>;
+
+  using BusLines = std::unordered_set<size_t>;
+  using BearingStops = std::unordered_set<size_t>;
 
 public:
   PointProjector(const SpravMapper& mapper);
@@ -31,6 +35,8 @@ private:
   double max_lon = std::numeric_limits<double>::min();
   double zoom_coef = 0;
 
+  BusLines buses_;
+
   CoordCompressInitData x_compress_data_;
   CoordCompressMap x_compress_map_;
   CoordCompressInitData y_compress_data_;
@@ -39,7 +45,12 @@ private:
   double y_step = 0;
 
   void CalcStatsForZoom(const Stop& s);
-  bool CheckWhetherStopsAdjacent(size_t id1, size_t id2);
-  void CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord);
-  CoordCompressMap GetCompressMapFor(const CoordCompressInitData& data);
+
+  void UniformCoords();
+  BearingStops FindBearingStops(const Bus& bus) const;
+
+  void CompressCoords();
+  bool CheckWhetherStopsAdjacent(size_t id1, size_t id2) const;
+  void CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord) const;
+  CoordCompressMap GetCompressMapFor(const CoordCompressInitData& data) const;
 };
