@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "render_settings.h"
@@ -15,7 +16,7 @@
 class SpravMapper;
 
 class PointProjector {
-  using CoordCompressData = std::vector<size_t>;
+  using CoordCompressInitData = std::list<std::unordered_set<size_t>>;
   using CoordCompressMap = std::unordered_map<size_t, size_t>;
 
 public:
@@ -31,9 +32,9 @@ private:
 
   double zoom_coef = 0;
 
-  CoordCompressData x_compress_data_;
+  CoordCompressInitData x_compress_data_;
   CoordCompressMap x_compress_map_;
-  CoordCompressData y_compress_data_;
+  CoordCompressInitData y_compress_data_;
   CoordCompressMap y_compress_map_;
   double x_step = 0;
   double y_step = 0;
@@ -44,7 +45,9 @@ private:
   double min_lon = std::numeric_limits<double>::max();
   double max_lon = std::numeric_limits<double>::min();
 
-  void CompressCoordsFor(CoordCompressData& data, std::function<double(const Stop&)> get_coord);
+  bool CheckWhetherStopsAdjacent(size_t id1, size_t id2);
+  void CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord);
+  CoordCompressMap GetCompressMapFor(const CoordCompressInitData& data);
 };
 
 class SpravMapper {
