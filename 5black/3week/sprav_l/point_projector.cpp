@@ -28,10 +28,10 @@ void PointProjector::PushStop(const Stop& s) {
   }
 
   if (mapper_.GetSettings().enableXcoordCompress) {
-    x_compress_data_.push_back(s.id);
+    x_compress_data_.push_back({s.id});
   }
   if (mapper_.GetSettings().enableYcoordCompress) {
-    y_compress_data_.push_back(s.id);
+    y_compress_data_.push_back({s.id});
   }
 }
 
@@ -42,16 +42,12 @@ void PointProjector::Process() {
 
   if (mapper_.GetSettings().enableXcoordCompress) {
     CompressCoordsFor(x_compress_data_, [](const Stop& s){ return s.lon; });
-    for (size_t i = 0; i < x_compress_data_.size(); ++i) {
-      x_compress_map_[x_compress_data_[i]] = i;
-    }
+    x_compress_map_ = GetCompressMapFor(x_compress_data_);
     x_step = co_width / max(static_cast<size_t>(1), x_compress_data_.size() - 1);
   }
   if (mapper_.GetSettings().enableYcoordCompress) {
     CompressCoordsFor(y_compress_data_, [](const Stop& s){ return s.lat; });
-    for (size_t i = 0; i < y_compress_data_.size(); ++i) {
-      y_compress_map_[y_compress_data_[i]] = i;
-    }
+    y_compress_map_ = GetCompressMapFor(y_compress_data_);
     y_step = co_height / max(static_cast<size_t>(1), y_compress_data_.size() - 1);
   }
 }
@@ -75,9 +71,91 @@ Svg::Point PointProjector::operator()(const Stop& s) const {
   return {x, y};
 }
 
-void PointProjector::CompressCoordsFor(CoordCompressData& data, std::function<double(const Stop&)> get_coord) {
-  sort(data.begin(), data.end(), [this, &get_coord](size_t lhs, size_t rhs) {
-    return get_coord(mapper_.GetSprav()->GetStop(lhs))
-      < get_coord(mapper_.GetSprav()->GetStop(rhs));
+bool PointProjector::CheckWhetherStopsAdjacent(size_t id1, size_t id2) {
+  if (id1 == id2) {
+    return false;
+  }
+
+  const Sprav* sprav = mapper_.GetSprav();
+  const Stop& stop1 = sprav->GetStop(id1);
+  const Stop& stop2 = sprav->GetStop(id2);
+
+  std::unordered_set<size_t> shared_buses;
+  set_intersection(stop1.buses.begin(), stop1.buses.end(),
+    stop2.buses.begin(), stop2.buses.end(),
+    inserter(shared_buses, shared_buses.end()));
+
+  if (shared_buses.size() == 0) {
+    return false;
+  }
+
+  for (auto bus_id : shared_buses) {
+    const Bus& bus = sprav->GetBus(bus_id);
+
+    auto it = bus.stops.begin();
+    while (true) {
+      it = find(it, bus.stops.end(), id1);
+      if (it == bus.stops.end()) {
+        break;
+      }
+
+      if (it == bus.stops.begin() && bus.is_roundtrip && *prev(prev(bus.stops.end())) == id2) {
+        return true;
+      } else if (*prev(it) == id2) {
+        return true;
+      }
+
+      if (it != prev(bus.stops.end()) && *next(it) == id2) {
+        return true;
+      }
+
+      ++it;
+    }
+
+  }
+  return false;
+}
+
+void PointProjector::CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord) {
+  data.sort([this, &get_coord](unordered_set<size_t> lhs, unordered_set<size_t> rhs) {
+    return get_coord(mapper_.GetSprav()->GetStop(*lhs.begin()))
+      < get_coord(mapper_.GetSprav()->GetStop(*rhs.begin()));
   });
+
+  if (data.size() <= 1) {
+    return;
+  }
+  
+  for (auto it = next(data.begin()); it != data.end();) {
+    auto previous_it = prev(it);
+    auto current_stop_id = *it->begin();
+    bool has_adjacent_stop = false;
+
+    for (auto id : *previous_it) {
+      if (CheckWhetherStopsAdjacent(current_stop_id, id)) {
+        has_adjacent_stop = true;
+        break;
+      }
+    }
+
+    if (!has_adjacent_stop) {
+      for (auto id : *it) {
+        previous_it->insert(id);
+      }
+      it = data.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
+PointProjector::CoordCompressMap PointProjector::GetCompressMapFor(const CoordCompressInitData& data) {
+  CoordCompressMap map;
+  size_t i = 0;
+  for (auto it = data.begin(); it != data.end(); ++i, ++it) {
+    for (size_t id : *it) {
+      map[id] = i;
+    }
+  }
+  return map;
 }
