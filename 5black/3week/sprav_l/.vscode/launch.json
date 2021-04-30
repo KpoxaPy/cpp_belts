@@ -12,10 +12,9 @@
       // Resolved by CMake Tools:
       "program": "${command:cmake.launchTargetPath}",
       "args": [
-        // "<", "${workspaceFolder}/example1.in.json",
+        "<", "${workspaceFolder}/example1.in.json",
         // "<", "${workspaceFolder}/example2.in.json",
         // "<", "${workspaceFolder}/example3.in.json",
-        "<", "${workspaceFolder}/example4.in.json",
         ">", "${env:TMP}/output.json"
       ],
       "stopAtEntry": false,

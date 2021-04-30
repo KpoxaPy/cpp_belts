@@ -13,6 +13,7 @@ void PointProjector::PushStop(const Stop& s) {
   for (auto bus_id : s.buses) {
     buses_.insert(bus_id);
   }
+  moved_coords_[s.id] = {s.lat, s.lon};
 
   if (mapper_.GetSettings().enableXcoordCompress) {
     x_compress_data_.push_back({s.id});
@@ -74,7 +75,19 @@ void PointProjector::UniformCoords() {
     const Bus& bus = mapper_.GetSprav()->GetBus(bus_id);
     auto bearing_stops_ = FindBearingStops(bus);
 
-    UNUSED(bearing_stops_);
+    Stops stops;
+    size_t bearing_id;
+    for (auto it = bus.stops.begin(); it != bus.stops.end(); ++it) {
+      if (bearing_stops_.count(*it) > 0) {
+        if (stops.size() > 0) {
+          UniformCoordsForStops(stops, bearing_id, *it);
+          stops.clear();
+        }
+        bearing_id = *it;
+      } else {
+        stops.push_back(*it);
+      }
+    }
   }
 }
 
@@ -124,19 +137,33 @@ PointProjector::BearingStops PointProjector::FindBearingStops(const Bus& bus) co
   return stops;
 }
 
+void PointProjector::UniformCoordsForStops(const Stops& stops, size_t bearing1, size_t bearing2) {
+  double lat_begin = moved_coords_[bearing1].lat;
+  double lon_begin = moved_coords_[bearing1].lon;
+  double lat_step = (moved_coords_[bearing2].lat - lat_begin) / (stops.size() + 1);
+  double lon_step = (moved_coords_[bearing2].lon - lon_begin) / (stops.size() + 1);
+  
+  size_t i = 1;
+  for (auto it = stops.begin(); it != stops.end(); ++i, ++it) {
+    auto& c = moved_coords_[*it];
+    c.lat = lat_begin + lat_step * i;
+    c.lon = lon_begin + lon_step * i;
+  }
+}
+
 void PointProjector::CompressCoords() {
   double padding = mapper_.GetSettings().padding;
   double co_width = mapper_.GetSettings().width - 2 * padding;
   double co_height = mapper_.GetSettings().height - 2 * padding;
 
   if (mapper_.GetSettings().enableXcoordCompress) {
-    CompressCoordsFor(x_compress_data_, [](const Stop& s){ return s.lon; });
+    CompressCoordsFor(x_compress_data_, [this](size_t id){ return moved_coords_[id].lon; });
     x_compress_map_ = GetCompressMapFor(x_compress_data_);
     x_step = co_width / max(static_cast<size_t>(1), x_compress_data_.size() - 1);
   }
 
   if (mapper_.GetSettings().enableYcoordCompress) {
-    CompressCoordsFor(y_compress_data_, [](const Stop& s){ return s.lat; });
+    CompressCoordsFor(y_compress_data_, [this](size_t id){ return moved_coords_[id].lat; });
     y_compress_map_ = GetCompressMapFor(y_compress_data_);
     y_step = co_height / max(static_cast<size_t>(1), y_compress_data_.size() - 1);
   }
@@ -187,10 +214,9 @@ bool PointProjector::CheckWhetherStopsAdjacent(size_t id1, size_t id2) const {
   return false;
 }
 
-void PointProjector::CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord) const {
+void PointProjector::CompressCoordsFor(CoordCompressInitData& data, std::function<double(size_t)> get_coord) const {
   data.sort([this, &get_coord](unordered_set<size_t> lhs, unordered_set<size_t> rhs) {
-    return get_coord(mapper_.GetSprav()->GetStop(*lhs.begin()))
-      < get_coord(mapper_.GetSprav()->GetStop(*rhs.begin()));
+    return get_coord(*lhs.begin()) < get_coord(*rhs.begin());
   });
 
   if (data.size() <= 1) {

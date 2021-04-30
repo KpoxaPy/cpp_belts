@@ -17,6 +17,14 @@ class PointProjector {
 
   using BusLines = std::unordered_set<size_t>;
   using BearingStops = std::unordered_set<size_t>;
+  using Stops = std::list<size_t>;
+
+  struct Coords {
+    double lat;
+    double lon;
+  };
+
+  using StopMovedCoords = std::unordered_map<size_t, Coords>;
 
 public:
   PointProjector(const SpravMapper& mapper);
@@ -36,6 +44,7 @@ private:
   double zoom_coef = 0;
 
   BusLines buses_;
+  StopMovedCoords moved_coords_;
 
   CoordCompressInitData x_compress_data_;
   CoordCompressMap x_compress_map_;
@@ -48,9 +57,10 @@ private:
 
   void UniformCoords();
   BearingStops FindBearingStops(const Bus& bus) const;
+  void UniformCoordsForStops(const Stops& stops, size_t bearing1, size_t bearing2);
 
   void CompressCoords();
   bool CheckWhetherStopsAdjacent(size_t id1, size_t id2) const;
-  void CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord) const;
+  void CompressCoordsFor(CoordCompressInitData& data, std::function<double(size_t)> get_coord) const;
   CoordCompressMap GetCompressMapFor(const CoordCompressInitData& data) const;
 };
