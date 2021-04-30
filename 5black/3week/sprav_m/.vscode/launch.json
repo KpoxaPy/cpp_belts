@@ -29,6 +29,7 @@
           "ignoreFailures": true
         }
       ],
+      "preLaunchTask": "build",
       "postDebugTask": "Make Svg"
     }
   ]

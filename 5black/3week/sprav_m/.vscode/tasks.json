@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build all",
+            "label": "package all",
             "type": "shell",
             "command": "mingw32-make.exe -C ./build/ package",
             "problemMatcher": ["$gcc"],
@@ -12,6 +12,20 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "mingw32-make.exe -C ./build/ all",
+            "problemMatcher": ["$gcc"],
+            "presentation": {
+                "echo": true,
+                "reveal": "never",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
         },
         {
             "label": "Make Svg",
