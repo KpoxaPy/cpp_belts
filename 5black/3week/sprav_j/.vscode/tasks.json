@@ -16,7 +16,15 @@
         {
             "label": "Make Svg",
             "type": "shell",
-            "command": "cat ${env:TMP}/output.json | jq -r .[2].map > ${env:TMP}/output.svg"
+            "presentation": {
+                "echo": true,
+                "reveal": "never",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "command": "chcp 65001; jq -r .[2].map ${env:TMP}/output.json | out-file ${env:TMP}/output.svg -encoding utf8"
         }
     ]
 }
