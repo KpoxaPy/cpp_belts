@@ -6,26 +6,7 @@ PointProjector::PointProjector(const SpravMapper& mapper)
     : mapper_(mapper) {}
 
 void PointProjector::PushStop(const Stop& s) {
-  min_lat = min(s.lat, min_lat);
-  max_lat = max(s.lat, max_lat);
-  min_lon = min(s.lon, min_lon);
-  max_lon = max(s.lon, max_lon);
-
-  double d_lat = max_lat - min_lat;
-  double d_lon = max_lon - min_lon;
-
-  double co_width = mapper_.GetSettings().width - 2 * mapper_.GetSettings().padding;
-  double co_height = mapper_.GetSettings().height - 2 * mapper_.GetSettings().padding;
-
-  if (d_lat >= 1e-6 && d_lon >= 1e-6) {
-    zoom_coef = min(co_width / d_lon, co_height / d_lat);
-  } else if (d_lon >= 1e-6) {
-    zoom_coef = co_width / d_lon;
-  } else if (d_lat >= 1e-6) {
-    zoom_coef = co_height / d_lat;
-  } else {
-    zoom_coef = 0;
-  }
+  CalcStatsForZoom(s);
 
   if (mapper_.GetSettings().enableXcoordCompress) {
     x_compress_data_.push_back({s.id});
@@ -69,6 +50,30 @@ Svg::Point PointProjector::operator()(const Stop& s) const {
   }
 
   return {x, y};
+}
+
+void PointProjector::CalcStatsForZoom(const Stop& s) {
+  min_lat = min(s.lat, min_lat);
+  max_lat = max(s.lat, max_lat);
+  min_lon = min(s.lon, min_lon);
+  max_lon = max(s.lon, max_lon);
+
+  double d_lat = max_lat - min_lat;
+  double d_lon = max_lon - min_lon;
+
+  double co_width = mapper_.GetSettings().width - 2 * mapper_.GetSettings().padding;
+  double co_height = mapper_.GetSettings().height - 2 * mapper_.GetSettings().padding;
+
+  if (d_lat >= 1e-6 && d_lon >= 1e-6) {
+    zoom_coef = min(co_width / d_lon, co_height / d_lat);
+  } else if (d_lon >= 1e-6) {
+    zoom_coef = co_width / d_lon;
+  } else if (d_lat >= 1e-6) {
+    zoom_coef = co_height / d_lat;
+  } else {
+    zoom_coef = 0;
+  }
+
 }
 
 bool PointProjector::CheckWhetherStopsAdjacent(size_t id1, size_t id2) {

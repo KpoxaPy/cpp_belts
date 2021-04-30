@@ -25,6 +25,10 @@ public:
 private:
   const SpravMapper& mapper_;
 
+  double min_lat = std::numeric_limits<double>::max();
+  double max_lat = std::numeric_limits<double>::min();
+  double min_lon = std::numeric_limits<double>::max();
+  double max_lon = std::numeric_limits<double>::min();
   double zoom_coef = 0;
 
   CoordCompressInitData x_compress_data_;
@@ -34,12 +38,7 @@ private:
   double x_step = 0;
   double y_step = 0;
 
-  double min_lat = std::numeric_limits<double>::max();
-  double max_lat = std::numeric_limits<double>::min();
-
-  double min_lon = std::numeric_limits<double>::max();
-  double max_lon = std::numeric_limits<double>::min();
-
+  void CalcStatsForZoom(const Stop& s);
   bool CheckWhetherStopsAdjacent(size_t id1, size_t id2);
   void CompressCoordsFor(CoordCompressInitData& data, std::function<double(const Stop&)> get_coord);
   CoordCompressMap GetCompressMapFor(const CoordCompressInitData& data);
