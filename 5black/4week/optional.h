@@ -57,30 +57,28 @@ public:
   }
 
   Optional& operator=(const Optional& other) {
-    if (other.defined) {
-      if (defined) {
-        **this = *other;
-      } else {
-        new (data) T(*other);
-      }
+    if (!other.defined) {
+      Reset();
     } else if (defined) {
-      (*this)->~T();
+      **this = *other;
+    } else {
+      new (data) T(*other);
+      defined = true;
     }
-    defined = other.defined;
+
     return *this;
   }
 
   Optional& operator=(Optional&& other) {
-    if (other.defined) {
-      if (defined) {
-        **this = std::move(*other);
-      } else {
-        new (data) T(std::move(*other));
-      }
+    if (!other.defined) {
+      Reset();
     } else if (defined) {
-      (*this)->~T();
+      **this = std::move(*other);
+    } else {
+      new (data) T(std::move(*other));
+      defined = true;
     }
-    defined = other.defined;
+
     return *this;
   }
 
@@ -106,28 +104,26 @@ public:
 
   T& Value() {
     if (defined) {
-      return *reinterpret_cast<T*>(data);
+      return **this;
     }
     throw BadOptionalAccess();
   }
 
   const T& Value() const {
     if (defined) {
-      return *reinterpret_cast<const T*>(data);
+      return **this;
     }
     throw BadOptionalAccess();
   }
 
   void Reset() {
     if (defined) {
-      reinterpret_cast<T*>(data)->~T();
+      Value().~T();
       defined = false;
     }
   }
 
   ~Optional() {
-    if (defined) {
-      reinterpret_cast<T*>(data)->~T();
-    }
+    Reset();
   }
 };
