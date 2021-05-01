@@ -2,8 +2,10 @@
 
 #include <functional>
 #include <list>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 #include "svg.h"
 
@@ -12,7 +14,10 @@ class Stop;
 class Bus;
 
 class PointProjector {
-  using CoordCompressInitData = std::list<std::unordered_set<size_t>>;
+  using TaggedStops = std::unordered_map<size_t, size_t>;
+  using AdjacentStops = std::unordered_map<size_t, std::unordered_set<size_t>>;
+
+  using CoordCompressInitData = std::list<size_t>;
   using CoordCompressMap = std::unordered_map<size_t, size_t>;
 
   using BusLines = std::unordered_set<size_t>;
@@ -46,6 +51,7 @@ private:
   BusLines buses_;
   StopMovedCoords moved_coords_;
 
+  AdjacentStops adjacent_stops_;
   CoordCompressInitData x_compress_data_;
   CoordCompressMap x_compress_map_;
   CoordCompressInitData y_compress_data_;
@@ -60,7 +66,6 @@ private:
   void UniformCoordsForStops(const Stops& stops, size_t bearing1, size_t bearing2);
 
   void CompressCoords();
-  bool CheckWhetherStopsAdjacent(size_t id1, size_t id2) const;
-  void CompressCoordsFor(CoordCompressInitData& data, std::function<double(size_t)> get_coord) const;
-  CoordCompressMap GetCompressMapFor(const CoordCompressInitData& data) const;
+  AdjacentStops BuildAdjacentStops() const;
+  std::pair<CoordCompressMap, size_t> CompressCoordsFor(CoordCompressInitData& data, std::function<double(size_t)> get_coord);
 };
