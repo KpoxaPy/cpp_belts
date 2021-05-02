@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <utility>
 #include <memory>
+#include <algorithm>
 
 template <typename T>
 struct RawMemory {
@@ -189,35 +190,35 @@ public:
   // Вставляет элемент перед pos
   // Возвращает итератор на вставленный элемент
   iterator Insert(const_iterator pos, const T& elem) {
-    iterator it = PrepareInsert(pos - cbegin());
-    new (it) T(elem);
-    ++size_;
-    return it;
+    size_t n = pos - cbegin();
+    PushBack(elem);
+    std::rotate(data_.buf + n, data_.buf + size_ - 1, data_.buf + size_);
+    return data_.buf + n;
   }
 
   iterator Insert(const_iterator pos, T&& elem) {
-    iterator it = PrepareInsert(pos - cbegin());
-    new (it) T(std::move(elem));
-    ++size_;
-    return it;
+    size_t n = pos - cbegin();
+    PushBack(std::move(elem));
+    std::rotate(data_.buf + n, data_.buf + size_ - 1, data_.buf + size_);
+    return data_.buf + n;
   }
 
   // Конструирует элемент по заданным аргументам конструктора перед pos
   // Возвращает итератор на вставленный элемент
   template <typename ... Args>
   iterator Emplace(const_iterator it, Args&&... args) {
-    iterator emplace_it = PrepareInsert(it - cbegin());
-    new (emplace_it) T(std::forward<Args>(args)...);
-    ++size_;
-    return emplace_it;
+    size_t n = it - cbegin();
+    EmplaceBack(std::forward<Args>(args)...);
+    std::rotate(data_.buf + n, data_.buf + size_ - 1, data_.buf + size_);
+    return data_.buf + n;
   }
 
   // Удаляет элемент на позиции pos
   // Возвращает итератор на элемент, следующий за удалённым
   iterator Erase(const_iterator it) {
     size_t n = it - cbegin();
-    for (size_t i = n + 1; i != size_; ++i) {
-      data_.buf[i - 1] = std::move(data_.buf[i]);
+    if (n + 1 < size_) {
+      std::move(data_.buf + n + 1, data_.buf + size_, data_.buf + n);
     }
     PopBack();
     return begin() + n;
@@ -226,17 +227,4 @@ public:
 private:
   RawMemory<T> data_;
   size_t size_ = 0;
-
-  iterator PrepareInsert(size_t n) {
-    if (size_ == data_.capacity) {
-      Reserve(size_ == 0 ? 1 : size_ * 2);
-    }
-
-    for (auto i = size_; i > n; --i) {
-      new (data_.buf + i) T(std::move(data_.buf[i - 1]));
-      std::destroy_at(data_.buf + i - 1);
-    }
-
-    return begin() + n;
-  }
 };
