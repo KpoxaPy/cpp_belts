@@ -1,13 +1,14 @@
 #include "request_route.h"
 
-RouteResponse::RouteResponse(RequestType type, size_t id, Sprav::Route route)
-    : Response(type), id_(id), route_(move(route)) {
+RouteResponse::RouteResponse(RequestType type, size_t id, Sprav::Route route, std::string map)
+    : Response(type), id_(id), route_(move(route)), map_(map) {
   empty_ = false;
 }
 
 Json::Node RouteResponse::AsJson() const {
   Json::Map dict;
   dict["request_id"] = id_;
+  dict["map"] = map_;
   if (route_) {
     dict["total_time"] = route_.GetTotalTime();
     Json::Array items;
@@ -44,7 +45,9 @@ RouteRequest::RouteRequest(const Json::Map& dict)
 }
 
 ResponsePtr RouteRequest::Process(SpravPtr sprav) const {
-  return make_shared<RouteResponse>(type_, id_, sprav->FindRoute(from_, to_));
+  auto route = sprav->FindRoute(from_, to_);
+  auto map = sprav->GetRouteMap(route);
+  return make_shared<RouteResponse>(type_, id_, std::move(route), std::move(map));
 }
 
 Json::Node RouteRequest::AsJson() const {

@@ -5,8 +5,9 @@
     },
     "render_settings": {
         "width": 1200,
-        "height": 1200,
+        "height": 500,
         "padding": 50,
+        "outer_margin": 150,
         "stop_radius": 5,
         "line_width": 14,
         "bus_label_font_size": 20,
@@ -14,7 +15,7 @@
             7,
             15
         ],
-        "stop_label_font_size": 20,
+        "stop_label_font_size": 18,
         "stop_label_offset": [
             7,
             -3
@@ -37,8 +38,9 @@
         ],
         "layers": [
             "bus_lines",
+            "bus_labels",
             "stop_points",
-            "bus_labels"
+            "stop_labels"
         ]
     },
     "base_requests": [
@@ -170,18 +172,18 @@
     ],
     "stat_requests": [
         {
-            "id": 826874078,
+            "id": 83786973,
             "type": "Bus",
             "name": "14"
         },
         {
-            "id": 1086967114,
+            "id": 133160474,
             "type": "Route",
             "from": "Морской вокзал",
             "to": "Параллельная улица"
         },
         {
-            "id": 1218663236,
+            "id": 1639812454,
             "type": "Map"
         }
     ]

@@ -55,3 +55,7 @@ std::string SpravMapper::Render() {
 
   return b.Render();
 }
+
+std::string SpravMapper::RenderForRoute(const Sprav::Route&) {
+  return {};
+}

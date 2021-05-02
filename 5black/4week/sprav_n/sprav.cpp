@@ -113,6 +113,10 @@ std::string Sprav::GetMap() const {
   return Pimpl()->GetMap();
 }
 
+std::string Sprav::GetRouteMap(const Route& route) const {
+  return Pimpl()->GetRouteMap(route);
+}
+
 const Sprav::PImpl* Sprav::Pimpl() const {
   return pimpl_.get();
 }

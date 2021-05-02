@@ -28,6 +28,7 @@ class SpravMapper {
   const PointProjector& GetProjector() const;
 
   std::string Render();
+  std::string RenderForRoute(const Sprav::Route& route);
 
  private:
   const RenderSettings& settings_;

@@ -78,6 +78,7 @@ class Sprav {
   Route FindRoute(std::string_view from, std::string_view to) const;
 
   std::string GetMap() const;
+  std::string GetRouteMap(const Route& route) const;
 
  private:
   class PImpl;

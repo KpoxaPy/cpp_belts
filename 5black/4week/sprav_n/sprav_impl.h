@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sprav.h"
+#include "sprav_mapper.h"
 
 class Sprav::PImpl {
  private:
@@ -33,6 +34,7 @@ class Sprav::PImpl {
   Route FindRoute(std::string_view from, std::string_view to) const;
 
   std::string GetMap() const;
+  std::string GetRouteMap(const Route& route) const;
 
  private:
   Sprav* sprav_;
@@ -47,6 +49,8 @@ class Sprav::PImpl {
   std::shared_ptr<Graph> router_graph_;
   std::shared_ptr<Router> router_;
 
+  mutable std::shared_ptr<SpravMapper> mapper_;
+
   template <typename InputIt>
   void AddBusStops(size_t bus_id, InputIt begin, InputIt end);
   void BuildGraph();
@@ -54,4 +58,6 @@ class Sprav::PImpl {
   void BuildRouter();
 
   void CalcBusStats(Bus& r) const;
+
+  SpravMapper& GetMapper() const;
 };

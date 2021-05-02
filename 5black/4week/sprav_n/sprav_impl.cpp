@@ -116,8 +116,11 @@ Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
 }
 
 std::string Sprav::PImpl::GetMap() const {
-  SpravMapper mapper(render_settings_, sprav_, stop_names_, bus_names_);
-  return mapper.Render();
+  return GetMapper().Render();
+}
+
+std::string Sprav::PImpl::GetRouteMap(const Route& route) const {
+  return GetMapper().RenderForRoute(route);
 }
 
 template <typename InputIt>
@@ -188,4 +191,11 @@ void Sprav::PImpl::CalcBusStats(Bus& b) const {
     }
     b.curvature = b.length / curve_length;
   }
+}
+
+SpravMapper& Sprav::PImpl::GetMapper() const {
+  if (!mapper_) {
+    mapper_ = make_shared<SpravMapper>(render_settings_, sprav_, stop_names_, bus_names_);
+  }
+  return *mapper_;
 }
