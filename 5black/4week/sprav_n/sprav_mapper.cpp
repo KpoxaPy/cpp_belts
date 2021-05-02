@@ -57,5 +57,11 @@ std::string SpravMapper::Render() {
 }
 
 std::string SpravMapper::RenderForRoute(const Sprav::Route&) {
-  return {};
+  Builder b(*this);
+
+  for (auto layer_type : settings_.layers) {
+    (b.*Builder::DRAW_ACTIONS.at(layer_type))();
+  }
+
+  return b.Render();
 }

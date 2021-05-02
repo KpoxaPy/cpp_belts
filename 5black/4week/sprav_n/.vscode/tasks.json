@@ -38,7 +38,7 @@
                 "showReuseMessage": true,
                 "clear": false
             },
-            "command": "chcp 65001; jq -r '.[] | select(.map?).map' ${env:TMP}/output.json | out-file ${env:TMP}/output.svg -encoding utf8"
+            "command": "chcp 65001; jq -r '[.[] | select(.map?).map] | .[0]' ${env:TMP}/output.json | out-file ${env:TMP}/output.svg -encoding utf8"
         }
     ]
 }
