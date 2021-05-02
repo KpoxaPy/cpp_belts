@@ -13,6 +13,7 @@ struct RenderSettings {
   double width = 1000;
   double height = 1000;
   double padding = 10;
+  double outer_margin = 0;
 
   double stop_radius = 6;
   double line_width = 16;

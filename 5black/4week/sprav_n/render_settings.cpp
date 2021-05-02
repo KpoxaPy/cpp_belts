@@ -39,6 +39,7 @@ RenderSettings::RenderSettings(const Json::Map& dict) {
   width = dict.at("width").AsNumber();
   height = dict.at("height").AsNumber();
   padding = dict.at("padding").AsNumber();
+  outer_margin = dict.at("outer_margin").AsNumber();
 
   stop_radius = dict.at("stop_radius").AsNumber();
   line_width = dict.at("line_width").AsNumber();
