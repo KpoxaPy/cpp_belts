@@ -50,17 +50,21 @@ std::string SpravMapper::Render() {
   Builder b(*this);
 
   for (auto layer_type : settings_.layers) {
-    (b.*Builder::DRAW_ACTIONS.at(layer_type))();
+    (b.*Builder::DRAW_ACTIONS.at(layer_type))(nullptr);
   }
 
   return b.Render();
 }
 
-std::string SpravMapper::RenderForRoute(const Sprav::Route&) {
+std::string SpravMapper::RenderForRoute(const Sprav::Route& route) {
   Builder b(*this);
 
   for (auto layer_type : settings_.layers) {
-    (b.*Builder::DRAW_ACTIONS.at(layer_type))();
+    (b.*Builder::DRAW_ACTIONS.at(layer_type))(nullptr);
+  }
+  b.DrawRouterCover();
+  for (auto layer_type : settings_.layers) {
+    (b.*Builder::DRAW_ACTIONS.at(layer_type))(&route);
   }
 
   return b.Render();

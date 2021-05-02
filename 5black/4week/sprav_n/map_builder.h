@@ -3,13 +3,8 @@
 #include <unordered_map>
 
 #include "svg.h"
-
-enum class MapLayerType {
-  BUS_LINES,
-  BUS_LABELS,
-  STOP_POINTS,
-  STOP_LABELS
-};
+#include "sprav.h"
+#include "render_settings.h"
 
 class SpravMapper;
 class Stop;
@@ -19,15 +14,17 @@ class Builder {
  public:
   Builder(const SpravMapper& mapper);
 
-  void DrawBusLines();
-  void DrawStops();
-  void DrawStopNames();
-  void DrawBusEndPoints();
+  void DrawBusLines(const Sprav::Route* route = nullptr);
+  void DrawStops(const Sprav::Route* route = nullptr);
+  void DrawStopNames(const Sprav::Route* route = nullptr);
+  void DrawBusEndPoints(const Sprav::Route* route = nullptr);
+
+  void DrawRouterCover();
 
   std::string Render();
 
  public:
-  static const std::unordered_map<MapLayerType, void (Builder::*)()> DRAW_ACTIONS;
+  static const std::unordered_map<MapLayerType, void (Builder::*)(const Sprav::Route*)> DRAW_ACTIONS;
 
  private:
   const SpravMapper& mapper_;

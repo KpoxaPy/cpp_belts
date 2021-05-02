@@ -4,7 +4,13 @@
 
 #include "json.h"
 #include "svg.h"
-#include "map_builder.h"
+
+enum class MapLayerType {
+  BUS_LINES,
+  BUS_LABELS,
+  STOP_POINTS,
+  STOP_LABELS
+};
 
 struct RenderSettings {
   RenderSettings() = default;

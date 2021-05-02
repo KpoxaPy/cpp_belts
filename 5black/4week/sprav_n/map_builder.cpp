@@ -4,7 +4,7 @@
 #include "sprav_mapper.h"
 #include "point_projector.h"
 
-const unordered_map<MapLayerType, void (Builder::*)()> Builder::DRAW_ACTIONS = {
+const unordered_map<MapLayerType, void (Builder::*)(const Sprav::Route*)> Builder::DRAW_ACTIONS = {
     {MapLayerType::BUS_LINES, &Builder::DrawBusLines},
     {MapLayerType::BUS_LABELS, &Builder::DrawBusEndPoints},
     {MapLayerType::STOP_POINTS, &Builder::DrawStops},
@@ -14,26 +14,26 @@ Builder::Builder(const SpravMapper& mapper)
   : mapper_(mapper)
 {}
 
-void Builder::DrawBusLines() {
+void Builder::DrawBusLines(const Sprav::Route* /* route */) {
   Paletter paletter(mapper_);
   for (const auto& bus_name : mapper_.GetBusNames()) {
     DrawLine(paletter(), *mapper_.GetSprav()->FindBus(bus_name));
   }
 }
 
-void Builder::DrawStops() {
+void Builder::DrawStops(const Sprav::Route* /* route */) {
   for (const auto& stop_name : mapper_.GetStopNames()) {
     DrawStop(*mapper_.GetSprav()->FindStop(stop_name));
   }
 }
 
-void Builder::DrawStopNames() {
+void Builder::DrawStopNames(const Sprav::Route* /* route */) {
   for (const auto& stop_name : mapper_.GetStopNames()) {
     DrawStopName(*mapper_.GetSprav()->FindStop(stop_name));
   }
 }
 
-void Builder::DrawBusEndPoints() {
+void Builder::DrawBusEndPoints(const Sprav::Route* /* route */) {
   Paletter paletter(mapper_);
   for (const auto& bus_name : mapper_.GetBusNames()) {
     const Bus& bus = *mapper_.GetSprav()->FindBus(bus_name);
@@ -49,6 +49,19 @@ void Builder::DrawBusEndPoints() {
       DrawBusEndPoint(line_color, bus, mapper_.GetSprav()->GetStop(last_id));
     }
   }
+}
+
+void Builder::DrawRouterCover() {
+  Svg::Rect rect;
+  
+  double outer_margin = mapper_.GetSettings().outer_margin;
+  double width = mapper_.GetSettings().width;
+  double height = mapper_.GetSettings().height;
+  rect.SetStart({-outer_margin, -outer_margin});
+  rect.SetDimensions({width + outer_margin * 2, height + outer_margin});
+  rect.SetFillColor(mapper_.GetSettings().underlayer_color);
+
+  doc_.Add(rect);
 }
 
 std::string Builder::Render() {
