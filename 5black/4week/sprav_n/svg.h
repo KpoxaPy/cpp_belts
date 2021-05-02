@@ -170,6 +170,21 @@ class Polyline : public BaseObject<Polyline> {
   std::vector<Point> points_;
 };
 
+class Rect : public BaseObject<Rect> {
+ public:
+  Rect();
+
+  Rect& SetStart(Point);
+  Rect& SetDimensions(Point);
+
+ protected:
+  Object MakeObject() const override;
+
+ private:
+  Point start_;
+  Point dim_;
+};
+
 class Text : public BaseObject<Text> {
  public:
   Text();

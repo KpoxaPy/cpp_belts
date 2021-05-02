@@ -120,6 +120,28 @@ Object Polyline::MakeObject() const {
   return o;
 }
 
+Rect::Rect()
+    : BaseObject("rect") {}
+
+Rect& Rect::SetStart(Point p) {
+  start_ = std::move(p);
+  return *this;
+}
+
+Rect& Rect::SetDimensions(Point p) {
+  dim_ = std::move(p);
+  return *this;
+}
+
+Object Rect::MakeObject() const {
+  auto o = BaseObject::MakeObject();
+  o.SetOption("x", start_.x);
+  o.SetOption("y", start_.y);
+  o.SetOption("width", dim_.x);
+  o.SetOption("height", dim_.y);
+  return o;
+}
+
 Text::Text()
     : BaseObject("text") {}
 
