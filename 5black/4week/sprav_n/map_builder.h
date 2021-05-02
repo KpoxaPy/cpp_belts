@@ -29,6 +29,9 @@ class Builder {
  private:
   const SpravMapper& mapper_;
   Svg::Document doc_;
+  std::unordered_map<std::string_view, Svg::Color> bus_lines_palette_;
+
+  void BuildBusLinesPalette();
 
   void DrawLine(const Svg::Color& line_color, const Bus& bus);
   void DrawStop(const Stop& stop);

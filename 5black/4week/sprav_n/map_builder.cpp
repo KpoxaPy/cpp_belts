@@ -12,12 +12,13 @@ const unordered_map<MapLayerType, void (Builder::*)(const Sprav::Route*)> Builde
 
 Builder::Builder(const SpravMapper& mapper)
   : mapper_(mapper)
-{}
+{
+  BuildBusLinesPalette();
+}
 
 void Builder::DrawBusLines(const Sprav::Route* /* route */) {
-  Paletter paletter(mapper_);
   for (const auto& bus_name : mapper_.GetBusNames()) {
-    DrawLine(paletter(), *mapper_.GetSprav()->FindBus(bus_name));
+    DrawLine(bus_lines_palette_[bus_name], *mapper_.GetSprav()->FindBus(bus_name));
   }
 }
 
@@ -34,19 +35,17 @@ void Builder::DrawStopNames(const Sprav::Route* /* route */) {
 }
 
 void Builder::DrawBusEndPoints(const Sprav::Route* /* route */) {
-  Paletter paletter(mapper_);
   for (const auto& bus_name : mapper_.GetBusNames()) {
     const Bus& bus = *mapper_.GetSprav()->FindBus(bus_name);
     if (bus.stops.size() == 0) {
       continue;
     }
 
-    auto line_color = paletter();
     size_t first_id = *begin(bus.stops);
     size_t last_id = *rbegin(bus.stops);
-    DrawBusEndPoint(line_color, bus, mapper_.GetSprav()->GetStop(first_id));
+    DrawBusEndPoint(bus_lines_palette_[bus_name], bus, mapper_.GetSprav()->GetStop(first_id));
     if (first_id != last_id) {
-      DrawBusEndPoint(line_color, bus, mapper_.GetSprav()->GetStop(last_id));
+      DrawBusEndPoint(bus_lines_palette_[bus_name], bus, mapper_.GetSprav()->GetStop(last_id));
     }
   }
 }
@@ -68,6 +67,13 @@ std::string Builder::Render() {
   ostringstream ss;
   doc_.Render(ss);
   return ss.str();
+}
+
+void Builder::BuildBusLinesPalette() {
+  Paletter paletter(mapper_);
+  for (const auto& bus_name : mapper_.GetBusNames()) {
+    bus_lines_palette_[bus_name] = paletter();
+  }
 }
 
 void Builder::DrawLine(const Svg::Color& line_color, const Bus& bus) {
