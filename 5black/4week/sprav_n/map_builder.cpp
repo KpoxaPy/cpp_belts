@@ -43,18 +43,37 @@ void Builder::DrawStopNames(const Sprav::Route* /* route */) {
   }
 }
 
-void Builder::DrawBusEndPoints(const Sprav::Route* /* route */) {
-  for (const auto& bus_name : mapper_.GetBusNames()) {
-    const Bus& bus = *mapper_.GetSprav()->FindBus(bus_name);
-    if (bus.stops.size() == 0) {
-      continue;
-    }
+void Builder::DrawBusEndPoints(const Sprav::Route* route) {
+  if (route) {
+    for (auto part : *route) {
+      if (part.type == RoutePartType::BUS) {
+        const Bus& bus = *mapper_.GetSprav()->FindBus(part.name);
+        size_t first_end_stop_id = *begin(bus.stops);
+        size_t last_end_stop_id = *rbegin(bus.stops);
 
-    size_t first_id = *begin(bus.stops);
-    size_t last_id = *rbegin(bus.stops);
-    DrawBusEndPoint(bus_lines_palette_[bus_name], bus, mapper_.GetSprav()->GetStop(first_id));
-    if (first_id != last_id) {
-      DrawBusEndPoint(bus_lines_palette_[bus_name], bus, mapper_.GetSprav()->GetStop(last_id));
+        size_t first_id = *part.stops.begin();
+        size_t last_id = *part.stops.rbegin();
+        if (first_id == first_end_stop_id || first_id == last_end_stop_id) {
+          DrawBusEndPoint(bus_lines_palette_[part.name], bus, mapper_.GetSprav()->GetStop(first_id));
+        }
+        if (last_id == first_end_stop_id || last_id == last_end_stop_id) {
+          DrawBusEndPoint(bus_lines_palette_[part.name], bus, mapper_.GetSprav()->GetStop(last_id));
+        }
+      }
+    }
+  } else {
+    for (const auto& bus_name : mapper_.GetBusNames()) {
+      const Bus& bus = *mapper_.GetSprav()->FindBus(bus_name);
+      if (bus.stops.size() == 0) {
+        continue;
+      }
+
+      size_t first_id = *begin(bus.stops);
+      size_t last_id = *rbegin(bus.stops);
+      DrawBusEndPoint(bus_lines_palette_[bus_name], bus, mapper_.GetSprav()->GetStop(first_id));
+      if (first_id != last_id) {
+        DrawBusEndPoint(bus_lines_palette_[bus_name], bus, mapper_.GetSprav()->GetStop(last_id));
+      }
     }
   }
 }
