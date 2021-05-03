@@ -8,8 +8,8 @@ RouteResponse::RouteResponse(RequestType type, size_t id, Sprav::Route route, st
 Json::Node RouteResponse::AsJson() const {
   Json::Map dict;
   dict["request_id"] = id_;
-  dict["map"] = map_;
   if (route_) {
+    dict["map"] = map_;
     dict["total_time"] = route_.GetTotalTime();
     Json::Array items;
     for (auto part : route_) {
