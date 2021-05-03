@@ -33,7 +33,9 @@ class Builder {
 
   void BuildBusLinesPalette();
 
-  void DrawLine(const Svg::Color& line_color, const Bus& bus);
+  void DrawLineFull(const Svg::Color& line_color, const Bus& bus);
+  void DrawLine(const Svg::Color& line_color, const std::list<size_t>& stops);
+
   void DrawStop(const Stop& stop);
   void DrawStopName(const Stop& stop);
   void DrawBusEndPoint(const Svg::Color& line_color, const Bus& bus, const Stop& stop);

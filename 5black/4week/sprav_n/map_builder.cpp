@@ -16,9 +16,18 @@ Builder::Builder(const SpravMapper& mapper)
   BuildBusLinesPalette();
 }
 
-void Builder::DrawBusLines(const Sprav::Route* /* route */) {
-  for (const auto& bus_name : mapper_.GetBusNames()) {
-    DrawLine(bus_lines_palette_[bus_name], *mapper_.GetSprav()->FindBus(bus_name));
+void Builder::DrawBusLines(const Sprav::Route* route) {
+  if (route) {
+    for (auto part : *route) {
+      if (part.type == RoutePartType::BUS) {
+        DrawLine(bus_lines_palette_[part.name], part.stops);
+      }
+    }
+  } else {
+    for (const auto& bus_name : mapper_.GetBusNames()) {
+      const Bus& bus = *mapper_.GetSprav()->FindBus(bus_name);
+      DrawLineFull(bus_lines_palette_[bus_name], bus);
+    }
   }
 }
 
@@ -76,21 +85,29 @@ void Builder::BuildBusLinesPalette() {
   }
 }
 
-void Builder::DrawLine(const Svg::Color& line_color, const Bus& bus) {
+void Builder::DrawLineFull(const Svg::Color& line_color, const Bus& bus) {
+  std::list<size_t> stops;
+  if (bus.stops.size() > 1) {
+    for (const auto& stop_id : bus.stops) {
+      stops.push_back(stop_id);
+    }
+    if (!bus.is_roundtrip) {
+      for (auto it = ++rbegin(bus.stops); it != rend(bus.stops); ++it) {
+        stops.push_back(*it);
+      }
+    }
+  }
+  DrawLine(line_color, stops);
+}
+
+void Builder::DrawLine(const Svg::Color& line_color, const std::list<size_t>& stops) {
   Svg::Polyline line;
   line.SetStrokeColor(line_color);
   line.SetStrokeWidth(mapper_.GetSettings().line_width);
   line.SetStrokeLineCap("round");
   line.SetStrokeLineJoin("round");
-  if (bus.stops.size() > 1) {
-    for (const auto& stop_id : bus.stops) {
-      line.AddPoint(mapper_.GetProjector()(mapper_.GetSprav()->GetStop(stop_id)));
-    }
-    if (!bus.is_roundtrip) {
-      for (auto it = ++rbegin(bus.stops); it != rend(bus.stops); ++it) {
-        line.AddPoint(mapper_.GetProjector()(mapper_.GetSprav()->GetStop(*it)));
-      }
-    }
+  for (auto id : stops) {
+    line.AddPoint(mapper_.GetProjector()(mapper_.GetSprav()->GetStop(id)));
   }
   doc_.Add(line);
 }

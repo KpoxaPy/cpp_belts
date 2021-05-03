@@ -128,10 +128,13 @@ void Sprav::PImpl::AddBusStops(size_t bus_id, InputIt begin, InputIt end) {
   for (auto it_from = begin; it_from != end; ++it_from) {
     double time = 0;
     size_t count = 0;
+    std::list<size_t> stops;
+    stops.push_back(*it_from);
     for (auto it_to = next(it_from); it_to != end; ++it_to) {
       time += GetStop(*prev(it_to)).DistanceTo(*it_to) / routing_settings_.bus_velocity;
       count += 1;
-      router_graph_->AddEdge({*it_from * 2, *it_to * 2 + 1, time, {RoutePartType::BUS, bus_id, count}});
+      stops.push_back(*it_to);
+      router_graph_->AddEdge({*it_from * 2, *it_to * 2 + 1, time, {RoutePartType::BUS, bus_id, count, stops}});
     }
   }
 }

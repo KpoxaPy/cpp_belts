@@ -27,6 +27,7 @@ class Sprav {
     RoutePartType type;
     size_t id = 0;
     size_t span_count = 0;
+    std::list<size_t> stops = {};
   };
 
   using Graph = ::Graph::DirectedWeightedGraph<double, RouteExtra>;
@@ -40,6 +41,8 @@ class Sprav {
     double time;
     std::string_view name;
     size_t span_count = 0;
+
+    std::list<size_t> stops = {};
   };
 
   class Route : public std::list<RouteItem> {

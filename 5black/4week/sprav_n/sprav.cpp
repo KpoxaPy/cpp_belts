@@ -13,6 +13,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
     std::string_view last_bus = {};
     double bus_total_time = 0;
     size_t bus_span_count = 0;
+    std::list<size_t> bus_stops;
     for (size_t idx = 0; idx < info.edge_count; ++idx) {
       auto edge = sprav_.Pimpl()->GetRouter()->GetRouteEdge(info.id, idx);
       switch (edge.extra.type) {
@@ -25,19 +26,21 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
           if (name == last_bus) {
             bus_total_time += edge.weight;
             bus_span_count += edge.extra.span_count;
+            bus_stops.insert(bus_stops.end(), edge.extra.stops.begin(), edge.extra.stops.end());
           } else if (last_bus != name) {
             if (!last_bus.empty()) {
-              push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count});
+              push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count, bus_stops});
             }
             last_bus = name;
             bus_total_time = edge.weight;
             bus_span_count = edge.extra.span_count;
+            bus_stops.assign(edge.extra.stops.begin(), edge.extra.stops.end());
           }
           break;
         }
         case RoutePartType::WAIT:
           if (!last_bus.empty()) {
-            push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count});
+            push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count, bus_stops});
             last_bus = {};
             bus_total_time = 0;
             bus_span_count = 0;
@@ -47,7 +50,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
       }
     }
     if (!last_bus.empty()) {
-      push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count});
+      push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count, bus_stops});
     }
   }
 }
