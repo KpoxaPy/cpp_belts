@@ -47,9 +47,23 @@ void Builder::DrawStops(const Sprav::Route* route) {
   }
 }
 
-void Builder::DrawStopNames(const Sprav::Route* /* route */) {
-  for (const auto& stop_name : mapper_.GetStopNames()) {
-    DrawStopName(*mapper_.GetSprav()->FindStop(stop_name));
+void Builder::DrawStopNames(const Sprav::Route* route) {
+  if (route) {
+    std::optional<size_t> last_stop_id;
+    for (auto part : *route) {
+      if (part.type == RoutePartType::WAIT) {
+        DrawStopName(*mapper_.GetSprav()->FindStop(part.name));
+      } else if (part.type == RoutePartType::BUS) {
+        last_stop_id = *part.stops.rbegin();
+      }
+    }
+    if (last_stop_id) {
+      DrawStopName(mapper_.GetSprav()->GetStop(*last_stop_id));
+    }
+  } else {
+    for (const auto& stop_name : mapper_.GetStopNames()) {
+      DrawStopName(*mapper_.GetSprav()->FindStop(stop_name));
+    }
   }
 }
 
