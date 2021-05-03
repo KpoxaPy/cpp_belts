@@ -109,7 +109,7 @@ void Builder::DrawRouterCover() {
   double width = mapper_.GetSettings().width;
   double height = mapper_.GetSettings().height;
   rect.SetStart({-outer_margin, -outer_margin});
-  rect.SetDimensions({width + outer_margin * 2, height + outer_margin});
+  rect.SetDimensions({width + outer_margin * 2, height + outer_margin * 2});
   rect.SetFillColor(mapper_.GetSettings().underlayer_color);
 
   doc_.Add(rect);
