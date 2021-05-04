@@ -5,23 +5,18 @@ package SpravSerialize;
 message Bus {
   uint32 id = 1;
   string name = 2;
-  repeated uint32 stop = 3;
-  bool is_roundtrip = 4;
 
   uint32 stops_count = 5;
   uint32 unique_stops_count = 6;
-  double length = 7;
-  double curvature = 8;
+  uint32 length = 7;
+  float curvature = 8;
 }
 
 message Stop {
   uint32 id = 1;
-  double lat = 2;
-  double lon = 3;
   string name = 4;
 
   repeated uint32 bus = 5;
-  map<uint32, int32> distance = 6;
 }
 
 message TransportCatalog {

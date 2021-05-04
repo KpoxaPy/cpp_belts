@@ -13,7 +13,7 @@ struct Bus {
 
   size_t stops_count;
   size_t unique_stops_count;
-  double length;
+  size_t length;
   double curvature;
 
   void SerializeTo(SpravSerialize::Bus& m) const;
