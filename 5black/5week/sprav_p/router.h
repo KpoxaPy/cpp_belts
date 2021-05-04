@@ -176,7 +176,8 @@ namespace Graph {
   void Router<Weight, Extra>::ParseFrom(const SpravSerialize::Router& m) {
     routes_internal_data_.reserve(m.row().size());
     for (const auto& m_row : m.row()) {
-      std::vector<std::optional<RouteInternalData>> row(m_row.data().size());
+      std::vector<std::optional<RouteInternalData>> row;
+      row.reserve(m_row.data().size());
       for (const auto& m_data_opt : m_row.data()) {
         std::optional<RouteInternalData> data_opt;
         if (m_data_opt.has_data()) {
