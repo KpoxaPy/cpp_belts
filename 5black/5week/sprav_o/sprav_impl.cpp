@@ -9,6 +9,8 @@
 #include "sprav_mapper.h"
 #include "string_stream_utils.h"
 
+#include "transport_catalog.pb.h"
+
 using namespace std;
 
 namespace {

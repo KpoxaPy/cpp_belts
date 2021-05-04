@@ -73,6 +73,10 @@ set(PROJECT_SRCS
   tests.cpp
 )
 
+set(PROTOS
+  transport_catalog.proto
+)
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -86,11 +90,12 @@ find_package(Protobuf REQUIRED)
 protobuf_generate_cpp(
   PROTO_SRCS
   PROTO_HDRS
-  transport_catalog.proto
+  ${PROTOS}
 )
 
-include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(main
   ${PROJECT_SRCS}
@@ -107,6 +112,7 @@ target_link_libraries(main ${Protobuf_LIBRARIES})
 install(FILES
   ${PROJECT_HDRS}
   ${PROJECT_SRCS}
+  ${PROTOS}
   DESTINATION .
 )
 
