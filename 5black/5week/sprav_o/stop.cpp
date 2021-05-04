@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "transport_catalog.pb.h"
+
 using namespace std;
 
 namespace {
@@ -21,6 +23,29 @@ ostream& operator<<(ostream& s, const Stop& stop) {
 
 int Stop::DistanceTo(size_t other) const {
   return distances.at(other);
+}
+
+void Stop::SerializeTo(SpravSerialize::Stop& m) const {
+  m.set_id(id);
+  m.set_lat(lat);
+  m.set_lon(lon);
+  m.mutable_name()->assign(name);
+  m.mutable_bus()->Add(buses.begin(), buses.end());
+  m.mutable_distance()->insert(distances.begin(), distances.end());
+}
+
+Stop Stop::Parse(const SpravSerialize::Stop& m) {
+  Stop s;
+  s.id = m.id();
+  s.lat = m.lat();
+  s.lon = m.lon();
+
+  s.buses.insert(m.bus().begin(), m.bus().end());
+  for (auto [id, dist] : m.distance()) {
+    s.distances[id] = dist;
+  }
+
+  return s;
 }
 
 double GetDistance(const Stop& a, const Stop& b) {

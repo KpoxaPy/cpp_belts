@@ -74,6 +74,7 @@ class Sprav {
   void AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances);
   void AddBus(std::string_view name, const std::list<std::string> stops, bool is_roundtrip);
 
+  void BuildBase();
   void Build();
 
   const Stop& GetStop(size_t id) const;

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <unordered_set>
+#include <fstream>
 
 #include "profile.h"
 #include "sprav_mapper.h"
@@ -16,10 +17,17 @@ using namespace std;
 namespace {
 
 template <typename Node, typename Container, typename Names>
-Node& GetNode(Container& c, Names& n, string_view name) {
+Node& GetNode(Container& c, Names& n, string_view name, optional<Node> pre_node) {
   auto it = c.find(name);
   if (it != c.end()) {
     return it->second;
+  }
+
+  if (pre_node) {
+    string_view stored_name = n[pre_node.value().id] = string(name);
+    Node& node = c[stored_name] = std::move(pre_node.value());
+    node.name = stored_name;
+    return node;
   }
 
   string_view stored_name = n.emplace_back(string(name));
@@ -35,11 +43,35 @@ Sprav::PImpl::PImpl(Sprav* sprav)
   : sprav_(sprav) {}
 
 void Sprav::PImpl::Serialize() {
+  SpravSerialize::TransportCatalog catalog;
 
+  for (const auto& [_, stop] : stops_) {
+    stop.SerializeTo(*catalog.add_stop());
+  }
+
+  for (const auto& [_, bus] : buses_) {
+    bus.SerializeTo(*catalog.add_bus());
+  }
+
+  ofstream ofile(serialization_settings_.file, ios::binary | ios::trunc);
+  catalog.SerializeToOstream(&ofile);
 }
 
 void Sprav::PImpl::DeSerialize() {
+  SpravSerialize::TransportCatalog catalog;
 
+  ifstream ifile(serialization_settings_.file, ios::binary);
+  catalog.ParseFromIstream(&ifile);
+
+  stop_names_.resize(catalog.stop().size());
+  for (const auto& stop : catalog.stop()) {
+    AddStop(stop.name(), Stop::Parse(stop));
+  }
+
+  bus_names_.resize(catalog.bus().size());
+  for (const auto& bus : catalog.bus()) {
+    AddBus(bus.name(), Bus::Parse(bus));
+  }
 }
 
 void Sprav::PImpl::SetSerializationSettings(SerializationSettings s) {
@@ -54,6 +86,12 @@ void Sprav::PImpl::SetRenderSettings(RenderSettings s) {
   render_settings_ = move(s);
 }
 
+void Sprav::PImpl::BuildBase() {
+  for (auto& [_, bus] : buses_) {
+    CalcBusStats(bus);
+  }
+}
+
 void Sprav::PImpl::Build() {
   BuildGraph();
   BuildRouter();
@@ -63,7 +101,6 @@ void Sprav::PImpl::AddStop(std::string_view name, double lat, double lon, const 
   Stop& s = GetStop(name);
   s.lat = lat;
   s.lon = lon;
-  s.is_declared = true;
 
   for (auto [other_name, distance]: distances) {
     Stop& other = GetStop(other_name);
@@ -73,6 +110,10 @@ void Sprav::PImpl::AddStop(std::string_view name, double lat, double lon, const 
       other.distances[s.id] = distance;
     }
   }
+}
+
+void Sprav::PImpl::AddStop(std::string_view name, Stop&& stop) {
+  GetStop(name, std::move(stop));
 }
 
 void Sprav::PImpl::AddBus(std::string_view name, const std::list<std::string> stops, bool is_roundtrip) {
@@ -85,12 +126,16 @@ void Sprav::PImpl::AddBus(std::string_view name, const std::list<std::string> st
   }
 }
 
-Stop& Sprav::PImpl::GetStop(string_view name) {
-  return GetNode<Stop>(stops_, stop_names_, name);
+void Sprav::PImpl::AddBus(std::string_view name, Bus&& bus) {
+  GetBus(name, std::move(bus));
 }
 
-Bus& Sprav::PImpl::GetBus(string_view name) {
-  return GetNode<Bus>(buses_, bus_names_, name);
+Stop& Sprav::PImpl::GetStop(string_view name, optional<Stop> pre_node) {
+  return GetNode<Stop>(stops_, stop_names_, name, pre_node);
+}
+
+Bus& Sprav::PImpl::GetBus(string_view name, optional<Bus> pre_node) {
+  return GetNode<Bus>(buses_, bus_names_, name, pre_node);
 }
 
 const Stop& Sprav::PImpl::GetStop(size_t id) const {
@@ -118,7 +163,6 @@ const Bus* Sprav::PImpl::FindBus(std::string_view name) const {
   if (it == buses_.end()) {
     return nullptr;
   }
-  CalcBusStats(it->second);
   return &it->second;
 }
 
@@ -164,10 +208,10 @@ void Sprav::PImpl::BuildGraph() {
   }
 
   // Fill route point edges
-  for (const auto& bus : buses_) {
-    AddBusStops(bus.second.id, bus.second.stops.begin(), bus.second.stops.end());
-    if (!bus.second.is_roundtrip) {
-      AddBusStops(bus.second.id, bus.second.stops.rbegin(), bus.second.stops.rend());
+  for (const auto& [_, bus] : buses_) {
+    AddBusStops(bus.id, bus.stops.begin(), bus.stops.end());
+    if (!bus.is_roundtrip) {
+      AddBusStops(bus.id, bus.stops.rbegin(), bus.stops.rend());
     }
   }
 }
@@ -181,10 +225,6 @@ void Sprav::PImpl::BuildRouter() {
 }
 
 void Sprav::PImpl::CalcBusStats(Bus& b) const {
-  if (b.has_stats) {
-    return;
-  }
-
   b.stops_count = b.is_roundtrip ? b.stops.size() : b.stops.size() * 2 - 1;
   b.unique_stops_count = unordered_set<size_t>(b.stops.begin(), b.stops.end()).size();
 

@@ -20,13 +20,18 @@ class Sprav::PImpl {
   void SetSerializationSettings(SerializationSettings s);
   void SetRoutingSettings(RoutingSettings s);
   void SetRenderSettings(RenderSettings s);
+
+  void BuildBase();
   void Build();
 
   void AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances);
-  void AddBus(std::string_view name, const std::list<std::string> stops, bool is_roundtrip);
+  void AddStop(std::string_view name, Stop&& stop);
 
-  Stop& GetStop(std::string_view name);
-  Bus& GetBus(std::string_view name);
+  void AddBus(std::string_view name, const std::list<std::string> stops, bool is_roundtrip);
+  void AddBus(std::string_view name, Bus&& bus);
+
+  Stop& GetStop(std::string_view name, std::optional<Stop> pre_node = {});
+  Bus& GetBus(std::string_view name, std::optional<Bus> pre_node = {});
 
   const Stop& GetStop(size_t id) const;
   const Bus& GetBus(size_t id) const;

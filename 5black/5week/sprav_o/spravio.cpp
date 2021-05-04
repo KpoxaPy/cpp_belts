@@ -70,6 +70,7 @@ class SpravIO::PImpl {
       MakeBaseRequest(r)->Process(sprav_);
     }
 
+    sprav_->BuildBase();
     sprav_->Serialize();
   }
 

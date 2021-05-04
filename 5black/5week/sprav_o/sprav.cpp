@@ -96,6 +96,10 @@ void Sprav::AddBus(std::string_view name, const std::list<std::string> stops, bo
   Pimpl()->AddBus(move(name), stops, is_roundtrip);
 }
 
+void Sprav::BuildBase() {
+  Pimpl()->BuildBase();
+}
+
 void Sprav::Build() {
   Pimpl()->Build();
 }
