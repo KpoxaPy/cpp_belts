@@ -75,8 +75,7 @@ class SpravIO::PImpl {
   }
 
   void ProcessRequests(const Json::Map& root) {
-    sprav_->DeSerialize();
-    sprav_->Build();
+    sprav_->Deserialize();
 
     list<ResponsePtr> responses;
     for (auto& r : root.at("stat_requests").AsArray()) {

@@ -2,6 +2,7 @@
 
 #include "graph.h"
 #include "profile.h"
+#include "transport_catalog.pb.h"
 
 #include <algorithm>
 #include <cassert>
@@ -22,6 +23,7 @@ namespace Graph {
     using RouteId = uint64_t;
 
     Router(const Graph& graph);
+    Router(const Graph& graph, const SpravSerialize::Router& m);
 
     struct RouteInfo {
       RouteId id;
@@ -34,6 +36,8 @@ namespace Graph {
     const Edge& GetRouteEdge(RouteId route_id, size_t edge_idx) const;
     void ReleaseRoute(RouteId route_id);
 
+    void Serialize(SpravSerialize::Router& m);
+
   private:
     const Graph& graph_;
 
@@ -42,10 +46,13 @@ namespace Graph {
       std::optional<EdgeId> prev_edge;
     };
     using RoutesInternalData = std::vector<std::vector<std::optional<RouteInternalData>>>;
+    RoutesInternalData routes_internal_data_;
 
     using ExpandedRoute = std::vector<EdgeId>;
     mutable RouteId next_route_id_ = 0;
     mutable std::unordered_map<RouteId, ExpandedRoute> expanded_routes_cache_;
+
+    void ParseFrom(const SpravSerialize::Router& m);
 
     void InitializeRoutesInternalData(const Graph& graph) {
       LOG_DURATION("Router: init internal");
@@ -88,15 +95,13 @@ namespace Graph {
         }
       }
     }
-
-    RoutesInternalData routes_internal_data_;
   };
 
 
   template <typename Weight, typename Extra>
   Router<Weight, Extra>::Router(const Graph& graph)
-      : graph_(graph),
-        routes_internal_data_(graph.GetVertexCount(), std::vector<std::optional<RouteInternalData>>(graph.GetVertexCount()))
+      : graph_(graph)
+      , routes_internal_data_(graph.GetVertexCount(), std::vector<std::optional<RouteInternalData>>(graph.GetVertexCount()))
   {
     InitializeRoutesInternalData(graph);
 
@@ -105,6 +110,13 @@ namespace Graph {
     for (VertexId vertex_through = 0; vertex_through < vertex_count; ++vertex_through) {
       RelaxRoutesInternalDataThroughVertex(vertex_count, vertex_through);
     }
+  }
+
+  template <typename Weight, typename Extra>
+  Router<Weight, Extra>::Router(const Graph& graph, const SpravSerialize::Router& m)
+    : graph_(graph)
+  {
+    ParseFrom(m);
   }
 
   template <typename Weight, typename Extra>
@@ -141,6 +153,16 @@ namespace Graph {
   template <typename Weight, typename Extra>
   void Router<Weight, Extra>::ReleaseRoute(RouteId route_id) {
     expanded_routes_cache_.erase(route_id);
+  }
+
+  template <typename Weight, typename Extra>
+  void Router<Weight, Extra>::Serialize(SpravSerialize::Router& /* m */) {
+
+  }
+
+  template <typename Weight, typename Extra>
+  void Router<Weight, Extra>::ParseFrom(const SpravSerialize::Router& /* m */) {
+
   }
 
 }

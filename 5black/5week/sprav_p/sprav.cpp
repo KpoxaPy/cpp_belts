@@ -72,8 +72,8 @@ void Sprav::Serialize() {
   Pimpl()->Serialize();
 }
 
-void Sprav::DeSerialize() {
-  Pimpl()->DeSerialize();
+void Sprav::Deserialize() {
+  Pimpl()->Deserialize();
 }
 
 void Sprav::SetSerializationSettings(SerializationSettings s) {
@@ -98,10 +98,6 @@ void Sprav::AddBus(std::string_view name, const std::list<std::string> stops, bo
 
 void Sprav::BuildBase() {
   Pimpl()->BuildBase();
-}
-
-void Sprav::Build() {
-  Pimpl()->Build();
 }
 
 const Stop& Sprav::GetStop(size_t id) const {

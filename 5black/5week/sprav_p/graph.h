@@ -4,6 +4,8 @@
 #include <deque>
 #include <vector>
 
+#include "transport_catalog.pb.h"
+
 template <typename It>
 class Range {
 public:
@@ -40,6 +42,8 @@ namespace Graph {
 
   public:
     DirectedWeightedGraph(size_t vertex_count);
+    DirectedWeightedGraph(const SpravSerialize::Graph& m);
+
     EdgeId AddEdge(const Edge& edge);
 
     size_t GetVertexCount() const;
@@ -47,14 +51,25 @@ namespace Graph {
     const Edge& GetEdge(EdgeId edge_id) const;
     IncidentEdgesRange GetIncidentEdges(VertexId vertex) const;
 
+    void Serialize(SpravSerialize::Graph& m);
+
   private:
     std::vector<Edge> edges_;
     std::vector<IncidenceList> incidence_lists_;
+
+    void ParseFrom(const SpravSerialize::Graph& m);
   };
 
 
   template <typename Weight, typename Extra>
-  DirectedWeightedGraph<Weight, Extra>::DirectedWeightedGraph(size_t vertex_count) : incidence_lists_(vertex_count) {}
+  DirectedWeightedGraph<Weight, Extra>::DirectedWeightedGraph(size_t vertex_count)
+    : incidence_lists_(vertex_count)
+  {}
+
+  template <typename Weight, typename Extra>
+  DirectedWeightedGraph<Weight, Extra>::DirectedWeightedGraph(const SpravSerialize::Graph& m) {
+    ParseFrom(m);
+  }
 
   template <typename Weight, typename Extra>
   EdgeId DirectedWeightedGraph<Weight, Extra>::AddEdge(const Edge& edge) {
@@ -84,5 +99,15 @@ namespace Graph {
   DirectedWeightedGraph<Weight, Extra>::GetIncidentEdges(VertexId vertex) const {
     const auto& edges = incidence_lists_[vertex];
     return {std::begin(edges), std::end(edges)};
+  }
+
+  template <typename Weight, typename Extra>
+  void DirectedWeightedGraph<Weight, Extra>::Serialize(SpravSerialize::Graph& /* m */) {
+
+  }
+
+  template <typename Weight, typename Extra>
+  void DirectedWeightedGraph<Weight, Extra>::ParseFrom(const SpravSerialize::Graph& /* m */) {
+
   }
 }

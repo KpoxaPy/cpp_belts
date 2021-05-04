@@ -9,7 +9,7 @@ Json::Node RouteResponse::AsJson() const {
   Json::Map dict;
   dict["request_id"] = id_;
   if (route_) {
-    dict["map"] = map_;
+    // dict["map"] = map_;
     dict["total_time"] = route_.GetTotalTime();
     Json::Array items;
     for (auto part : route_) {

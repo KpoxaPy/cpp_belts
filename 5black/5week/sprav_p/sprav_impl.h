@@ -15,14 +15,13 @@ class Sprav::PImpl {
   PImpl(Sprav* sprav);
 
   void Serialize();
-  void DeSerialize();
+  void Deserialize();
 
   void SetSerializationSettings(SerializationSettings s);
   void SetRoutingSettings(RoutingSettings s);
   void SetRenderSettings(RenderSettings s);
 
   void BuildBase();
-  void Build();
 
   void AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances);
   void AddStop(std::string_view name, Stop&& stop);

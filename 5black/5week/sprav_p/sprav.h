@@ -65,7 +65,7 @@ class Sprav {
   ~Sprav();
 
   void Serialize();
-  void DeSerialize();
+  void Deserialize();
 
   void SetSerializationSettings(SerializationSettings s);
   void SetRoutingSettings(RoutingSettings s);
@@ -75,7 +75,6 @@ class Sprav {
   void AddBus(std::string_view name, const std::list<std::string> stops, bool is_roundtrip);
 
   void BuildBase();
-  void Build();
 
   const Stop& GetStop(size_t id) const;
   const Bus& GetBus(size_t id) const;

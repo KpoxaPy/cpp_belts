@@ -19,7 +19,25 @@ message Stop {
   repeated uint32 bus = 5;
 }
 
+message Edge {
+  uint32 id = 1;
+  uint32 from = 2;
+  uint32 to = 3;
+  float weight = 4;
+
+  repeated uint32 incidence_list = 5;
+}
+
+message Graph {
+  repeated Edge edge = 1;
+}
+
+message Router {
+}
+
 message TransportCatalog {
   repeated Bus bus = 1;
   repeated Stop stop = 2;
+  Graph graph = 3;
+  Router router = 4;
 }

@@ -53,11 +53,14 @@ void Sprav::PImpl::Serialize() {
     bus.SerializeTo(*catalog.add_bus());
   }
 
+  router_graph_->Serialize(*catalog.mutable_graph());
+  router_->Serialize(*catalog.mutable_router());
+
   ofstream ofile(serialization_settings_.file, ios::binary | ios::trunc);
   catalog.SerializeToOstream(&ofile);
 }
 
-void Sprav::PImpl::DeSerialize() {
+void Sprav::PImpl::Deserialize() {
   SpravSerialize::TransportCatalog catalog;
 
   ifstream ifile(serialization_settings_.file, ios::binary);
@@ -72,6 +75,9 @@ void Sprav::PImpl::DeSerialize() {
   for (const auto& bus : catalog.bus()) {
     AddBus(bus.name(), Bus::Parse(bus));
   }
+
+  router_graph_ = make_shared<Graph>(catalog.graph());
+  router_ = make_shared<Router>(*router_graph_.get(), catalog.router());
 }
 
 void Sprav::PImpl::SetSerializationSettings(SerializationSettings s) {
@@ -90,9 +96,6 @@ void Sprav::PImpl::BuildBase() {
   for (auto& [_, bus] : buses_) {
     CalcBusStats(bus);
   }
-}
-
-void Sprav::PImpl::Build() {
   BuildGraph();
   BuildRouter();
 }
