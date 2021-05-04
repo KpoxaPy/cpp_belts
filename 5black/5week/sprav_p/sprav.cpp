@@ -4,6 +4,52 @@
 
 using namespace std;
 
+namespace {
+
+using SerializedExtra = SpravSerialize::Graph::Edge::Extra;
+
+SerializedExtra::Type SerializeType(RoutePartType t) {
+  switch (t) {
+  case RoutePartType::BUS:
+    return SerializedExtra::Type::Graph_Edge_Extra_Type_BUS;
+  case RoutePartType::WAIT:
+    return SerializedExtra::Type::Graph_Edge_Extra_Type_WAIT;
+  default:
+    return SerializedExtra::Type::Graph_Edge_Extra_Type_NOOP;
+  }
+}
+
+RoutePartType SerializeType(SerializedExtra::Type t) {
+  switch (t) {
+  case SerializedExtra::Type::Graph_Edge_Extra_Type_BUS:
+    return RoutePartType::BUS;
+  case SerializedExtra::Type::Graph_Edge_Extra_Type_WAIT:
+    return RoutePartType::WAIT;
+  default:
+    return RoutePartType::NOOP;
+  }
+}
+
+} // namespace
+
+void Sprav::RouteExtra::Serialize(SerializedExtra& m) const {
+  m.set_type(SerializeType(type));
+  m.set_id(id);
+  m.set_span_count(span_count);
+  for (auto stop : stops) {
+    m.mutable_stops()->Add(stop);
+  }
+}
+
+Sprav::RouteExtra Sprav::RouteExtra::ParseFrom(const SerializedExtra& m) {
+  RouteExtra e;
+  e.type = SerializeType(m.type());
+  e.id = m.id();
+  e.span_count = m.span_count();
+  e.stops.assign(m.stops().begin(), m.stops().end());
+  return e;
+}
+
 Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
   : sprav_(sprav)
   , info_opt_(move(info_opt))

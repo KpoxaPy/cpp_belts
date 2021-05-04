@@ -12,6 +12,7 @@
 #include "routing_settings.h"
 #include "serialization_settings.h"
 #include "stop.h"
+#include "transport_catalog.pb.h"
 
 enum class RoutePartType {
   NOOP,
@@ -29,6 +30,9 @@ class Sprav {
     size_t id = 0;
     size_t span_count = 0;
     std::list<size_t> stops = {};
+
+    void Serialize(SpravSerialize::Graph::Edge::Extra& m) const;
+    static RouteExtra ParseFrom(const SpravSerialize::Graph::Edge::Extra& m);
   };
 
   using Graph = ::Graph::DirectedWeightedGraph<double, RouteExtra>;

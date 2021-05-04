@@ -19,20 +19,50 @@ message Stop {
   repeated uint32 bus = 5;
 }
 
-message Edge {
-  uint32 id = 1;
-  uint32 from = 2;
-  uint32 to = 3;
-  float weight = 4;
-
-  repeated uint32 incidence_list = 5;
-}
-
 message Graph {
+  message Edge {
+    message Extra {
+      enum Type {
+        NOOP = 0;
+        BUS = 1;
+        WAIT = 2;
+      }
+
+      Type type = 1;
+      uint32 id = 2;
+      uint32 span_count = 3;
+      repeated uint32 stops = 4;
+    }
+
+    uint32 from = 1;
+    uint32 to = 2;
+    float weight = 3;
+    Extra extra = 4;
+  }
+
+  message IncidenceList {
+    repeated uint32 edge = 1;
+  }
+
   repeated Edge edge = 1;
+  repeated IncidenceList incidence_list = 2;
 }
 
 message Router {
+  message Data {
+    float weight = 1;
+    optional uint32 prev_edge = 2;
+  }
+
+  message DataOpt {
+    Data data = 1;
+  }
+
+  message Row {
+    repeated DataOpt data = 1;
+  }
+
+  repeated Row row = 1;
 }
 
 message TransportCatalog {

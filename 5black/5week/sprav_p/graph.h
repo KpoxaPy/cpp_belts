@@ -102,12 +102,38 @@ namespace Graph {
   }
 
   template <typename Weight, typename Extra>
-  void DirectedWeightedGraph<Weight, Extra>::Serialize(SpravSerialize::Graph& /* m */) {
+  void DirectedWeightedGraph<Weight, Extra>::Serialize(SpravSerialize::Graph& m) {
+    for (const auto& edge : edges_) {
+      auto& m_edge = *m.add_edge();
+      m_edge.set_from(edge.from);
+      m_edge.set_to(edge.to);
+      m_edge.set_weight(edge.weight);
+      edge.extra.Serialize(*m_edge.mutable_extra());
+    }
 
+    for (const auto& list : incidence_lists_) {
+      auto& m_list = *m.add_incidence_list();
+      for (size_t id : list) {
+        m_list.add_edge(id);
+      }
+    }
   }
 
   template <typename Weight, typename Extra>
-  void DirectedWeightedGraph<Weight, Extra>::ParseFrom(const SpravSerialize::Graph& /* m */) {
+  void DirectedWeightedGraph<Weight, Extra>::ParseFrom(const SpravSerialize::Graph& m) {
+    edges_.reserve(m.edge().size());
+    for (const auto& m_edge : m.edge()) {
+      Edge edge;
+      edge.from = m_edge.from();
+      edge.to = m_edge.to();
+      edge.weight = m_edge.weight();
+      edge.extra = Extra::ParseFrom(m_edge.extra());
+      edges_.push_back(std::move(edge));
+    }
 
+    incidence_lists_.reserve(m.incidence_list().size());
+    for (const auto& m_list : m.incidence_list()) {
+      incidence_lists_.push_back(IncidenceList(m_list.edge().begin(), m_list.edge().end()));
+    }
   }
 }
