@@ -184,7 +184,9 @@ namespace Graph {
           RouteInternalData data;
           data.weight = m_data_opt.data().weight();
 
-          if (m_data_opt.data().has_prev_edge()) {
+          if (m_data_opt.data().optional_prev_edge_case()
+            != SpravSerialize::Router::Data::OPTIONAL_PREV_EDGE_NOT_SET)
+          {
             data.prev_edge = m_data_opt.data().prev_edge();
           }
 

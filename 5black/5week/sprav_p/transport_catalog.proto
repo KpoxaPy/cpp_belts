@@ -51,7 +51,9 @@ message Graph {
 message Router {
   message Data {
     float weight = 1;
-    optional uint32 prev_edge = 2;
+    oneof optional_prev_edge {
+      uint32 prev_edge = 2;
+    }
   }
 
   message DataOpt {
