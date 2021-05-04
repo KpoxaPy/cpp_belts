@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package SpravSerialize;
+
+message Bus {
+  uint32 id = 1;
+  string name = 2;
+
+  uint32 stops_count = 5;
+  uint32 unique_stops_count = 6;
+  uint32 length = 7;
+  float curvature = 8;
+}
+
+message Stop {
+  uint32 id = 1;
+  string name = 4;
+
+  repeated uint32 bus = 5;
+}
+
+message TransportCatalog {
+  repeated Bus bus = 1;
+  repeated Stop stop = 2;
+}
