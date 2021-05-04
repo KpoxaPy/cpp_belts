@@ -30,8 +30,12 @@ void Stop::SerializeTo(SpravSerialize::Stop& m) const {
   m.set_lat(lat);
   m.set_lon(lon);
   m.mutable_name()->assign(name);
-  m.mutable_bus()->Add(buses.begin(), buses.end());
-  m.mutable_distance()->insert(distances.begin(), distances.end());
+  for (auto bus : buses) {
+    m.mutable_bus()->Add(bus);
+  }
+  for (auto [stop, dist] : distances) {
+    (*m.mutable_distance())[stop] = dist;
+  }
 }
 
 Stop Stop::Parse(const SpravSerialize::Stop& m) {

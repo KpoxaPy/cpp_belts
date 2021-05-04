@@ -6,7 +6,9 @@ void Bus::SerializeTo(SpravSerialize::Bus& m) const {
   m.set_id(id);
   m.mutable_name()->assign(name);
   m.set_is_roundtrip(is_roundtrip);
-  m.mutable_stop()->Add(stops.begin(), stops.end());
+  for (auto stop : stops) {
+    m.mutable_stop()->Add(stop);
+  }
 
   m.set_stops_count(stops_count);
   m.set_unique_stops_count(unique_stops_count);
