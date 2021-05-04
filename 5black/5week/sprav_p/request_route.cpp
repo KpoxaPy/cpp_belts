@@ -46,8 +46,9 @@ RouteRequest::RouteRequest(const Json::Map& dict)
 
 ResponsePtr RouteRequest::Process(SpravPtr sprav) const {
   auto route = sprav->FindRoute(from_, to_);
-  auto map = sprav->GetRouteMap(route);
-  return make_shared<RouteResponse>(type_, id_, std::move(route), std::move(map));
+  // auto map = sprav->GetRouteMap(route);
+  // return make_shared<RouteResponse>(type_, id_, std::move(route), std::move(map));
+  return make_shared<RouteResponse>(type_, id_, std::move(route), "");
 }
 
 Json::Node RouteRequest::AsJson() const {
