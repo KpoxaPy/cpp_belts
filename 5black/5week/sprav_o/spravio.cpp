@@ -11,11 +11,26 @@ using namespace std::placeholders;
 
 class SpravIO::PImpl {
  public:
-  PImpl(SpravPtr sprav, std::ostream& output, Format format)
-      : sprav_(move(sprav)), os_(output), output_format_(format) {}
+  PImpl(SpravPtr sprav, Mode mode, std::ostream& output, Format format)
+      : sprav_(move(sprav))
+      , mode_(mode)
+      , os_(output)
+      , output_format_(format) {}
 
   void Process(std::istream& input) {
-    ProcessJson(input);
+    auto doc = [&input]() mutable {
+      LOG_DURATION("Json::Load");
+      return Json::Load(input);
+    }();
+    auto dict = doc.GetRoot().AsMap();
+
+    ReadSettings(dict);
+
+    if (mode_ == Mode::MAKE_BASE) {
+      MakeBase(dict);
+    } else if (mode_ == Mode::PROCESS_REQUESTS) {
+      ProcessRequests(dict);
+    }
   }
 
   template <typename InputIt>
@@ -38,56 +53,48 @@ class SpravIO::PImpl {
     }
   }
 
-  void ProcessJson(std::istream& input) {
-    LOG_DURATION("ProcessJson");
-    auto doc = [&input]() mutable {
-      LOG_DURATION("Json::Load");
-      return Json::Load(input);
-    }();
-    auto dict = doc.GetRoot().AsMap();
-
-    if (auto it = dict.find("routing_settings"); it != dict.end()) {
+  void ReadSettings(const Json::Map& root) {
+    if (auto it = root.find("serialization_settings"); it != root.end()) {
+      sprav_->SetSerializationSettings({it->second.AsMap()});
+    }
+    if (auto it = root.find("routing_settings"); it != root.end()) {
       sprav_->SetRoutingSettings({it->second.AsMap()});
     }
-    if (auto it = dict.find("render_settings"); it != dict.end()) {
+    if (auto it = root.find("render_settings"); it != root.end()) {
       sprav_->SetRenderSettings({it->second.AsMap()});
-    }
-
-    {
-      LOG_DURATION("Process base requests");
-      for (auto& r : dict.at("base_requests").AsArray()) {
-        MakeBaseRequest(r)->Process(sprav_);
-      }
-    }
-
-    {
-      LOG_DURATION("Build sprav");
-      sprav_->Build();
-    }
-
-    list<ResponsePtr> responses;
-    {
-      LOG_DURATION("Process stat requests");
-      for (auto& r : dict.at("stat_requests").AsArray()) {
-        auto resp = MakeRequest(r)->Process(sprav_);
-        if (!resp->empty()) {
-          responses.emplace_back(move(resp));
-        }
-      }
-    }
-    {
-      LOG_DURATION("Output stat responses");
-      Output(responses.begin(), responses.end());
     }
   }
 
+  void MakeBase(const Json::Map& root) {
+    for (auto& r : root.at("base_requests").AsArray()) {
+      MakeBaseRequest(r)->Process(sprav_);
+    }
+
+    sprav_->Serialize();
+  }
+
+  void ProcessRequests(const Json::Map& root) {
+    sprav_->DeSerialize();
+    sprav_->Build();
+
+    list<ResponsePtr> responses;
+    for (auto& r : root.at("stat_requests").AsArray()) {
+      auto resp = MakeRequest(r)->Process(sprav_);
+      if (!resp->empty()) {
+        responses.emplace_back(move(resp));
+      }
+    }
+    Output(responses.begin(), responses.end());
+  }
+
   SpravPtr sprav_;
+  Mode mode_;
   std::ostream& os_;
   Format output_format_;
 };
 
-SpravIO::SpravIO(SpravPtr sprav, std::ostream& output, Format format)
-    : pimpl_(make_unique<PImpl>(sprav, output, format)) {}
+SpravIO::SpravIO(SpravPtr sprav, Mode mode, std::ostream& output, Format format)
+    : pimpl_(make_unique<PImpl>(sprav, mode, output, format)) {}
 
 SpravIO::~SpravIO() = default;
 

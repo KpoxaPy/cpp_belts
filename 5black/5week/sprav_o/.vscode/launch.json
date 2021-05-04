@@ -5,16 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      // "logging": { "engineLogging": true },
-      "name": "(gdb) Launch",
+      "name": "Make base",
       "type": "cppdbg",
       "request": "launch",
-      // Resolved by CMake Tools:
       "program": "${command:cmake.launchTargetPath}",
       "args": [
-        // "<", "${workspaceFolder}/example1.in.json",
-        "<", "${workspaceFolder}/example2.in.json",
-        ">", "${env:TMP}/output.json"
+        "make_base",
+        "<", "${workspaceFolder}/example1_make_base.in.json",
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -27,8 +24,27 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "build",
-      "postDebugTask": "Make Svg"
+    },
+    {
+      "name": "Process requests",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [
+        "process_requests",
+        "<", "${workspaceFolder}/example1_process_requests.in.json",
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
     }
   ]
 }

@@ -14,6 +14,10 @@ class Sprav::PImpl {
  public:
   PImpl(Sprav* sprav);
 
+  void Serialize();
+  void DeSerialize();
+
+  void SetSerializationSettings(SerializationSettings s);
   void SetRoutingSettings(RoutingSettings s);
   void SetRenderSettings(RenderSettings s);
   void Build();
@@ -43,6 +47,7 @@ class Sprav::PImpl {
   BusNames bus_names_;
   mutable Buses buses_;
 
+  SerializationSettings serialization_settings_;
   RoutingSettings routing_settings_;
   RenderSettings render_settings_;
 

@@ -68,6 +68,18 @@ Sprav::Sprav()
 
 Sprav::~Sprav() = default;
 
+void Sprav::Serialize() {
+  Pimpl()->Serialize();
+}
+
+void Sprav::DeSerialize() {
+  Pimpl()->DeSerialize();
+}
+
+void Sprav::SetSerializationSettings(SerializationSettings s) {
+  Pimpl()->SetSerializationSettings(move(s));
+}
+
 void Sprav::SetRoutingSettings(RoutingSettings s) {
   Pimpl()->SetRoutingSettings(move(s));
 }

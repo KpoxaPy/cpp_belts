@@ -10,6 +10,7 @@
 #include "render_settings.h"
 #include "router.h"
 #include "routing_settings.h"
+#include "serialization_settings.h"
 #include "stop.h"
 
 enum class RoutePartType {
@@ -63,6 +64,10 @@ class Sprav {
   Sprav();
   ~Sprav();
 
+  void Serialize();
+  void DeSerialize();
+
+  void SetSerializationSettings(SerializationSettings s);
   void SetRoutingSettings(RoutingSettings s);
   void SetRenderSettings(RenderSettings s);
 

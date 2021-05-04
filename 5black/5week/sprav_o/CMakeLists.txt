@@ -28,6 +28,7 @@ set(PROJECT_HDRS
   request_stat_stop.h
   router.h
   routing_settings.h
+  serialization_settings.h
   sprav.h
   sprav_impl.h
   sprav_mapper.h
@@ -59,6 +60,7 @@ set(PROJECT_SRCS
   request_stat_bus.cpp
   request_stat_stop.cpp
   routing_settings.cpp
+  serialization_settings.cpp
   sprav.cpp
   sprav_impl.cpp
   sprav_mapper.cpp
@@ -79,10 +81,20 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
+find_package(Protobuf REQUIRED)
+
+protobuf_generate_cpp(
+  PROTO_SRCS
+  PROTO_HDRS
+  transport_catalog.proto
+)
+
+include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_executable(main
   ${PROJECT_SRCS}
+  ${PROTO_SRCS}
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -90,6 +102,7 @@ find_package(Threads)
 
 target_compile_features(main PUBLIC cxx_std_17)
 target_link_libraries(main Threads::Threads)
+target_link_libraries(main ${Protobuf_LIBRARIES})
 
 install(FILES
   ${PROJECT_HDRS}

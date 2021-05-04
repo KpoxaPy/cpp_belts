@@ -9,7 +9,13 @@
 
 class SpravIO {
  public:
-  SpravIO(SpravPtr sprav, std::ostream& output, Format format = Format::JSON);
+  enum class Mode {
+    MAKE_BASE,
+    PROCESS_REQUESTS
+  };
+
+ public:
+  SpravIO(SpravPtr sprav, Mode mode, std::ostream& output, Format format = Format::JSON);
   ~SpravIO();
 
   void Process(std::istream& input);

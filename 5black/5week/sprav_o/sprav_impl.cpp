@@ -32,6 +32,18 @@ Node& GetNode(Container& c, Names& n, string_view name) {
 Sprav::PImpl::PImpl(Sprav* sprav)
   : sprav_(sprav) {}
 
+void Sprav::PImpl::Serialize() {
+
+}
+
+void Sprav::PImpl::DeSerialize() {
+
+}
+
+void Sprav::PImpl::SetSerializationSettings(SerializationSettings s) {
+  serialization_settings_ = move(s);
+}
+
 void Sprav::PImpl::SetRoutingSettings(RoutingSettings s) {
   routing_settings_ = move(s);
 }
