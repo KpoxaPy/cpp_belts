@@ -1,15 +1,16 @@
 #include "sprav_impl.h"
 
+#include <google/protobuf/arena.h>
+
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <unordered_set>
-#include <fstream>
 
 #include "profile.h"
 #include "sprav_mapper.h"
 #include "string_stream_utils.h"
-
 #include "transport_catalog.pb.h"
 
 using namespace std;
@@ -42,42 +43,91 @@ Node& GetNode(Container& c, Names& n, string_view name, optional<Node> pre_node)
 Sprav::PImpl::PImpl(Sprav* sprav)
   : sprav_(sprav) {}
 
+struct Catalog {
+  SpravSerialize::TransportCatalog* p;
+  google::protobuf::Arena arena;
+
+  Catalog() {
+    LOG_DURATION("Transport catalog construct");
+    p = google::protobuf::Arena::CreateMessage<SpravSerialize::TransportCatalog>(&arena);
+  }
+
+  ~Catalog() {
+    LOG_DURATION("Transport catalog destruct");
+    arena.Reset();
+  }
+};
+
 void Sprav::PImpl::Serialize() {
-  SpravSerialize::TransportCatalog catalog;
+  LOG_DURATION("Sprav::Serialize");
+  Catalog catalog;
 
-  for (const auto& [_, stop] : stops_) {
-    stop.SerializeTo(*catalog.add_stop());
+  {
+    LOG_DURATION("Sprav::Serialize stops");
+    for (const auto& [_, stop] : stops_) {
+      stop.SerializeTo(*catalog.p->add_stop());
+    }
   }
 
-  for (const auto& [_, bus] : buses_) {
-    bus.SerializeTo(*catalog.add_bus());
+  {
+    LOG_DURATION("Sprav::Serialize buses");
+    for (const auto& [_, bus] : buses_) {
+      bus.SerializeTo(*catalog.p->add_bus());
+    }
   }
 
-  router_graph_->Serialize(*catalog.mutable_graph());
-  router_->Serialize(*catalog.mutable_router());
+  {
+    LOG_DURATION("Sprav::Serialize graph");
+    router_graph_->Serialize(*catalog.p->mutable_graph());
+  }
 
-  ofstream ofile(serialization_settings_.file, ios::binary | ios::trunc);
-  catalog.SerializeToOstream(&ofile);
+  {
+    LOG_DURATION("Sprav::Serialize router");
+    router_->Serialize(*catalog.p->mutable_router());
+  }
+
+  {
+    LOG_DURATION("Sprav::Serialize materialization");
+    ofstream ofile(serialization_settings_.file, ios::binary | ios::trunc);
+    catalog.p->SerializeToOstream(&ofile);
+  }
 }
 
 void Sprav::PImpl::Deserialize() {
-  SpravSerialize::TransportCatalog catalog;
+  LOG_DURATION("Sprav::Deserialize");
+  Catalog catalog;
 
-  ifstream ifile(serialization_settings_.file, ios::binary);
-  catalog.ParseFromIstream(&ifile);
-
-  stop_names_.resize(catalog.stop().size());
-  for (const auto& stop : catalog.stop()) {
-    AddStop(stop.name(), Stop::Parse(stop));
+  {
+    LOG_DURATION("Sprav::Deserialize parsing");
+    ifstream ifile(serialization_settings_.file, ios::binary);
+    catalog.p->ParseFromIstream(&ifile);
   }
 
-  bus_names_.resize(catalog.bus().size());
-  for (const auto& bus : catalog.bus()) {
-    AddBus(bus.name(), Bus::Parse(bus));
+  {
+    LOG_DURATION("Sprav::Deserialize stops");
+    stop_names_.resize(catalog.p->stop().size());
+    for (const auto& stop : catalog.p->stop()) {
+      AddStop(stop.name(), Stop::Parse(stop));
+    }
   }
 
-  router_graph_ = make_shared<Graph>(catalog.graph());
-  router_ = make_shared<Router>(*router_graph_.get(), catalog.router());
+  {
+    LOG_DURATION("Sprav::Deserialize buses");
+    bus_names_.resize(catalog.p->bus().size());
+    for (const auto& bus : catalog.p->bus()) {
+      AddBus(bus.name(), Bus::Parse(bus));
+    }
+  }
+
+  {
+    LOG_DURATION("Sprav::Deserialize graph");
+    router_graph_ = make_shared<Graph>(catalog.p->graph());
+  }
+
+  {
+    LOG_DURATION("Sprav::Deserialize router");
+    router_ = make_shared<Router>(*router_graph_.get(), catalog.p->router());
+  }
 }
 
 void Sprav::PImpl::SetSerializationSettings(SerializationSettings s) {
@@ -93,6 +143,7 @@ void Sprav::PImpl::SetRenderSettings(RenderSettings s) {
 }
 
 void Sprav::PImpl::BuildBase() {
+  LOG_DURATION("Sprav::BuildBase");
   for (auto& [_, bus] : buses_) {
     CalcBusStats(bus);
   }
@@ -157,7 +208,7 @@ const Stop* Sprav::PImpl::FindStop(std::string_view name) const {
   return &it->second;
 }
 
-const Sprav::Router* Sprav::PImpl::GetRouter() const {
+Sprav::Router* Sprav::PImpl::GetRouter() const {
   return router_.get();
 }
 
@@ -173,7 +224,16 @@ Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
   if (!router_) {
     throw runtime_error("Failed to find route: no router");
   }
-  return {*sprav_, router_->BuildRoute(FindStop(from)->id * 2 + 1, FindStop(to)->id * 2 + 1)};
+
+  // AvgMeter<chrono::nanoseconds> meter("route build");
+  // for (size_t i = 0; i < 30000; ++i) {
+  //   AVG_DURATION(meter);
+  //   auto route = router_->BuildRoute(FindStop(from)->id * 2 + 1, FindStop(to)->id * 2 + 1);
+  //   router_->ReleaseRoute(route->id);
+  // }
+
+  auto route = router_->BuildRoute(FindStop(from)->id * 2 + 1, FindStop(to)->id * 2 + 1);
+  return {*sprav_, std::move(route)};
 }
 
 std::string Sprav::PImpl::GetMap() const {

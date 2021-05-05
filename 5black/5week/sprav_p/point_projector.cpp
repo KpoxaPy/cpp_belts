@@ -76,7 +76,7 @@ void PointProjector::UniformCoords() {
     auto bearing_stops_ = FindBearingStops(bus);
 
     Stops stops;
-    size_t bearing_id;
+    size_t bearing_id = 0;
     for (auto it = bus.stops.begin(); it != bus.stops.end(); ++it) {
       if (bearing_stops_.count(*it) > 0) {
         if (stops.size() > 0) {

@@ -61,7 +61,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
     size_t bus_span_count = 0;
     std::list<size_t> bus_stops;
     for (size_t idx = 0; idx < info.edge_count; ++idx) {
-      auto edge = sprav_.Pimpl()->GetRouter()->GetRouteEdge(info.id, idx);
+      auto edge = sprav_.GetRouter()->GetRouteEdge(info.id, idx);
       switch (edge.extra.type) {
         default:
         case RoutePartType::NOOP:
@@ -98,6 +98,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
     if (!last_bus.empty()) {
       push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count, bus_stops});
     }
+    sprav_.GetRouter()->ReleaseRoute(info.id);
   }
 }
 
@@ -162,7 +163,7 @@ const Bus* Sprav::FindBus(std::string_view name) const {
   return Pimpl()->FindBus(name);
 }
  
-const Sprav::Router* Sprav::GetRouter() const {
+Sprav::Router* Sprav::GetRouter() const {
   return Pimpl()->GetRouter();
 }
 

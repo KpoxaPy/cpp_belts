@@ -174,6 +174,7 @@ namespace Graph {
 
   template <typename Weight, typename Extra>
   void Router<Weight, Extra>::ParseFrom(const SpravSerialize::Router& m) {
+    LOG_DURATION("Router parsefrom");
     routes_internal_data_.reserve(m.row().size());
     for (const auto& m_row : m.row()) {
       std::vector<std::optional<RouteInternalData>> row;

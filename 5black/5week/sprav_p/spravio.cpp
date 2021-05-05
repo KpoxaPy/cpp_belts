@@ -78,10 +78,13 @@ class SpravIO::PImpl {
     sprav_->Deserialize();
 
     list<ResponsePtr> responses;
-    for (auto& r : root.at("stat_requests").AsArray()) {
-      auto resp = MakeRequest(r)->Process(sprav_);
-      if (!resp->empty()) {
-        responses.emplace_back(move(resp));
+    {
+      LOG_DURATION("SpravIO::ProcessRequests");
+      for (auto& r : root.at("stat_requests").AsArray()) {
+        auto resp = MakeRequest(r)->Process(sprav_);
+        if (!resp->empty()) {
+          responses.emplace_back(move(resp));
+        }
       }
     }
     Output(responses.begin(), responses.end());

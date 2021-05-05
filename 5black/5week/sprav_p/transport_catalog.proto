@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package SpravSerialize;
 
+option cc_enable_arenas = true;
+
 message Bus {
   uint32 id = 1;
   string name = 2;

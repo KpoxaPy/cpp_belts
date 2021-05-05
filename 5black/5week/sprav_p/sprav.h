@@ -86,7 +86,7 @@ class Sprav {
   const Stop* FindStop(std::string_view name) const;
   const Bus* FindBus(std::string_view name) const;
 
-  const Router* GetRouter() const;
+  Router* GetRouter() const;
   Route FindRoute(std::string_view from, std::string_view to) const;
 
   std::string GetMap() const;

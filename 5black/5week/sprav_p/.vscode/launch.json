@@ -11,8 +11,9 @@
       "program": "${command:cmake.launchTargetPath}",
       "args": [
         "make_base",
-        "<", "${workspaceFolder}/example1_make_base.in.json",
-        // "<", "${workspaceFolder}/example2_make_base.in.json",
+        // "<", "${workspaceFolder}/example1_make_base.in.json",
+        "<", "${workspaceFolder}/example2_make_base.in.json",
+        // "<", "${workspaceFolder}/load_make_base.in.json",
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -33,8 +34,9 @@
       "program": "${command:cmake.launchTargetPath}",
       "args": [
         "process_requests",
-        "<", "${workspaceFolder}/example1_process_requests.in.json",
-        // "<", "${workspaceFolder}/example2_process_requests.in.json",
+        // "<", "${workspaceFolder}/example1_process_requests.in.json",
+        "<", "${workspaceFolder}/example2_process_requests.in.json",
+        // "<", "${workspaceFolder}/load_process_requests.in.json",
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
