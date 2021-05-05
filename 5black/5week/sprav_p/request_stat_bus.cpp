@@ -1,8 +1,14 @@
 #include "request_stat_bus.h"
 
+unordered_map<std::string, StatBusResponsePtr> StatBusRequest::response_cache_;
+
 StatBusResponse::StatBusResponse(RequestType type, string name, size_t id, const Bus* bus)
     : Response(type), name_(move(name)), id_(id), bus_(bus) {
   empty_ = false;
+}
+
+void StatBusResponse::SetId(size_t id) {
+  id_ = id;
 }
 
 Json::Node StatBusResponse::AsJson() const {
@@ -25,7 +31,17 @@ StatBusRequest::StatBusRequest(const Json::Map& dict)
 }
 
 ResponsePtr StatBusRequest::Process(SpravPtr sprav) const {
-  return make_shared<StatBusResponse>(type_, name_, id_, sprav->FindBus(name_));
+  StatBusResponsePtr resp_ptr;
+
+  if (auto it = response_cache_.find(name_); it != response_cache_.end()) {
+    resp_ptr = it->second;
+    resp_ptr->SetId(id_);
+  } else {
+    resp_ptr = make_shared<StatBusResponse>(type_, name_, id_, sprav->FindBus(name_));
+    response_cache_[name_] = resp_ptr;
+  }
+
+  return resp_ptr;
 }
 
 Json::Node StatBusRequest::AsJson() const {
