@@ -1,8 +1,14 @@
 #include "request_stat_stop.h"
 
+unordered_map<std::string, StatStopResponsePtr> StatStopRequest::response_cache_;
+
 StatStopResponse::StatStopResponse(RequestType type, string name, size_t id, SpravPtr sprav, const Stop* stop)
     : Response(type), name_(move(name)), id_(id), sprav_(sprav), stop_(stop) {
   empty_ = false;
+}
+
+void StatStopResponse::SetId(size_t id) {
+  id_ = id;
 }
 
 Json::Node StatStopResponse::AsJson() const {
@@ -32,7 +38,17 @@ StatStopRequest::StatStopRequest(const Json::Map& dict)
 }
 
 ResponsePtr StatStopRequest::Process(SpravPtr sprav) const {
-  return make_shared<StatStopResponse>(type_, name_, id_, sprav, sprav->FindStop(name_));
+  StatStopResponsePtr resp_ptr;
+
+  if (auto it = response_cache_.find(name_); it != response_cache_.end()) {
+    resp_ptr = it->second;
+    resp_ptr->SetId(id_);
+  } else {
+    resp_ptr = make_shared<StatStopResponse>(type_, name_, id_, sprav, sprav->FindStop(name_));
+    response_cache_[name_] = resp_ptr;
+  }
+
+  return resp_ptr;
 }
 
 Json::Node StatStopRequest::AsJson() const {
