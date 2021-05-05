@@ -2,4 +2,7 @@ data1.bin
 data2.bin
 data_load.bin
 load_make_base.in.json
-load_process_requests.in.json
+load_process_requests_stops.in.json
+load_process_requests_buses.in.json
+load_process_requests_routes.in.json
+output.json

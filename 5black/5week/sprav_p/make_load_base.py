@@ -2,6 +2,11 @@ import json
 import copy
 import random
 
+max_stops = 450
+max_buses = 400
+max_adjecent = 200
+max_requests = 30000
+
 settings = {
     "serialization_settings": {
         "file": "data_load.bin"
@@ -59,14 +64,23 @@ base_stop_request = {
     }
 }
 
+stat_stop_request = {
+    "id": 1360715858,
+    "type": "Stop",
+    "name": None
+}
+
 base_bus_request = {}
 
+
+r = random.Random()
+
 base_stops = []
-for n in range(1, 450):
+for n in range(0, max_stops):
     stop = copy.deepcopy(base_stop_request)
     stop["name"] = "stop" + str(n)
-    stop["latitude"] = random.uniform(10,70)
-    stop["longitude"] = random.uniform(10,70)
+    stop["latitude"] = r.uniform(10, 70)
+    stop["longitude"] = r.uniform(10, 70)
     base_stops.append(stop)
 
 make = copy.deepcopy(settings)
@@ -77,8 +91,28 @@ f.write(json.dumps(make))
 base = copy.deepcopy(settings)
 f.close()
 
+stat_stops = []
+for n in range(0, max_requests):
+    stop = copy.deepcopy(stat_stop_request)
+    stop["id"] = r.randrange(1000000000)
+    stop["name"] = "stop" + str(r.randrange(0, max_stops))
+    stat_stops.append(stop)
+
+process = copy.deepcopy(settings)
+process["stat_requests"] = stat_stops
+f = open("load_process_requests_stops.in.json", "w")
+f.write(json.dumps(process))
+f.close()
+
+
 process = copy.deepcopy(settings)
 process["stat_requests"] = []
-f = open("load_process_requests.in.json", "w")
+f = open("load_process_requests_buses.in.json", "w")
+f.write(json.dumps(process))
+f.close()
+
+process = copy.deepcopy(settings)
+process["stat_requests"] = []
+f = open("load_process_requests_routes.in.json", "w")
 f.write(json.dumps(process))
 f.close()
