@@ -5,7 +5,7 @@ BaseStopRequest::BaseStopRequest(const Json::Map& dict)
   name_ = dict.at("name").AsString();
   lat_ = dict.at("latitude").AsNumber();
   lon_ = dict.at("longitude").AsNumber();
-  for (auto [name, dist] : dict.at("road_distances").AsMap()) {
+  for (auto& [name, dist] : dict.at("road_distances").AsMap()) {
     distances_[name] = dist.AsNumber();
   }
 }

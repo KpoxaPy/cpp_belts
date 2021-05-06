@@ -5,7 +5,7 @@ BaseBusRequest::BaseBusRequest(const Json::Map& dict)
   name_ = dict.at("name").AsString();
   auto rt_it = dict.find("is_roundtrip");
   is_ring_route_ = rt_it != dict.end() ? rt_it->second.AsBool() : false;
-  for (auto stop : dict.at("stops").AsArray()) {
+  for (auto& stop : dict.at("stops").AsArray()) {
     stops_.emplace_back(stop.AsString());
   }
 }

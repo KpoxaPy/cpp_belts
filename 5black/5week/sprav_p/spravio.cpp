@@ -1,6 +1,6 @@
 #include "spravio.h"
 
-#include <list>
+#include <queue>
 
 #include "json.h"
 #include "profile.h"
@@ -24,7 +24,7 @@ class SpravIO::PImpl {
       LOG_DURATION("Json::Load");
       return Json::Load(input);
     }();
-    auto dict = doc.GetRoot().AsMap();
+    auto& dict = doc.GetRoot().AsMap();
 
     ReadSettings(dict);
 
@@ -35,8 +35,7 @@ class SpravIO::PImpl {
     }
   }
 
-  void Output(list<ResponsePtr> responses) {
-    LOG_DURATION("Output");
+  void Output(queue<ResponsePtr> responses) {
     SumMeter resp_destr("Response desruction");
     SumMeter resp_output("Response output");
 
@@ -54,7 +53,7 @@ class SpravIO::PImpl {
           }
           {
             METER_DURATION(resp_destr);
-            responses.pop_front();
+            responses.pop();
           }
         }
         os_ << "]\n";
@@ -92,18 +91,21 @@ class SpravIO::PImpl {
     LOG_DURATION("ProcessRequests");
     sprav_->Deserialize();
 
-    list<ResponsePtr> responses;
+    queue<ResponsePtr> responses;
     {
       LOG_DURATION("ProcessRequests responses generating");
       for (auto& r : root.at("stat_requests").AsArray()) {
         auto resp = MakeRequest(r)->Process(sprav_);
         if (!resp->empty()) {
-          responses.emplace_back(move(resp));
+          responses.emplace(move(resp));
         }
       }
     }
 
-    Output(std::move(responses));
+    {
+      LOG_DURATION("Output");
+      Output(std::move(responses));
+    }
   }
 
   SpravPtr sprav_;
