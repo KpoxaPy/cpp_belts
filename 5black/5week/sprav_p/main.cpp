@@ -8,20 +8,23 @@
 
 using namespace std;
 
-int main(int argc, const char* argv[]) {
-  if (argc != 2) {
-    cerr << "Usage: transport_catalog_part_o [make_base|process_requests]\n";
-    return 5;
-  }
-
-  const string_view mode(argv[1]);
-
+void Do(std::string_view mode) {
+  LOG_DURATION("Do");
   SpravPtr sprav = make_shared<Sprav>();
   if (mode == "make_base") {
     SpravIO(sprav, SpravIO::Mode::MAKE_BASE, cout).Process(cin);
   } else if (mode == "process_requests") {
     SpravIO(sprav, SpravIO::Mode::PROCESS_REQUESTS, cout).Process(cin);
   }
+}
+
+int main(int argc, const char* argv[]) {
+  if (argc != 2) {
+    cerr << "Usage: transport_catalog_part_o [make_base|process_requests]\n";
+    return 5;
+  }
+
+  Do(argv[1]);
 
   return 0;
 }

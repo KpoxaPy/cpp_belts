@@ -1,7 +1,6 @@
 #include "spravio.h"
 
 #include <list>
-#include <thread>
 
 #include "json.h"
 #include "profile.h"
@@ -35,19 +34,20 @@ class SpravIO::PImpl {
     }
   }
 
-  template <typename InputIt>
-  void Output(InputIt begin, InputIt end) {
+  template <typename C>
+  void Output(C&& responses) {
     LOG_DURATION("Output");
     switch (output_format_) {
       case Format::JSON:
       case Format::JSON_PRETTY:
       {
-        Json::Node node = Json::Array{};
-        Json::Array& array = node.AsArray();
-        for (; begin != end; ++begin) {
-          array.push_back(begin->get()->AsJson());
+        os_ << "[";
+        bool first = true;
+        for (auto resp : responses) {
+          os_ << (first ? first = false, "" : ",")
+            << Json::Printer(resp->AsJson(), output_format_ == Format::JSON_PRETTY);
         }
-        os_ << Json::Printer(node, output_format_ == Format::JSON_PRETTY) << "\n";
+        os_ << "]\n";
         break;
       }
 
@@ -75,8 +75,6 @@ class SpravIO::PImpl {
 
     sprav_->BuildBase();
     sprav_->Serialize();
-
-    this_thread::sleep_for(500ms);
   }
 
   void ProcessRequests(const Json::Map& root) {
@@ -92,9 +90,7 @@ class SpravIO::PImpl {
         }
       }
     }
-    Output(responses.begin(), responses.end());
-
-    this_thread::sleep_for(500ms);
+    Output(std::move(responses));
   }
 
   SpravPtr sprav_;
