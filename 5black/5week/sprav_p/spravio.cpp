@@ -19,6 +19,7 @@ class SpravIO::PImpl {
       , output_format_(format) {}
 
   void Process(std::istream& input) {
+    LOG_DURATION("Process");
     auto doc = [&input]() mutable {
       LOG_DURATION("Json::Load");
       return Json::Load(input);
@@ -34,18 +35,27 @@ class SpravIO::PImpl {
     }
   }
 
-  template <typename C>
-  void Output(C&& responses) {
+  void Output(list<ResponsePtr> responses) {
     LOG_DURATION("Output");
+    SumMeter resp_destr("Response desruction");
+    SumMeter resp_output("Response output");
+
     switch (output_format_) {
       case Format::JSON:
       case Format::JSON_PRETTY:
       {
         os_ << "[";
         bool first = true;
-        for (auto resp : responses) {
-          os_ << (first ? first = false, "" : ",")
-            << Json::Printer(resp->AsJson(), output_format_ == Format::JSON_PRETTY);
+        while (!responses.empty()) {
+          {
+            METER_DURATION(resp_output);
+            os_ << (first ? first = false, "" : ",")
+              << Json::Printer(responses.front()->AsJson(), output_format_ == Format::JSON_PRETTY);
+          }
+          {
+            METER_DURATION(resp_destr);
+            responses.pop_front();
+          }
         }
         os_ << "]\n";
         break;
@@ -69,6 +79,7 @@ class SpravIO::PImpl {
   }
 
   void MakeBase(const Json::Map& root) {
+    LOG_DURATION("MakeBase");
     for (auto& r : root.at("base_requests").AsArray()) {
       MakeBaseRequest(r)->Process(sprav_);
     }
@@ -78,11 +89,12 @@ class SpravIO::PImpl {
   }
 
   void ProcessRequests(const Json::Map& root) {
+    LOG_DURATION("ProcessRequests");
     sprav_->Deserialize();
 
     list<ResponsePtr> responses;
     {
-      LOG_DURATION("SpravIO::ProcessRequests");
+      LOG_DURATION("ProcessRequests responses generating");
       for (auto& r : root.at("stat_requests").AsArray()) {
         auto resp = MakeRequest(r)->Process(sprav_);
         if (!resp->empty()) {
@@ -90,6 +102,7 @@ class SpravIO::PImpl {
         }
       }
     }
+
     Output(std::move(responses));
   }
 

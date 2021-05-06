@@ -38,6 +38,8 @@ private:
 template <typename Duration = microseconds>
 class AvgMeter {
 public:
+  using DurationType = Duration;
+
   AvgMeter(const string& msg = "")
     : message(msg)
     , sum_ts(0)
@@ -62,24 +64,48 @@ private:
   Duration sum_ts;
 };
 
-template <typename Duration>
-class AvgMetterLogger {
+template <typename OutputDuration = milliseconds, typename Duration = nanoseconds>
+class SumMeter {
 public:
-  explicit AvgMetterLogger(AvgMeter<Duration>& avg)
+  using DurationType = Duration;
+
+  SumMeter(const string& msg = "")
+    : message(msg)
+    , sum_ts(0)
+  {}
+
+  ~SumMeter() {
+    cerr << (message.empty() ? "" : message + ": ")
+       << duration_cast<OutputDuration>(sum_ts) << endl;
+  }
+
+  void AddTime(Duration time) {
+    sum_ts += time;
+  }
+
+private:
+  string message;
+  Duration sum_ts;
+};
+
+template <typename Type>
+class MeterLogger {
+public:
+  explicit MeterLogger(Type& avg)
     : avg(avg)
   {}
 
-  ~AvgMetterLogger() {
+  ~MeterLogger() {
     avg.AddTime(m.Get());
   }
 
 private:
-  AvgMeter<Duration>& avg;
-  DurationMeter<Duration> m;
+  Type& avg;
+  DurationMeter<typename Type::DurationType> m;
 };
 
-#define AVG_DURATION(avg_meter) \
-  AvgMetterLogger UNIQ_ID(__LINE__){avg_meter};
+#define METER_DURATION(meter) \
+  MeterLogger UNIQ_ID(__LINE__){meter};
 
 template <typename Duration = milliseconds>
 class LogDuration {
