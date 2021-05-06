@@ -1,10 +1,12 @@
 #include "spravio.h"
-#include "reader.h"
-#include "string_view_utils.h"
-#include "json.h"
-#include "profile.h"
 
 #include <list>
+#include <thread>
+
+#include "json.h"
+#include "profile.h"
+#include "reader.h"
+#include "string_view_utils.h"
 
 using namespace std;
 using namespace std::placeholders;
@@ -35,6 +37,7 @@ class SpravIO::PImpl {
 
   template <typename InputIt>
   void Output(InputIt begin, InputIt end) {
+    LOG_DURATION("Output");
     switch (output_format_) {
       case Format::JSON:
       case Format::JSON_PRETTY:
@@ -72,6 +75,8 @@ class SpravIO::PImpl {
 
     sprav_->BuildBase();
     sprav_->Serialize();
+
+    this_thread::sleep_for(500ms);
   }
 
   void ProcessRequests(const Json::Map& root) {
@@ -88,6 +93,8 @@ class SpravIO::PImpl {
       }
     }
     Output(responses.begin(), responses.end());
+
+    this_thread::sleep_for(500ms);
   }
 
   SpravPtr sprav_;

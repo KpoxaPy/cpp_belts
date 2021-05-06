@@ -38,11 +38,6 @@ Node& GetNode(Container& c, Names& n, string_view name, optional<Node> pre_node)
   return node;
 }
 
-}
-
-Sprav::PImpl::PImpl(Sprav* sprav)
-  : sprav_(sprav) {}
-
 struct Catalog {
   SpravSerialize::TransportCatalog* p;
   google::protobuf::Arena arena;
@@ -58,9 +53,15 @@ struct Catalog {
   }
 };
 
+Catalog catalog;
+
+}
+
+Sprav::PImpl::PImpl(Sprav* sprav)
+  : sprav_(sprav) {}
+
 void Sprav::PImpl::Serialize() {
   LOG_DURATION("Sprav::Serialize");
-  Catalog catalog;
 
   {
     LOG_DURATION("Sprav::Serialize stops");
@@ -95,7 +96,6 @@ void Sprav::PImpl::Serialize() {
 
 void Sprav::PImpl::Deserialize() {
   LOG_DURATION("Sprav::Deserialize");
-  Catalog catalog;
 
   {
     LOG_DURATION("Sprav::Deserialize parsing");
