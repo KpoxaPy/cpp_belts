@@ -110,18 +110,13 @@ namespace Graph {
       m_edge.set_weight(edge.weight);
       edge.extra.Serialize(*m_edge.mutable_extra());
     }
-
-    for (const auto& list : incidence_lists_) {
-      auto& m_list = *m.add_incidence_list();
-      for (size_t id : list) {
-        m_list.add_edge(id);
-      }
-    }
+    m.set_vertex_count(incidence_lists_.size());
   }
 
   template <typename Weight, typename Extra>
   void DirectedWeightedGraph<Weight, Extra>::ParseFrom(const SpravSerialize::Graph& m) {
     edges_.reserve(m.edge().size());
+    incidence_lists_.resize(m.vertex_count());
     for (const auto& m_edge : m.edge()) {
       Edge edge;
       edge.from = m_edge.from();
@@ -129,11 +124,7 @@ namespace Graph {
       edge.weight = m_edge.weight();
       edge.extra = Extra::ParseFrom(m_edge.extra());
       edges_.push_back(std::move(edge));
-    }
-
-    incidence_lists_.reserve(m.incidence_list().size());
-    for (const auto& m_list : m.incidence_list()) {
-      incidence_lists_.push_back(IncidenceList(m_list.edge().begin(), m_list.edge().end()));
+      incidence_lists_[edge.from].push_back(edges_.size() - 1);
     }
   }
 }

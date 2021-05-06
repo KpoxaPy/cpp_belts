@@ -47,7 +47,7 @@ message Graph {
   }
 
   repeated Edge edge = 1;
-  repeated IncidenceList incidence_list = 2;
+  uint32 vertex_count = 2;
 }
 
 message Router {
