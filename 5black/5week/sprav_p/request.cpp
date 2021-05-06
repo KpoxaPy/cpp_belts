@@ -14,7 +14,7 @@
 using namespace std;
 
 RequestPtr MakeBaseRequest(const Json::Node& doc) {
-  auto& dict = doc.AsMap();
+  auto& dict = doc.AsDict();
   auto& type = dict.at("type").AsString(); 
   if (type == "Bus") {
     return make_shared<BaseBusRequest>(dict);
@@ -25,7 +25,7 @@ RequestPtr MakeBaseRequest(const Json::Node& doc) {
 }
 
 RequestPtr MakeRequest(const Json::Node& doc) {
-  auto& dict = doc.AsMap();
+  auto& dict = doc.AsDict();
   auto& type = dict.at("type").AsString(); 
   if (type == "Bus") {
     return make_shared<StatBusRequest>(dict);

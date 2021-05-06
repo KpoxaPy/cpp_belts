@@ -6,7 +6,7 @@ RouteResponse::RouteResponse(RequestType type, size_t id, Sprav::Route route, st
 }
 
 Json::Node RouteResponse::AsJson() const {
-  Json::Map dict;
+  Json::Dict dict;
   dict["request_id"] = id_;
   if (route_) {
     // dict["map"] = map_;
@@ -17,7 +17,7 @@ Json::Node RouteResponse::AsJson() const {
         continue;
       }
 
-      Json::Map item_dict;
+      Json::Dict item_dict;
       if (part.type == RoutePartType::WAIT) {
         item_dict["type"] = "Wait";
         item_dict["time"] = part.time;
@@ -37,9 +37,9 @@ Json::Node RouteResponse::AsJson() const {
   return dict;
 }
 
-RouteRequest::RouteRequest(const Json::Map& dict)
+RouteRequest::RouteRequest(const Json::Dict& dict)
     : Request(RequestType::ROUTE) {
-  id_ = dict.at("id").AsNumber();
+  id_ = dict.at("id").AsInt();
   from_ = dict.at("from").AsString();
   to_ = dict.at("to").AsString();
 }
@@ -52,7 +52,7 @@ ResponsePtr RouteRequest::Process(SpravPtr sprav) const {
 }
 
 Json::Node RouteRequest::AsJson() const {
-  Json::Map dict;
+  Json::Dict dict;
   dict["id"] = id_;
   dict["from"] = from_;
   dict["to"] = to_;

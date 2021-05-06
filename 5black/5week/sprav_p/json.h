@@ -1,119 +1,73 @@
 #pragma once
 
-#include <istream>
-#include <ostream>
+#include <iostream>
 #include <map>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
 namespace Json {
 
-class Node;
-using Array = std::vector<Node>;
-using Map = std::map<std::string, Node>;
+  class Node;
+  using Dict = std::map<std::string, Node>;
+  using Array = std::vector<Node>;
 
-struct Bool {
-  bool value;
+  using NodeBase = std::variant<Array, Dict, bool, int, double, std::string>;
 
-  explicit Bool(bool v) : value(v) {}
+  class Node : NodeBase {
+  public:
+    using variant::variant;
+    const variant& GetBase() const { return *this; }
 
-  operator bool() const {
-    return value;
-  }
-};
+    Node(size_t v);
 
-class Number : std::variant<double, int64_t> {
-  friend class Printer;
-
- public:
-  using variant::variant;
-
-  Number(const std::string& s);
-  Number(int v);
-  Number(size_t v);
-
-  template <typename T>
-  operator T() const {
-    if (std::holds_alternative<int64_t>(*this)) {
-      return std::get<int64_t>(*this);
-    } else if (std::holds_alternative<double>(*this)) {
-      return std::get<double>(*this);
+    const auto& AsArray() const { return std::get<Array>(*this); }
+    const auto& AsDict() const { return std::get<Dict>(*this); }
+    bool AsBool() const { return std::get<bool>(*this); }
+    int AsInt() const { return std::get<int>(*this); }
+    double AsDouble() const {
+        return std::holds_alternative<double>(*this) ? std::get<double>(*this) : std::get<int>(*this);
     }
-    throw std::runtime_error("Json::Number holds something that out of domain");
-  }
-};
+    const auto& AsString() const { return std::get<std::string>(*this); }
+  };
 
-class Node : public std::variant<Array, Map, Number, std::string, Bool> {
-  friend class Printer;
+  class Document {
+  public:
+    explicit Document(Node root) : root(move(root)) {}
 
- public:
-  using variant::variant;
+    const Node& GetRoot() const {
+      return root;
+    }
 
-  auto& AsArray() {
-    return std::get<Array>(*this);
-  }
-  const auto& AsArray() const {
-    return std::get<Array>(*this);
-  }
+  private:
+    Node root;
+  };
 
-  auto& AsMap() {
-    return std::get<Map>(*this);
-  }
-  const auto& AsMap() const {
-    return std::get<Map>(*this);
-  }
+  Node LoadNode(std::istream& input);
 
-  const auto& AsNumber() const {
-    return std::get<Number>(*this);
+  Document Load(std::istream& input);
+
+  void PrintNode(const Node& node, std::ostream& output);
+
+  template <typename Value>
+  void PrintValue(const Value& value, std::ostream& output) {
+    output << value;
   }
 
-  auto& AsString() {
-    return std::get<std::string>(*this);
-  }
-  const auto& AsString() const {
-    return std::get<std::string>(*this);
-  }
+  template <>
+  void PrintValue<std::string>(const std::string& value, std::ostream& output);
 
-  bool AsBool() const {
-    return std::get<Bool>(*this);
-  }
-};
+  template <>
+  void PrintValue<bool>(const bool& value, std::ostream& output);
 
-std::ostream& operator<<(std::ostream& s, const Node& node);
+  template <>
+  void PrintValue<Array>(const Array& nodes, std::ostream& output);
 
-class Printer {
-  friend std::ostream& operator<<(std::ostream& s, const Printer& printer);
+  template <>
+  void PrintValue<Dict>(const Dict& dict, std::ostream& output);
 
- public:
-  Printer(const Node& node, bool pretty_print = true);
+  void Print(const Document& document, std::ostream& output);
 
- private:
-  Printer(const Node& node, bool pretty_print, size_t level);
+}
 
-  std::string PrettySpacer(bool inside = true) const;
-  std::string PrettyEndline() const;
-
-  void Print(std::ostream& s, const Node& node) const;
-  void Print(std::ostream& s, const Number& number) const;
-
-  const Node& node_;
-  bool pretty_print_;
-  size_t level_;
-};
-
-std::ostream& operator<<(std::ostream& s, const Printer& printer);
-
-class Document {
- public:
-  explicit Document(Node root);
-
-  const Node& GetRoot() const;
-
- private:
-  Node root;
-};
-
-Document Load(std::istream& input);
-
-}  // namespace Json

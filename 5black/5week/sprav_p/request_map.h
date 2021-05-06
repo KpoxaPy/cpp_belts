@@ -15,7 +15,7 @@ class MapResponse : public Response {
 
 class MapRequest : public Request {
  public:
-  MapRequest(const Json::Map& dict);
+  MapRequest(const Json::Dict& dict);
 
   ResponsePtr Process(SpravPtr sprav) const override;
   Json::Node AsJson() const override;

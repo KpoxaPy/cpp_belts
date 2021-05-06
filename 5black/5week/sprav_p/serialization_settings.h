@@ -6,7 +6,7 @@
 
 struct SerializationSettings {
   SerializationSettings() = default;
-  SerializationSettings(const Json::Map& dict);
+  SerializationSettings(const Json::Dict& dict);
 
   std::string file;
 };

@@ -45,7 +45,7 @@ class EmptyResponse : public Response {
   {}
 
   Json::Node AsJson() const override {
-    return Json::Map{};
+    return Json::Dict{};
   }
 };
 

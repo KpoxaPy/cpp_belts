@@ -1,6 +1,6 @@
 #include "request_base_bus.h"
 
-BaseBusRequest::BaseBusRequest(const Json::Map& dict)
+BaseBusRequest::BaseBusRequest(const Json::Dict& dict)
     : Request(RequestType::BASE_BUS) {
   name_ = dict.at("name").AsString();
   auto rt_it = dict.find("is_roundtrip");
@@ -16,7 +16,7 @@ ResponsePtr BaseBusRequest::Process(SpravPtr sprav) const {
 }
 
 Json::Node BaseBusRequest::AsJson() const {
-  Json::Map dict;
+  Json::Dict dict;
   dict["type"] = "Bus";
   dict["name"] = name_;
   dict["is_roundtrip"] = is_ring_route_;

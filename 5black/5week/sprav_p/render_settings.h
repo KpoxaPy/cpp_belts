@@ -14,7 +14,7 @@ enum class MapLayerType {
 
 struct RenderSettings {
   RenderSettings() = default;
-  RenderSettings(const Json::Map& dict);
+  RenderSettings(const Json::Dict& dict);
 
   double width = 1000;
   double height = 1000;

@@ -12,7 +12,7 @@ void StatBusResponse::SetId(size_t id) {
 }
 
 Json::Node StatBusResponse::AsJson() const {
-  Json::Map dict;
+  Json::Dict dict;
   dict["request_id"] = id_;
   if (bus_) {
     dict["route_length"] = bus_->length;
@@ -24,10 +24,10 @@ Json::Node StatBusResponse::AsJson() const {
   }
   return dict;
 }
-StatBusRequest::StatBusRequest(const Json::Map& dict)
+StatBusRequest::StatBusRequest(const Json::Dict& dict)
     : Request(RequestType::STAT_BUS) {
   name_ = dict.at("name").AsString();
-  id_ = dict.at("id").AsNumber();
+  id_ = dict.at("id").AsInt();
 }
 
 ResponsePtr StatBusRequest::Process(SpravPtr sprav) const {
@@ -45,7 +45,7 @@ ResponsePtr StatBusRequest::Process(SpravPtr sprav) const {
 }
 
 Json::Node StatBusRequest::AsJson() const {
-  Json::Map dict;
+  Json::Dict dict;
   dict["type"] = "Bus";
   dict["name"] = name_;
   dict["id"] = id_;

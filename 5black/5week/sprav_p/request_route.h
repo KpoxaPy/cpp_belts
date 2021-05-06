@@ -16,7 +16,7 @@ class RouteResponse : public Response {
 
 class RouteRequest : public Request {
  public:
-  RouteRequest(const Json::Map& dict);
+  RouteRequest(const Json::Dict& dict);
 
   ResponsePtr Process(SpravPtr sprav) const override;
   Json::Node AsJson() const override;

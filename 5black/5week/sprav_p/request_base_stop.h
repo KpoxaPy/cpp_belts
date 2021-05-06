@@ -4,7 +4,7 @@
 
 class BaseStopRequest : public Request {
  public:
-  BaseStopRequest(const Json::Map& dict);
+  BaseStopRequest(const Json::Dict& dict);
 
   ResponsePtr Process(SpravPtr sprav) const override;
   Json::Node AsJson() const override;

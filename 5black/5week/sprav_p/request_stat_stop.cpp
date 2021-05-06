@@ -12,7 +12,7 @@ void StatStopResponse::SetId(size_t id) {
 }
 
 Json::Node StatStopResponse::AsJson() const {
-  Json::Map dict;
+  Json::Dict dict;
   dict["request_id"] = id_;
   if (stop_) {
     set<string_view> buses_views;
@@ -31,10 +31,10 @@ Json::Node StatStopResponse::AsJson() const {
   return dict;
 }
 
-StatStopRequest::StatStopRequest(const Json::Map& dict)
+StatStopRequest::StatStopRequest(const Json::Dict& dict)
     : Request(RequestType::STAT_STOP) {
   name_ = dict.at("name").AsString();
-  id_ = dict.at("id").AsNumber();
+  id_ = dict.at("id").AsInt();
 }
 
 ResponsePtr StatStopRequest::Process(SpravPtr sprav) const {
@@ -52,7 +52,7 @@ ResponsePtr StatStopRequest::Process(SpravPtr sprav) const {
 }
 
 Json::Node StatStopRequest::AsJson() const {
-  Json::Map dict;
+  Json::Dict dict;
   dict["type"] = "Stop";
   dict["name"] = name_;
   dict["id"] = id_;

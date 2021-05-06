@@ -1,190 +1,148 @@
 #include "json.h"
 
-#include <stdexcept>
-#include <sstream>
-#include <iomanip>
-
 using namespace std;
 
 namespace Json {
 
-Number::Number(const string& s)
-{
-  if (s.find('.') != string::npos) {
-    *this = stod(s);
-  } else {
-    *this = stoi(s);
-  }
-}
+  Node::Node(size_t v) : NodeBase(static_cast<int>(v)) {}
 
-Number::Number(int v) {
-  *this = static_cast<int64_t>(v);
-}
+  Node LoadArray(istream& input) {
+    Array result;
 
-Number::Number(size_t v) {
-  *this = static_cast<int64_t>(v);
-}
-
-std::ostream& operator<<(std::ostream& s, const Node& node) {
-  return s << Printer(node);
-}
-
-Printer::Printer(const Node& node, bool pretty_print)
-  : node_(node)
-  , pretty_print_(pretty_print)
-  , level_(0)
-{}
-
-Printer::Printer(const Node& node, bool pretty_print, size_t level)
-  : node_(node)
-  , pretty_print_(pretty_print)
-  , level_(level)
-{}
-
-std::string Printer::PrettySpacer(bool inside) const {
-  ostringstream ss;
-  if (pretty_print_) {
-    for (size_t i = 0; i < level_ + (inside ? 1 : 0); ++i) {
-      ss << "  ";
+    for (char c; input >> c && c != ']'; ) {
+      if (c != ',') {
+        input.putback(c);
+      }
+      result.push_back(LoadNode(input));
     }
-  }
-  return ss.str();
-}
 
-std::string Printer::PrettyEndline() const {
-  if (pretty_print_) {
-    return "\n";
-  } else {
-    return {};
+    return Node(move(result));
   }
-}
 
-void Printer::Print(std::ostream& s, const Node& node) const {
-  if (holds_alternative<Array>(node)) {
-    s << "[" << PrettyEndline();
-    auto array = node.AsArray();
-    for (auto it = array.begin(); it != array.end(); ++it) {
-      s << PrettySpacer() << Printer(*it, pretty_print_, level_ + 1)
-        << (next(it) != array.end() ? "," : "") << PrettyEndline();
+  Node LoadBool(istream& input) {
+    string s;
+    while (isalpha(input.peek())) {
+      s.push_back(input.get());
     }
-    s << PrettySpacer(false) << "]";
-  } else if (holds_alternative<Map>(node)) {
-    s << "{" << PrettyEndline();
-    auto map = node.AsMap();
-    for (auto it = map.begin(); it != map.end(); ++it) {
-      s << PrettySpacer() << quoted(it->first) << ":" << (pretty_print_ ? " " : "") << Printer(it->second, pretty_print_, level_ + 1)
-        << (next(it) != map.end() ? "," : "") << PrettyEndline();
+    return Node(s == "true");
+  }
+
+  Node LoadNumber(istream& input) {
+    bool is_negative = false;
+    if (input.peek() == '-') {
+      is_negative = true;
+      input.get();
     }
-    s << PrettySpacer(false) << "}";
-  } else if (holds_alternative<Number>(node)) {
-    Print(s, node.AsNumber());
-  } else if (holds_alternative<std::string>(node)) {
-    s << quoted(node.AsString());
-  } else if (holds_alternative<Bool>(node)) {
-    s << (node.AsBool() ? "true" : "false");
-  }
-}
-
-void Printer::Print(std::ostream& s, const Number& number) const {
-  if (holds_alternative<double>(number)) {
-    s << setprecision(10) << get<double>(number);
-  } else if (holds_alternative<int64_t>(number)) {
-    s << get<int64_t>(number);
-  }
-
-}
-
-ostream& operator<<(ostream& s, const Printer& p) {
-  p.Print(s, p.node_);
-  return s;
-}
-
-Document::Document(Node root)
-  : root(move(root))
-{}
-
-const Node& Document::GetRoot() const {
-  return root;
-}
-
-Node LoadNode(istream& input);
-
-Node LoadArray(istream& input) {
-  vector<Node> result;
-
-  for (char c; input >> c && c != ']';) {
-    if (c != ',') {
-      input.putback(c);
+    int int_part = 0;
+    while (isdigit(input.peek())) {
+      int_part *= 10;
+      int_part += input.get() - '0';
     }
-    result.push_back(LoadNode(input));
+    if (input.peek() != '.') {
+      return Node(int_part * (is_negative ? -1 : 1));
+    }
+    input.get();  // '.'
+    double result = int_part;
+    double frac_mult = 0.1;
+    while (isdigit(input.peek())) {
+      result += frac_mult * (input.get() - '0');
+      frac_mult /= 10;
+    }
+    return Node(result * (is_negative ? -1 : 1));
   }
 
-  return Node(move(result));
-}
+  Node LoadString(istream& input) {
+    string line;
+    getline(input, line, '"');
+    return Node(move(line));
+  }
 
-Node LoadNumber(string input) {
-  return Number(move(input));
-}
+  Node LoadDict(istream& input) {
+    Dict result;
 
-Node LoadString(istream& input) {
-  string line;
-  getline(input, line, '"');
-  return Node(move(line));
-}
+    for (char c; input >> c && c != '}'; ) {
+      if (c == ',') {
+        input >> c;
+      }
 
-Node LoadDict(istream& input) {
-  map<string, Node> result;
-
-  for (char c; input >> c && c != '}';) {
-    if (c == ',') {
+      string key = LoadString(input).AsString();
       input >> c;
+      result.emplace(move(key), LoadNode(input));
     }
 
-    string key = LoadString(input).AsString();
+    return Node(move(result));
+  }
+
+  Node LoadNode(istream& input) {
+    char c;
     input >> c;
-    result.emplace(move(key), LoadNode(input));
+
+    if (c == '[') {
+      return LoadArray(input);
+    } else if (c == '{') {
+      return LoadDict(input);
+    } else if (c == '"') {
+      return LoadString(input);
+    } else if (c == 't' || c == 'f') {
+      input.putback(c);
+      return LoadBool(input);
+    } else {
+      input.putback(c);
+      return LoadNumber(input);
+    }
   }
 
-  return Node(move(result));
+  Document Load(istream& input) {
+    return Document{LoadNode(input)};
+  }
+
+  template <>
+  void PrintValue<string>(const string& value, ostream& output) {
+    output << '"' << value << '"';
+  }
+
+  template <>
+  void PrintValue<bool>(const bool& value, std::ostream& output) {
+    output << std::boolalpha << value;
+  }
+
+  template <>
+  void PrintValue<Array>(const Array& nodes, std::ostream& output) {
+    output << '[';
+    bool first = true;
+    for (const Node& node : nodes) {
+      if (!first) {
+        output << ", ";
+      }
+      first = false;
+      PrintNode(node, output);
+    }
+    output << ']';
+  }
+
+  template <>
+  void PrintValue<Dict>(const Dict& dict, std::ostream& output) {
+    output << '{';
+    bool first = true;
+    for (const auto& [key, node]: dict) {
+      if (!first) {
+        output << ", ";
+      }
+      first = false;
+      PrintValue(key, output);
+      output << ": ";
+      PrintNode(node, output);
+    }
+    output << '}';
+  }
+
+  void PrintNode(const Json::Node& node, ostream& output) {
+    visit([&output](const auto& value) { PrintValue(value, output); },
+          node.GetBase());
+  }
+
+  void Print(const Document& document, ostream& output) {
+    PrintNode(document.GetRoot(), output);
+  }
+
 }
-
-Node LoadLiteral(istream& input) {
-  ostringstream ss;
-  char c;
-  while (input >> c && c != '}' && c != ']' && c != ',' && c != ':') {
-    ss << c;
-  }
-  if (input) {
-    input.putback(c);
-  }
-
-  if (ss.str() == "true") {
-    return Bool(true);
-  } else if (ss.str() == "false") {
-    return Bool(false);
-  } else {
-    return LoadNumber(ss.str());
-  }
-}
-
-Node LoadNode(istream& input) {
-  char c;
-  input >> c;
-
-  if (c == '[') {
-    return LoadArray(input);
-  } else if (c == '{') {
-    return LoadDict(input);
-  } else if (c == '"') {
-    return LoadString(input);
-  } else {
-    input.putback(c);
-    return LoadLiteral(input);
-  }
-}
-
-Document Load(istream& input) {
-  return Document{LoadNode(input)};
-}
-
-}  // namespace Json

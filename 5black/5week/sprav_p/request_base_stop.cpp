@@ -1,12 +1,12 @@
 #include "request_base_stop.h"
 
-BaseStopRequest::BaseStopRequest(const Json::Map& dict)
+BaseStopRequest::BaseStopRequest(const Json::Dict& dict)
     : Request(RequestType::BASE_STOP) {
   name_ = dict.at("name").AsString();
-  lat_ = dict.at("latitude").AsNumber();
-  lon_ = dict.at("longitude").AsNumber();
-  for (auto& [name, dist] : dict.at("road_distances").AsMap()) {
-    distances_[name] = dist.AsNumber();
+  lat_ = dict.at("latitude").AsDouble();
+  lon_ = dict.at("longitude").AsDouble();
+  for (auto& [name, dist] : dict.at("road_distances").AsDict()) {
+    distances_[name] = dist.AsInt();
   }
 }
 
@@ -16,12 +16,12 @@ ResponsePtr BaseStopRequest::Process(SpravPtr sprav) const {
 }
 
 Json::Node BaseStopRequest::AsJson() const {
-  Json::Map dict;
+  Json::Dict dict;
   dict["type"] = "Stop";
   dict["name"] = name_;
   dict["latitude"] = lat_;
   dict["longitude"] = lon_;
-  Json::Map distances;
+  Json::Dict distances;
   for (const auto& [name, dist] : distances_) {
     distances[string(name)] = dist;
   }

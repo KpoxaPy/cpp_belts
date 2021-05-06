@@ -24,7 +24,7 @@ class SpravIO::PImpl {
       LOG_DURATION("Process: loading json");
       return Json::Load(input);
     }());
-    auto& dict = doc->GetRoot().AsMap();
+    auto& dict = doc->GetRoot().AsDict();
 
     ReadSettings(dict);
 
@@ -55,8 +55,8 @@ class SpravIO::PImpl {
         while (!responses.empty()) {
           {
             METER_DURATION(resp_output);
-            os_ << (first ? first = false, "" : ",")
-              << Json::Printer(responses.front()->AsJson(), output_format_ == Format::JSON_PRETTY);
+            os_ << (first ? first = false, "" : ",");
+            Json::PrintNode(responses.front()->AsJson(), os_);
           }
           {
             METER_DURATION(resp_destr);
@@ -72,19 +72,19 @@ class SpravIO::PImpl {
     }
   }
 
-  void ReadSettings(const Json::Map& root) {
+  void ReadSettings(const Json::Dict& root) {
     if (auto it = root.find("serialization_settings"); it != root.end()) {
-      sprav_->SetSerializationSettings({it->second.AsMap()});
+      sprav_->SetSerializationSettings({it->second.AsDict()});
     }
     if (auto it = root.find("routing_settings"); it != root.end()) {
-      sprav_->SetRoutingSettings({it->second.AsMap()});
+      sprav_->SetRoutingSettings({it->second.AsDict()});
     }
     if (auto it = root.find("render_settings"); it != root.end()) {
-      sprav_->SetRenderSettings({it->second.AsMap()});
+      sprav_->SetRenderSettings({it->second.AsDict()});
     }
   }
 
-  void MakeBase(const Json::Map& root) {
+  void MakeBase(const Json::Dict& root) {
     for (auto& r : root.at("base_requests").AsArray()) {
       MakeBaseRequest(r)->Process(sprav_);
     }
@@ -93,7 +93,7 @@ class SpravIO::PImpl {
     sprav_->Serialize();
   }
 
-  void ProcessRequests(const Json::Map& root) {
+  void ProcessRequests(const Json::Dict& root) {
     {
       LOG_DURATION("ProcessRequests: Deserialization");
       sprav_->Deserialize();

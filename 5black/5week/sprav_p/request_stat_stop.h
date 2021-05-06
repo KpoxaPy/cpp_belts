@@ -19,7 +19,7 @@ using StatStopResponsePtr = std::shared_ptr<StatStopResponse>;
 
 class StatStopRequest : public Request {
  public:
-  StatStopRequest(const Json::Map& dict);
+  StatStopRequest(const Json::Dict& dict);
 
   ResponsePtr Process(SpravPtr sprav) const override;
   Json::Node AsJson() const override;

@@ -18,7 +18,7 @@ using StatBusResponsePtr = std::shared_ptr<StatBusResponse>;
 
 class StatBusRequest : public Request {
  public:
-  StatBusRequest(const Json::Map& dict);
+  StatBusRequest(const Json::Dict& dict);
 
   ResponsePtr Process(SpravPtr sprav) const override;
   Json::Node AsJson() const override;

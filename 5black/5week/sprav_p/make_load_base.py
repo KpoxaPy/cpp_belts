@@ -125,7 +125,7 @@ def set_adj(s_from, s_to):
         (stops[s_from]["lon"] - stops[s_to]["lon"])**2) * 1110000
     dist_low = dist_0 * 1.3
     dist_high = dist_0 * 1.5
-    stops[s_from]["dists"][s_to] = r.uniform(dist_low, dist_high)
+    stops[s_from]["dists"][s_to] = int(r.uniform(dist_low, dist_high))
 
 
 def check_adj_rank(s_from, s_to, two_way):
