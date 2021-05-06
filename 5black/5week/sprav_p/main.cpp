@@ -16,6 +16,11 @@ void Do(std::string_view mode) {
   } else if (mode == "process_requests") {
     SpravIO(sprav, SpravIO::Mode::PROCESS_REQUESTS, cout).Process(cin);
   }
+
+  {
+    LOG_DURATION("Do: sprav destruction");
+    sprav.reset();
+  }
 }
 
 int main(int argc, const char* argv[]) {

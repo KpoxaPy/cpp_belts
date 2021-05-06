@@ -91,16 +91,16 @@ private:
 template <typename Type>
 class MeterLogger {
 public:
-  explicit MeterLogger(Type& avg)
-    : avg(avg)
+  explicit MeterLogger(Type& meter)
+    : meter(meter)
   {}
 
   ~MeterLogger() {
-    avg.AddTime(m.Get());
+    meter.AddTime(m.Get());
   }
 
 private:
-  Type& avg;
+  Type& meter;
   DurationMeter<typename Type::DurationType> m;
 };
 
