@@ -20,19 +20,26 @@ class SpravIO::PImpl {
 
   void Process(std::istream& input) {
     LOG_DURATION("Process");
-    auto doc = [&input]() mutable {
-      LOG_DURATION("Json::Load");
+    Json::Document* doc = new Json::Document([&input]() mutable {
+      LOG_DURATION("Process: loading json");
       return Json::Load(input);
-    }();
-    auto& dict = doc.GetRoot().AsMap();
+    }());
+    auto& dict = doc->GetRoot().AsMap();
 
     ReadSettings(dict);
 
     if (mode_ == Mode::MAKE_BASE) {
+      LOG_DURATION("Process: MakeBase");
       MakeBase(dict);
     } else if (mode_ == Mode::PROCESS_REQUESTS) {
+      LOG_DURATION("Process: ProcessRequests");
       ProcessRequests(dict);
     }
+
+    // {
+      // LOG_DURATION("Process: destruct json");
+      // doc.reset();
+    // }
   }
 
   void Output(queue<ResponsePtr> responses) {
@@ -78,7 +85,6 @@ class SpravIO::PImpl {
   }
 
   void MakeBase(const Json::Map& root) {
-    LOG_DURATION("MakeBase");
     for (auto& r : root.at("base_requests").AsArray()) {
       MakeBaseRequest(r)->Process(sprav_);
     }
@@ -88,8 +94,10 @@ class SpravIO::PImpl {
   }
 
   void ProcessRequests(const Json::Map& root) {
-    LOG_DURATION("ProcessRequests");
-    sprav_->Deserialize();
+    {
+      LOG_DURATION("ProcessRequests: Deserialization");
+      sprav_->Deserialize();
+    }
 
     queue<ResponsePtr> responses;
     {
@@ -103,7 +111,7 @@ class SpravIO::PImpl {
     }
 
     {
-      LOG_DURATION("Output");
+      LOG_DURATION("ProcessRequests: Output");
       Output(std::move(responses));
     }
   }
