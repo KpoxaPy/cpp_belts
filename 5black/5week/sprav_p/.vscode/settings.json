@@ -15,6 +15,9 @@
         "array": "cpp",
         "iomanip": "cpp",
         "ostream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp",
+        "*.inc": "cpp"
     }
 }

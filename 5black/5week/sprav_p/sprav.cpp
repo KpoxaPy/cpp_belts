@@ -36,9 +36,9 @@ void Sprav::RouteExtra::Serialize(SerializedExtra& m) const {
   m.set_type(SerializeType(type));
   m.set_id(id);
   m.set_span_count(span_count);
-  for (auto stop : stops) {
-    m.mutable_stops()->Add(stop);
-  }
+  // for (auto stop : stops) {
+  //   m.mutable_stops()->Add(stop);
+  // }
 }
 
 Sprav::RouteExtra Sprav::RouteExtra::ParseFrom(const SerializedExtra& m) {
@@ -46,7 +46,7 @@ Sprav::RouteExtra Sprav::RouteExtra::ParseFrom(const SerializedExtra& m) {
   e.type = SerializeType(m.type());
   e.id = m.id();
   e.span_count = m.span_count();
-  e.stops.assign(m.stops().begin(), m.stops().end());
+  // e.stops.assign(m.stops().begin(), m.stops().end());
   return e;
 }
 
@@ -72,7 +72,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
           if (name == last_bus) {
             bus_total_time += edge.weight;
             bus_span_count += edge.extra.span_count;
-            bus_stops.insert(bus_stops.end(), edge.extra.stops.begin(), edge.extra.stops.end());
+            // bus_stops.insert(bus_stops.end(), edge.extra.stops.begin(), edge.extra.stops.end());
           } else if (last_bus != name) {
             if (!last_bus.empty()) {
               push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count, bus_stops});
@@ -80,7 +80,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
             last_bus = name;
             bus_total_time = edge.weight;
             bus_span_count = edge.extra.span_count;
-            bus_stops.assign(edge.extra.stops.begin(), edge.extra.stops.end());
+            // bus_stops.assign(edge.extra.stops.begin(), edge.extra.stops.end());
           }
           break;
         }
