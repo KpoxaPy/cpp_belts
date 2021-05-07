@@ -20,7 +20,7 @@ class SpravIO::PImpl {
 
   void Process(std::istream& input) {
     LOG_DURATION("Process");
-    Json::Document* doc = new Json::Document([&input]() mutable {
+    auto doc = make_unique<Json::Document>([&input]() mutable {
       LOG_DURATION("Process: loading json");
       return Json::Load(input);
     }());
@@ -36,10 +36,10 @@ class SpravIO::PImpl {
       ProcessRequests(dict);
     }
 
-    // {
-      // LOG_DURATION("Process: destruct json");
-      // doc.reset();
-    // }
+    {
+      LOG_DURATION("Process: destruct json");
+      doc.reset();
+    }
   }
 
   void Output(queue<ResponsePtr> responses) {

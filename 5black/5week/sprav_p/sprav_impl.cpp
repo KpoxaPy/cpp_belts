@@ -40,17 +40,17 @@ Node& GetNode(Container& c, Names& n, string_view name, optional<Node> pre_node)
 
 struct Catalog {
   SpravSerialize::TransportCatalog* p;
-  google::protobuf::Arena* arena;
+  google::protobuf::Arena arena;
 
   Catalog() {
-    arena = new google::protobuf::Arena();
-    p = google::protobuf::Arena::CreateMessage<SpravSerialize::TransportCatalog>(arena);
+    // arena = new google::protobuf::Arena();
+    p = google::protobuf::Arena::CreateMessage<SpravSerialize::TransportCatalog>(&arena);
   }
 
-  // ~Catalog() {
-    // LOG_DURATION("Transport catalog destruct");
-    // arena.Reset();
-  // }
+  ~Catalog() {
+    LOG_DURATION("Transport catalog destruct");
+    arena.Reset();
+  }
 };
 
 Catalog catalog;
