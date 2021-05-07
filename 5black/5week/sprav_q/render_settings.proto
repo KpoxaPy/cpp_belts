@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+import "svg.proto";
+
+package SpravSerialize;
+
+enum MapLayerType {
+  UNKNOWN = 0;
+  BUS_LINES = 1;
+  BUS_LABELS = 2;
+  STOP_POINTS = 3;
+  STOP_LABELS = 4;
+}
+
+message RenderSettings {
+  float width = 1;
+  float height = 2;
+  float padding = 3;
+  float outer_margin = 4;
+
+  float stop_radius = 5;
+  float line_width = 6;
+
+  uint32 stop_label_font_size = 7;
+
+  Svg.Point stop_label_offset = 8;
+
+  Svg.Color underlayer_color = 9;
+  float underlayer_width = 10;
+
+  float bus_label_font_size = 11;
+  Svg.Point bus_label_offset = 12;
+
+  repeated Svg.Color color_palette = 13;
+
+  repeated MapLayerType layers = 14;
+}

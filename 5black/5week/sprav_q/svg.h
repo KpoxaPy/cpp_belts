@@ -10,6 +10,8 @@
 #include <variant>
 #include <vector>
 
+#include "svg.pb.h"
+
 namespace Svg {
 
 template <typename T>
@@ -30,11 +32,20 @@ struct Rgb {
       : red(r), green(g), blue(b) {}
   Rgb(uint8_t r, uint8_t g, uint8_t b, double a)
       : red(r), green(g), blue(b), alpha(a) {}
+  Rgb(const SpravSerialize::Svg::Rgba& m);
+
+  void Serialize(SpravSerialize::Svg::Rgba& m) const;
 };
 
 std::ostream& operator<<(std::ostream&, const Rgb&);
 
-using Color = std::variant<std::monostate, std::string, Rgb>;
+class Color: std::variant<std::monostate, std::string, Rgb> {
+public:
+  using variant::variant;
+  const variant& GetBase() const { return *this; }
+  Color(const SpravSerialize::Svg::Color& m);
+  void Serialize(SpravSerialize::Svg::Color& m) const;
+};
 extern const Color NoneColor;
 
 std::ostream& operator<<(std::ostream&, const Color&);
@@ -46,6 +57,14 @@ struct Point {
   Point() = default;
   Point(double x, double y)
       : x(x), y(y) {}
+
+  Point(const SpravSerialize::Svg::Point& m)
+      : x(m.x()), y(m.y()) {}
+
+  void Serialize(SpravSerialize::Svg::Point& m) const {
+    m.set_x(x);
+    m.set_y(y);
+  }
 };
 
 class Object {

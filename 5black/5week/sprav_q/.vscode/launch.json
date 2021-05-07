@@ -43,7 +43,7 @@
       "args": [
         "process_requests",
         ">",
-        "output.json",
+        "${env:TMP}/output.json",
         "<",
         // "${workspaceFolder}/example1_process_requests.in.json",
         // "${workspaceFolder}/example2_process_requests.in.json",
@@ -62,6 +62,7 @@
           "ignoreFailures": true
         }
       ],
+      "postDebugTask": "Make Svg"
     }
   ]
 }

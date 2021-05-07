@@ -4,6 +4,7 @@
 
 #include "json.h"
 #include "svg.h"
+#include "render_settings.pb.h"
 
 enum class MapLayerType {
   BUS_LINES,
@@ -15,6 +16,9 @@ enum class MapLayerType {
 struct RenderSettings {
   RenderSettings() = default;
   RenderSettings(const Json::Dict& dict);
+  RenderSettings(const SpravSerialize::RenderSettings& m);
+
+  void Serialize(SpravSerialize::RenderSettings& m) const;
 
   double width = 1000;
   double height = 1000;

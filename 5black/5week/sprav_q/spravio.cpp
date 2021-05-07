@@ -26,7 +26,7 @@ class SpravIO::PImpl {
     }());
     auto& dict = doc->GetRoot().AsDict();
 
-    ReadSettings(dict);
+    ReadSerializationSettings(dict);
 
     if (mode_ == Mode::MAKE_BASE) {
       LOG_DURATION("Process: MakeBase");
@@ -72,19 +72,28 @@ class SpravIO::PImpl {
     }
   }
 
-  void ReadSettings(const Json::Dict& root) {
+  void ReadSerializationSettings(const Json::Dict& root) {
     if (auto it = root.find("serialization_settings"); it != root.end()) {
       sprav_->SetSerializationSettings({it->second.AsDict()});
     }
+  }
+
+  void ReadRoutingSettings(const Json::Dict& root) {
     if (auto it = root.find("routing_settings"); it != root.end()) {
       sprav_->SetRoutingSettings({it->second.AsDict()});
     }
+  }
+
+  void ReadRenderSettings(const Json::Dict& root) {
     if (auto it = root.find("render_settings"); it != root.end()) {
       sprav_->SetRenderSettings({it->second.AsDict()});
     }
   }
 
   void MakeBase(const Json::Dict& root) {
+    ReadRoutingSettings(root);
+    ReadRenderSettings(root);
+
     for (auto& r : root.at("base_requests").AsArray()) {
       MakeBaseRequest(r)->Process(sprav_);
     }

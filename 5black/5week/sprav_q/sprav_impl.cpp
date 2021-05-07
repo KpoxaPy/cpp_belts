@@ -87,6 +87,11 @@ void Sprav::PImpl::Serialize() {
   }
 
   {
+    LOG_DURATION("Sprav::Serialize render settings");
+    render_settings_.Serialize(*catalog.p->mutable_render_settings());
+  }
+
+  {
     LOG_DURATION("Sprav::Serialize materialization");
     ofstream ofile(serialization_settings_.file, ios::binary | ios::trunc);
     catalog.p->SerializeToOstream(&ofile);
@@ -100,6 +105,11 @@ void Sprav::PImpl::Deserialize() {
     LOG_DURATION("Sprav::Deserialize parsing");
     ifstream ifile(serialization_settings_.file, ios::binary);
     catalog.p->ParseFromIstream(&ifile);
+  }
+
+  {
+    LOG_DURATION("Sprav::Deserialize render settings");
+    render_settings_ = RenderSettings(catalog.p->render_settings());
   }
 
   {
@@ -127,6 +137,8 @@ void Sprav::PImpl::Deserialize() {
     LOG_DURATION("Sprav::Deserialize router");
     router_ = make_shared<Router>(*router_graph_.get(), catalog.p->router());
   }
+
+  // Deserialize render settings
 }
 
 void Sprav::PImpl::SetSerializationSettings(SerializationSettings s) {

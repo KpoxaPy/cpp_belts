@@ -4,7 +4,23 @@ using namespace std;
 
 namespace Svg {
 
-const Color NoneColor = {};
+Rgb::Rgb(const SpravSerialize::Svg::Rgba& m)
+    : red(m.r()), green(m.g()), blue(m.b())
+{
+  if (m.has_aplha()) {
+    alpha = m.alpha();
+  }
+}
+
+void Rgb::Serialize(SpravSerialize::Svg::Rgba& m) const {
+  m.set_r(red);
+  m.set_g(green);
+  m.set_b(blue);
+  if (alpha) {
+    m.set_has_aplha(true);
+    m.set_alpha(alpha.value());
+  }
+}
 
 ostream& operator<<(ostream& s, const Rgb& rgb) {
   if (!rgb.alpha) {
@@ -19,6 +35,27 @@ ostream& operator<<(ostream& s, const Rgb& rgb) {
   s << ")";
   return s;
 }
+
+Color::Color(const SpravSerialize::Svg::Color& m) {
+  if (m.data_case() == SpravSerialize::Svg::Color::DataCase::kName) {
+    emplace<string>(m.name());
+  } else if (m.data_case() == SpravSerialize::Svg::Color::DataCase::kRgba) {
+    emplace<Rgb>(m.rgba());
+  }
+}
+
+void Color::Serialize(SpravSerialize::Svg::Color& m) const {
+  if (holds_alternative<string>(*this)) {
+    m.set_name(get<string>(*this));
+  } else if (holds_alternative<Rgb>(*this)) {
+    get<Rgb>(*this).Serialize(*m.mutable_rgba());
+  } else {
+    m.clear_data();
+  }
+}
+
+const Color NoneColor = {};
+
 
 void RenderColor(ostream& s, monostate) {
   s << "none";
@@ -35,7 +72,7 @@ void RenderColor(ostream& s, const Rgb& rgb) {
 ostream& operator<<(ostream& s, const Color& c) {
   visit([&s](const auto& v) mutable {
     RenderColor(s, v);
-  }, c);
+  }, c.GetBase());
   return s;
 }
 

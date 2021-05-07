@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package SpravSerialize.Svg;
+
+message Point {
+  float x = 1;
+  float y = 2;
+}
+
+message Rgba {
+  uint32 r = 1;
+  uint32 g = 2;
+  uint32 b = 3;
+  bool has_aplha = 4;
+  float alpha = 5;
+}
+
+message Color {
+  oneof data {
+    Rgba rgba = 1;
+    string name = 2;
+  }
+}

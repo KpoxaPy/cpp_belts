@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "render_settings.proto";
+
 package SpravSerialize;
 
 option cc_enable_arenas = true;
@@ -62,4 +64,5 @@ message TransportCatalog {
   repeated Stop stop = 2;
   Graph graph = 3;
   Router router = 4;
+  RenderSettings render_settings = 5;
 }
