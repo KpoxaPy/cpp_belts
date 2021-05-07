@@ -12,7 +12,7 @@ bus_stops_mean = 10
 bus_stops_sigma = 5
 bus_stops_hard_max = max_stops
 
-settings = {
+settings_make = {
     "serialization_settings": {
         "file": "data_load.bin"
     },
@@ -57,6 +57,12 @@ settings = {
             "stop_points",
             "stop_labels"
         ]
+    }
+}
+
+settings_process = {
+    "serialization_settings": {
+        "file": "data_load.bin"
     }
 }
 
@@ -183,7 +189,7 @@ for n, d in stops.items():
     base_stops.append(stop)
 
 
-make = copy.deepcopy(settings)
+make = copy.deepcopy(settings_make)
 make["stat_requests"] =  [
     {
         "id": 1639812454,
@@ -195,7 +201,6 @@ make["base_requests"].extend(base_stops)
 make["base_requests"].extend(base_buses)
 f = open("load_make_base.in.json", "w")
 f.write(json.dumps(make))
-base = copy.deepcopy(settings)
 f.close()
 
 stat_stops = []
@@ -205,7 +210,7 @@ for n in range(0, max_requests):
     stop["name"] = "stop" + str(r.randrange(0, max_stops))
     stat_stops.append(stop)
 
-process = copy.deepcopy(settings)
+process = copy.deepcopy(settings_process)
 process["stat_requests"] = stat_stops
 f = open("load_process_requests_stops.in.json", "w")
 f.write(json.dumps(process))
@@ -218,7 +223,7 @@ for n in range(0, max_requests):
     bus["name"] = str(r.randrange(0, max_buses))
     stat_buses.append(bus)
 
-process = copy.deepcopy(settings)
+process = copy.deepcopy(settings_process)
 process["stat_requests"] = stat_buses
 f = open("load_process_requests_buses.in.json", "w")
 f.write(json.dumps(process))
@@ -232,7 +237,7 @@ for n in range(0, max_requests):
     route["to"] = "stop" + str(r.randrange(0, max_stops))
     stat_routes.append(route)
 
-process = copy.deepcopy(settings)
+process = copy.deepcopy(settings_process)
 process["stat_requests"] = stat_routes
 f = open("load_process_requests_routes.in.json", "w")
 f.write(json.dumps(process))
