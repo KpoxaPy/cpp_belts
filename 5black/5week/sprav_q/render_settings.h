@@ -40,7 +40,4 @@ struct RenderSettings {
   std::vector<Svg::Color> color_palette;
 
   std::vector<MapLayerType> layers;
-
-  bool enableXcoordCompress = true;
-  bool enableYcoordCompress = true;
 };

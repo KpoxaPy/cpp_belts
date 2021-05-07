@@ -42,12 +42,6 @@ public:
 private:
   const SpravMapper& mapper_;
 
-  double min_lat = std::numeric_limits<double>::max();
-  double max_lat = std::numeric_limits<double>::min();
-  double min_lon = std::numeric_limits<double>::max();
-  double max_lon = std::numeric_limits<double>::min();
-  double zoom_coef = 0;
-
   BusLines buses_;
   StopMovedCoords moved_coords_;
 
@@ -58,8 +52,6 @@ private:
   CoordCompressMap y_compress_map_;
   double x_step = 0;
   double y_step = 0;
-
-  void CalcStatsForZoom(const Stop& s);
 
   void UniformCoords();
   BearingStops FindBearingStops(const Bus& bus) const;
