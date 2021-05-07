@@ -160,11 +160,12 @@ namespace Graph {
     for (const auto& row : routes_internal_data_) {
       auto& m_row = *m.add_row();
       for (const auto& data_opt : row) {
-        auto& m_data_opt = *m_row.add_data();
+        auto& m_data = *m_row.add_data();
         if (data_opt.has_value()) {
-          auto& m_data = *m_data_opt.mutable_data();
+          m_data.set_is_defined(true);
           m_data.set_weight(data_opt->weight);
           if (data_opt->prev_edge.has_value()) {
+            m_data.set_has_prev_edge(true);
             m_data.set_prev_edge(data_opt->prev_edge.value());
           }
         }
@@ -179,18 +180,14 @@ namespace Graph {
     for (const auto& m_row : m.row()) {
       std::vector<std::optional<RouteInternalData>> row;
       row.reserve(m_row.data().size());
-      for (const auto& m_data_opt : m_row.data()) {
+      for (const auto& m_data : m_row.data()) {
         std::optional<RouteInternalData> data_opt;
-        if (m_data_opt.has_data()) {
+        if (m_data.is_defined()) {
           RouteInternalData data;
-          data.weight = m_data_opt.data().weight();
-
-          if (m_data_opt.data().optional_prev_edge_case()
-            != SpravSerialize::Router::Data::OPTIONAL_PREV_EDGE_NOT_SET)
-          {
-            data.prev_edge = m_data_opt.data().prev_edge();
+          data.weight = m_data.weight();
+          if (m_data.has_prev_edge()) {
+            data.prev_edge = m_data.prev_edge();
           }
-
           data_opt = std::move(data);
         }
         row.push_back(std::move(data_opt));

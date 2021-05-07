@@ -6,24 +6,24 @@ using namespace std;
 
 namespace {
 
-using SerializedExtra = SpravSerialize::Graph::Edge::Extra;
+using SerializedExtra = SpravSerialize::Graph::Edge;
 
 SerializedExtra::Type SerializeType(RoutePartType t) {
   switch (t) {
   case RoutePartType::BUS:
-    return SerializedExtra::Type::Graph_Edge_Extra_Type_BUS;
+    return SerializedExtra::Type::Graph_Edge_Type_BUS;
   case RoutePartType::WAIT:
-    return SerializedExtra::Type::Graph_Edge_Extra_Type_WAIT;
+    return SerializedExtra::Type::Graph_Edge_Type_WAIT;
   default:
-    return SerializedExtra::Type::Graph_Edge_Extra_Type_NOOP;
+    return SerializedExtra::Type::Graph_Edge_Type_NOOP;
   }
 }
 
 RoutePartType SerializeType(SerializedExtra::Type t) {
   switch (t) {
-  case SerializedExtra::Type::Graph_Edge_Extra_Type_BUS:
+  case SerializedExtra::Type::Graph_Edge_Type_BUS:
     return RoutePartType::BUS;
-  case SerializedExtra::Type::Graph_Edge_Extra_Type_WAIT:
+  case SerializedExtra::Type::Graph_Edge_Type_WAIT:
     return RoutePartType::WAIT;
   default:
     return RoutePartType::NOOP;

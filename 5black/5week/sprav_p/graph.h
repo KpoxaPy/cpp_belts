@@ -108,7 +108,7 @@ namespace Graph {
       m_edge.set_from(edge.from);
       m_edge.set_to(edge.to);
       m_edge.set_weight(edge.weight);
-      edge.extra.Serialize(*m_edge.mutable_extra());
+      edge.extra.Serialize(m_edge);
     }
     m.set_vertex_count(incidence_lists_.size());
   }
@@ -122,7 +122,7 @@ namespace Graph {
       edge.from = m_edge.from();
       edge.to = m_edge.to();
       edge.weight = m_edge.weight();
-      edge.extra = Extra::ParseFrom(m_edge.extra());
+      edge.extra = Extra::ParseFrom(m_edge);
       edges_.push_back(std::move(edge));
       incidence_lists_[edge.from].push_back(edges_.size() - 1);
     }

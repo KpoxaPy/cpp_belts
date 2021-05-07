@@ -23,27 +23,19 @@ message Stop {
 
 message Graph {
   message Edge {
-    message Extra {
-      enum Type {
-        NOOP = 0;
-        BUS = 1;
-        WAIT = 2;
-      }
-
-      Type type = 1;
-      uint32 id = 2;
-      uint32 span_count = 3;
-      repeated uint32 stops = 4;
+    enum Type {
+      NOOP = 0;
+      BUS = 1;
+      WAIT = 2;
     }
 
     uint32 from = 1;
     uint32 to = 2;
     float weight = 3;
-    Extra extra = 4;
-  }
-
-  message IncidenceList {
-    repeated uint32 edge = 1;
+    Type type = 4;
+    uint32 id = 5;
+    uint32 span_count = 6;
+    repeated uint32 stops = 7;
   }
 
   repeated Edge edge = 1;
@@ -52,18 +44,14 @@ message Graph {
 
 message Router {
   message Data {
-    float weight = 1;
-    oneof optional_prev_edge {
-      uint32 prev_edge = 2;
-    }
-  }
-
-  message DataOpt {
-    Data data = 1;
+    bool is_defined = 1;
+    float weight = 2;
+    bool has_prev_edge = 3;
+    uint32 prev_edge = 4;
   }
 
   message Row {
-    repeated DataOpt data = 1;
+    repeated Data data = 1;
   }
 
   repeated Row row = 1;

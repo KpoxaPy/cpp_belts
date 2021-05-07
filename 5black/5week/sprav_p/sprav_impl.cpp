@@ -224,13 +224,6 @@ Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
     throw runtime_error("Failed to find route: no router");
   }
 
-  // AvgMeter<chrono::nanoseconds> meter("route build");
-  // for (size_t i = 0; i < 30000; ++i) {
-  //   AVG_DURATION(meter);
-  //   auto route = router_->BuildRoute(FindStop(from)->id * 2 + 1, FindStop(to)->id * 2 + 1);
-  //   router_->ReleaseRoute(route->id);
-  // }
-
   auto route = router_->BuildRoute(FindStop(from)->id * 2 + 1, FindStop(to)->id * 2 + 1);
   return {*sprav_, std::move(route)};
 }

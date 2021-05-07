@@ -31,8 +31,8 @@ class Sprav {
     size_t span_count = 0;
     std::list<size_t> stops = {};
 
-    void Serialize(SpravSerialize::Graph::Edge::Extra& m) const;
-    static RouteExtra ParseFrom(const SpravSerialize::Graph::Edge::Extra& m);
+    void Serialize(SpravSerialize::Graph::Edge& m) const;
+    static RouteExtra ParseFrom(const SpravSerialize::Graph::Edge& m);
   };
 
   using Graph = ::Graph::DirectedWeightedGraph<double, RouteExtra>;
