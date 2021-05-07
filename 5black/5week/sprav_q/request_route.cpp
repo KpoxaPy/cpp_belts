@@ -9,7 +9,7 @@ Json::Node RouteResponse::AsJson() const {
   Json::Dict dict;
   dict["request_id"] = id_;
   if (route_) {
-    // dict["map"] = map_;
+    dict["map"] = map_;
     dict["total_time"] = route_.GetTotalTime();
     Json::Array items;
     for (auto part : route_) {
@@ -46,9 +46,8 @@ RouteRequest::RouteRequest(const Json::Dict& dict)
 
 ResponsePtr RouteRequest::Process(SpravPtr sprav) const {
   auto route = sprav->FindRoute(from_, to_);
-  // auto map = sprav->GetRouteMap(route);
-  // return make_shared<RouteResponse>(type_, id_, std::move(route), std::move(map));
-  return make_shared<RouteResponse>(type_, id_, std::move(route), "");
+  auto map = sprav->GetRouteMap(route);
+  return make_shared<RouteResponse>(type_, id_, std::move(route), std::move(map));
 }
 
 Json::Node RouteRequest::AsJson() const {
