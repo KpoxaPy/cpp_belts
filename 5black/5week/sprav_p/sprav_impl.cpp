@@ -43,7 +43,6 @@ struct Catalog {
   google::protobuf::Arena arena;
 
   Catalog() {
-    // arena = new google::protobuf::Arena();
     p = google::protobuf::Arena::CreateMessage<SpravSerialize::TransportCatalog>(&arena);
   }
 
