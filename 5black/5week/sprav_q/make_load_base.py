@@ -6,7 +6,7 @@ import math
 max_stops = 450
 max_buses = 400
 max_adjacent = 200
-max_requests = 30000
+max_requests = 50
 
 bus_stops_mean = 10
 bus_stops_sigma = 5
