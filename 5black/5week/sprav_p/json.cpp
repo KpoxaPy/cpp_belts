@@ -5,6 +5,7 @@ using namespace std;
 namespace Json {
 
   Node::Node(size_t v) : NodeBase(static_cast<int>(v)) {}
+  Node::Node(const char* s) : NodeBase(string(s)) {}
 
   Node LoadArray(istream& input) {
     Array result;

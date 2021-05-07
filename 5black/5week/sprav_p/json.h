@@ -21,13 +21,16 @@ namespace Json {
     const variant& GetBase() const { return *this; }
 
     Node(size_t v);
+    Node(const char* s);
 
     const auto& AsArray() const { return std::get<Array>(*this); }
     const auto& AsDict() const { return std::get<Dict>(*this); }
     bool AsBool() const { return std::get<bool>(*this); }
-    int AsInt() const { return std::get<int>(*this); }
+    int AsInt() const {
+      return std::holds_alternative<int>(*this) ? std::get<int>(*this) : std::get<double>(*this);
+    }
     double AsDouble() const {
-        return std::holds_alternative<double>(*this) ? std::get<double>(*this) : std::get<int>(*this);
+      return std::holds_alternative<double>(*this) ? std::get<double>(*this) : std::get<int>(*this);
     }
     const auto& AsString() const { return std::get<std::string>(*this); }
   };
