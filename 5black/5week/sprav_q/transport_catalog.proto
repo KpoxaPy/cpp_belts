@@ -10,6 +10,8 @@ option cc_enable_arenas = true;
 message Bus {
   uint32 id = 1;
   string name = 2;
+  repeated uint32 stop_id = 3;
+  bool is_roundtrip = 4;
 
   uint32 stops_count = 5;
   uint32 unique_stops_count = 6;
