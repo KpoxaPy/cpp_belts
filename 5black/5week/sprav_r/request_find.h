@@ -1,5 +1,6 @@
 #pragma once
 
+#include "database_queries.pb.h"
 #include "request.h"
 
 class FindResponse : public Response {
@@ -24,4 +25,5 @@ class FindRequest : public Request {
 
  private:
   size_t id_ = 0;
+  YellowPages::Query query_;
 };

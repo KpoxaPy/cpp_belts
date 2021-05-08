@@ -78,17 +78,18 @@ set(PROJECT_SRCS
 )
 
 set(PROTOS
-  transport_catalog.proto
-  render_settings.proto
-  svg.proto
-  mapper.proto
   address.proto
   company.proto
   database.proto
+  database_queries.proto
+  mapper.proto
   name.proto
   phone.proto
+  render_settings.proto
   rubric.proto
   sphere.proto
+  svg.proto
+  transport_catalog.proto
   url.proto
   working_time.proto
 )
