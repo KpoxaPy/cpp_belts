@@ -22,6 +22,7 @@ class Sprav::PImpl {
   const RenderSettings& GetRenderSettings() const;
 
   void SetPages(PagesPtr pages);
+  PagesPtr GetPages() const;
 
   void BuildBase();
 
@@ -48,6 +49,8 @@ class Sprav::PImpl {
 
   std::string GetMap() const;
   std::string GetRouteMap(const Route& route) const;
+
+  Pages::Companies FindCompanies(const YellowPages::Query& query);
 
  private:
   Sprav* sprav_;

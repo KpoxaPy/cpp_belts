@@ -143,6 +143,10 @@ void Sprav::SetPages(PagesPtr pages) {
   Pimpl()->SetPages(std::move(pages));
 }
 
+PagesPtr Sprav::GetPages() const {
+  return Pimpl()->GetPages();
+}
+
 void Sprav::AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances) {
   Pimpl()->AddStop(move(name), lat, lon, distances);
 }
@@ -193,6 +197,10 @@ std::string Sprav::GetMap() const {
 
 std::string Sprav::GetRouteMap(const Route& route) const {
   return Pimpl()->GetRouteMap(route);
+}
+
+Pages::Companies Sprav::FindCompanies(const YellowPages::Query& query) {
+  return Pimpl()->FindCompanies(query);
 }
 
 const Sprav::PImpl* Sprav::Pimpl() const {

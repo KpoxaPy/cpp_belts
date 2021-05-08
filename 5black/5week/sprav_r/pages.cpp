@@ -41,6 +41,14 @@ void Pages::Serialize(YellowPages::Database& m) {
   m.CopyFrom(db_);
 }
 
+const YellowPages::Company& Pages::operator[](size_t id) const {
+  return db_.companies().at(id);
+}
+
+Pages::Companies Pages::Process(const YellowPages::Query& /* query */) const {
+  return {0};
+}
+
 void Pages::ParseFrom(const YellowPages::Database& m) {
   db_.CopyFrom(m);
 }

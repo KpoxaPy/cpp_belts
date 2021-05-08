@@ -1,18 +1,21 @@
 #pragma once
 
 #include "database_queries.pb.h"
+#include "pages.h"
 #include "request.h"
 
 class FindResponse : public Response {
  public:
-  FindResponse(RequestType type, size_t id, SpravPtr sprav);
-  void SetId(size_t id);
+  FindResponse(RequestType type, size_t id, SpravPtr sprav, Pages::Companies result);
 
   Json::Node AsJson() const override;
 
  private:
   size_t id_ = 0;
   SpravPtr sprav_;
+  Pages::Companies result_;
+
+  std::string GetCompanyMainName(size_t id) const;
 };
 using FindResponsePtr = std::shared_ptr<FindResponse>;
 

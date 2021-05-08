@@ -7,12 +7,13 @@
 #include <unordered_map>
 
 #include "bus.h"
+#include "database_queries.pb.h"
+#include "pages.h"
 #include "render_settings.h"
 #include "router.h"
 #include "routing_settings.h"
 #include "serialization_settings.h"
 #include "stop.h"
-#include "pages.h"
 
 enum class RoutePartType {
   NOOP,
@@ -79,6 +80,7 @@ class Sprav {
   const RenderSettings& GetRenderSettings() const;
 
   void SetPages(PagesPtr pages);
+  PagesPtr GetPages() const;
 
   void AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances);
   void AddBus(std::string_view name, const std::list<std::string> stops, bool is_roundtrip);
@@ -99,6 +101,8 @@ class Sprav {
 
   std::string GetMap() const;
   std::string GetRouteMap(const Route& route) const;
+
+  Pages::Companies FindCompanies(const YellowPages::Query& query);
 
  private:
   class PImpl;

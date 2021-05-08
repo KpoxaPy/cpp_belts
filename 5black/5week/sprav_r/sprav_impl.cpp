@@ -180,6 +180,10 @@ void Sprav::PImpl::SetPages(PagesPtr pages) {
   pages_ = std::move(pages);
 }
 
+PagesPtr Sprav::PImpl::GetPages() const {
+  return pages_;
+}
+
 void Sprav::PImpl::BuildBase() {
   LOG_DURATION("Sprav::BuildBase");
   for (auto& [_, bus] : buses_) {
@@ -283,6 +287,10 @@ std::string Sprav::PImpl::GetMap() const {
 
 std::string Sprav::PImpl::GetRouteMap(const Route& route) const {
   return GetMapper().RenderForRoute(route);
+}
+
+Pages::Companies Sprav::PImpl::FindCompanies(const YellowPages::Query& query) {
+  return pages_->Process(query);
 }
 
 template <typename InputIt>
