@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "database.pb.h"
@@ -11,11 +12,20 @@ class Pages {
  public:
   using Companies = std::unordered_set<size_t>;
 
+ private:
+  using RubricsProjection = std::unordered_map<std::string, size_t>;
+
+  using RubricsIndex = std::unordered_map<size_t, Companies>;
+  using NamesIndex = std::unordered_map<std::string, Companies>;
+  using UrlsIndex = std::unordered_map<std::string, Companies>;
+
  public:
   Pages() = default;
   Pages(const Json::Dict& dict);
   Pages(const YellowPages::Database& m);
   void Serialize(YellowPages::Database& m);
+
+  void BuildIndex();
 
   const YellowPages::Company& operator[](size_t id) const;
 
@@ -23,6 +33,12 @@ class Pages {
 
  private:
   YellowPages::Database db_;
+
+  RubricsProjection rubrics_projection_;
+
+  RubricsIndex rubrics_index_;
+  NamesIndex names_index_;
+  UrlsIndex urls_index_;
 
   void ParseFrom(const YellowPages::Database& m);
 };
