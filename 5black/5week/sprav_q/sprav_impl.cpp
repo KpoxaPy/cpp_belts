@@ -92,6 +92,11 @@ void Sprav::PImpl::Serialize() {
   }
 
   {
+    LOG_DURATION("Sprav::Serialize mapper");
+    mapper_->Serialize(*catalog.p->mutable_mapper());
+  }
+
+  {
     LOG_DURATION("Sprav::Serialize materialization");
     ofstream ofile(serialization_settings_.file, ios::binary | ios::trunc);
     catalog.p->SerializeToOstream(&ofile);
@@ -138,7 +143,10 @@ void Sprav::PImpl::Deserialize() {
     router_ = make_shared<Router>(*router_graph_.get(), catalog.p->router());
   }
 
-  // Deserialize render settings
+  {
+    LOG_DURATION("Sprav::Deserialize mapper");
+    mapper_ = make_shared<SpravMapper>(sprav_, catalog.p->mapper());
+  }
 }
 
 void Sprav::PImpl::SetSerializationSettings(SerializationSettings s) {
@@ -153,6 +161,10 @@ void Sprav::PImpl::SetRenderSettings(RenderSettings s) {
   render_settings_ = move(s);
 }
 
+const RenderSettings& Sprav::PImpl::GetRenderSettings() const {
+  return render_settings_;
+}
+
 void Sprav::PImpl::BuildBase() {
   LOG_DURATION("Sprav::BuildBase");
   for (auto& [_, bus] : buses_) {
@@ -160,6 +172,8 @@ void Sprav::PImpl::BuildBase() {
   }
   BuildGraph();
   BuildRouter();
+
+  mapper_ = make_shared<SpravMapper>(sprav_);
 }
 
 void Sprav::PImpl::AddStop(std::string_view name, double lat, double lon, const unordered_map<string, int>& distances) {
@@ -229,6 +243,14 @@ const Bus* Sprav::PImpl::FindBus(std::string_view name) const {
     return nullptr;
   }
   return &it->second;
+}
+
+const Sprav::StopNames& Sprav::PImpl::GetStopNames() const {
+  return stop_names_;
+}
+
+const Sprav::BusNames& Sprav::PImpl::GetBusNames() const {
+  return bus_names_;
 }
 
 Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
@@ -318,8 +340,5 @@ void Sprav::PImpl::CalcBusStats(Bus& b) const {
 }
 
 SpravMapper& Sprav::PImpl::GetMapper() const {
-  if (!mapper_) {
-    mapper_ = make_shared<SpravMapper>(render_settings_, sprav_, stop_names_, bus_names_);
-  }
   return *mapper_;
 }

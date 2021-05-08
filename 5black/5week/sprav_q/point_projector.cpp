@@ -8,6 +8,7 @@ PointProjector::PointProjector(const SpravMapper& mapper)
     : mapper_(mapper) {}
 
 void PointProjector::PushStop(const Stop& s) {
+
   for (auto bus_id : s.buses) {
     buses_.insert(bus_id);
   }
@@ -19,6 +20,32 @@ void PointProjector::PushStop(const Stop& s) {
 void PointProjector::Process() {
   UniformCoords();
   CompressCoords();
+}
+
+void PointProjector::ParseFrom(const SpravSerialize::PointProjector& m) {
+  x_step = m.x_step();
+  y_step = m.y_step();
+  for (const auto& p : m.x_map()) {
+    x_compress_map_.emplace(p.id(), p.tag());
+  }
+  for (const auto& p : m.y_map()) {
+    y_compress_map_.emplace(p.id(), p.tag());
+  }
+}
+
+void PointProjector::Serialize(SpravSerialize::PointProjector& m) const {
+  m.set_x_step(x_step);
+  m.set_y_step(y_step);
+  for (const auto& [id, tag] : x_compress_map_) {
+    auto& p = *m.add_x_map();
+    p.set_id(id);
+    p.set_tag(tag);
+  }
+  for (const auto& [id, tag] : y_compress_map_) {
+    auto& p = *m.add_y_map();
+    p.set_id(id);
+    p.set_tag(tag);
+  }
 }
 
 Svg::Point PointProjector::operator()(const Stop& s) const {

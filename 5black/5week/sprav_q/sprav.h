@@ -12,16 +12,12 @@
 #include "routing_settings.h"
 #include "serialization_settings.h"
 #include "stop.h"
-#include "transport_catalog.pb.h"
 
 enum class RoutePartType {
   NOOP,
   BUS,
   WAIT
 };
-
-class PointCoordAdapter;
-class Paletter;
 
 class Sprav {
  private:
@@ -64,6 +60,9 @@ class Sprav {
     RouteInfoOpt info_opt_;
   };
 
+  using StopNames = std::deque<std::string>;
+  using BusNames = std::deque<std::string>;
+
  public:
   Sprav();
   ~Sprav();
@@ -72,8 +71,11 @@ class Sprav {
   void Deserialize();
 
   void SetSerializationSettings(SerializationSettings s);
+
   void SetRoutingSettings(RoutingSettings s);
+
   void SetRenderSettings(RenderSettings s);
+  const RenderSettings& GetRenderSettings() const;
 
   void AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances);
   void AddBus(std::string_view name, const std::list<std::string> stops, bool is_roundtrip);
@@ -85,6 +87,9 @@ class Sprav {
 
   const Stop* FindStop(std::string_view name) const;
   const Bus* FindBus(std::string_view name) const;
+
+  const StopNames& GetStopNames() const;
+  const BusNames& GetBusNames() const;
 
   Router* GetRouter() const;
   Route FindRoute(std::string_view from, std::string_view to) const;

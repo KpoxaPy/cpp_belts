@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "render_settings.proto";
+import "mapper.proto";
 
 package SpravSerialize;
 
@@ -18,11 +19,9 @@ message Bus {
 
 message Stop {
   uint32 id = 1;
-  float latitude = 2;
-  float longitude = 3;
-  string name = 4;
+  string name = 2;
 
-  repeated uint32 bus = 5;
+  repeated uint32 bus = 3;
 }
 
 message Graph {
@@ -67,4 +66,5 @@ message TransportCatalog {
   Graph graph = 3;
   Router router = 4;
   RenderSettings render_settings = 5;
+  Mapper mapper = 6;
 }

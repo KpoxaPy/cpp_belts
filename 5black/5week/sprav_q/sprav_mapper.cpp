@@ -8,22 +8,33 @@
 
 using namespace std;
 
-SpravMapper::SpravMapper(
-  const RenderSettings& settings,
-  const Sprav* sprav,
-  const std::deque<std::string>& stop_names,
-  const std::deque<std::string>& bus_names)
-  : settings_(settings)
+SpravMapper::SpravMapper(const Sprav* sprav)
+  : settings_(sprav->GetRenderSettings())
   , sprav_(sprav)
-  , projector_(make_shared<PointProjector>(*this))
 {
-  sorted_stop_names_.insert(begin(stop_names), end(stop_names));
-  sorted_bus_names_.insert(begin(bus_names), end(bus_names));
+  sorted_stop_names_.insert(begin(sprav_->GetStopNames()), end(sprav_->GetStopNames()));
+  sorted_bus_names_.insert(begin(sprav_->GetBusNames()), end(sprav_->GetBusNames()));
 
+  projector_ = make_shared<PointProjector>(*this);
   for (const auto& name : sorted_stop_names_) {
     projector_->PushStop(*sprav_->FindStop(name));
   }
   projector_->Process();
+}
+
+SpravMapper::SpravMapper(const Sprav* sprav, const SpravSerialize::Mapper& m)
+  : settings_(sprav->GetRenderSettings())
+  , sprav_(sprav)
+{
+  sorted_stop_names_.insert(begin(sprav_->GetStopNames()), end(sprav_->GetStopNames()));
+  sorted_bus_names_.insert(begin(sprav_->GetBusNames()), end(sprav_->GetBusNames()));
+
+  projector_ = make_shared<PointProjector>(*this);
+  projector_->ParseFrom(m.point_projector());
+}
+
+void SpravMapper::Serialize(SpravSerialize::Mapper& m) const {
+  projector_->Serialize(*m.mutable_point_projector());
 }
 
 const RenderSettings& SpravMapper::GetSettings() const {

@@ -5,10 +5,7 @@
 
 class Sprav::PImpl {
  private:
-  using StopNames = std::deque<std::string>;
   using Stops = std::unordered_map<std::string_view, Stop>;
-
-  using BusNames = std::deque<std::string>;
   using Buses = std::unordered_map<std::string_view, Bus>;
 
  public:
@@ -18,8 +15,11 @@ class Sprav::PImpl {
   void Deserialize();
 
   void SetSerializationSettings(SerializationSettings s);
+
   void SetRoutingSettings(RoutingSettings s);
+
   void SetRenderSettings(RenderSettings s);
+  const RenderSettings& GetRenderSettings() const;
 
   void BuildBase();
 
@@ -37,6 +37,9 @@ class Sprav::PImpl {
 
   const Stop* FindStop(std::string_view name) const;
   const Bus* FindBus(std::string_view name) const;
+
+  const StopNames& GetStopNames() const;
+  const BusNames& GetBusNames() const;
 
   Router* GetRouter() const;
   Route FindRoute(std::string_view from, std::string_view to) const;
@@ -58,7 +61,7 @@ class Sprav::PImpl {
   std::shared_ptr<Graph> router_graph_;
   std::shared_ptr<Router> router_;
 
-  mutable std::shared_ptr<SpravMapper> mapper_;
+  std::shared_ptr<SpravMapper> mapper_;
 
   template <typename InputIt>
   void AddBusStops(size_t bus_id, InputIt begin, InputIt end);

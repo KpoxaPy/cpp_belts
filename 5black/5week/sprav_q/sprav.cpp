@@ -135,6 +135,10 @@ void Sprav::SetRenderSettings(RenderSettings s) {
   Pimpl()->SetRenderSettings(move(s));
 }
 
+const RenderSettings& Sprav::GetRenderSettings() const {
+  return Pimpl()->GetRenderSettings();
+}
+
 void Sprav::AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances) {
   Pimpl()->AddStop(move(name), lat, lon, distances);
 }
@@ -161,6 +165,14 @@ const Stop* Sprav::FindStop(std::string_view name) const {
 
 const Bus* Sprav::FindBus(std::string_view name) const {
   return Pimpl()->FindBus(name);
+}
+
+const Sprav::StopNames& Sprav::GetStopNames() const {
+  return Pimpl()->GetStopNames();
+}
+
+const Sprav::BusNames& Sprav::GetBusNames() const {
+  return Pimpl()->GetBusNames();
 }
  
 Sprav::Router* Sprav::GetRouter() const {

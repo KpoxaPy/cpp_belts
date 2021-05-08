@@ -77,6 +77,7 @@ set(PROTOS
   transport_catalog.proto
   render_settings.proto
   svg.proto
+  mapper.proto
 )
 
 if(NOT CMAKE_BUILD_TYPE)

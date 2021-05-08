@@ -27,8 +27,6 @@ int Stop::DistanceTo(size_t other) const {
 
 void Stop::SerializeTo(SpravSerialize::Stop& m) const {
   m.set_id(id);
-  m.set_latitude(lat);
-  m.set_longitude(lon);
   m.mutable_name()->assign(name);
   for (auto bus : buses) {
     m.mutable_bus()->Add(bus);
@@ -38,8 +36,6 @@ void Stop::SerializeTo(SpravSerialize::Stop& m) const {
 Stop Stop::Parse(const SpravSerialize::Stop& m) {
   Stop s;
   s.id = m.id();
-  s.lat = m.latitude();
-  s.lon = m.longitude();
   s.buses.insert(m.bus().begin(), m.bus().end());
 
   return s;

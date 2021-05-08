@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "mapper.pb.h"
 #include "svg.h"
 
 class SpravMapper;
@@ -36,6 +37,9 @@ public:
 
   void PushStop(const Stop& s);
   void Process();
+  void ParseFrom(const SpravSerialize::PointProjector& m);
+
+  void Serialize(SpravSerialize::PointProjector& m) const;
 
   Svg::Point operator()(const Stop& s) const;
 

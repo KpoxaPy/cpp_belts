@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 
+#include "mapper.pb.h"
 #include "render_settings.h"
 #include "sprav.h"
 #include "svg.h"
@@ -16,10 +17,13 @@ class PointProjector;
 class SpravMapper {
  public:
   SpravMapper(
-    const RenderSettings& settings,
+    const Sprav* sprav);
+
+  SpravMapper(
     const Sprav* sprav,
-    const std::deque<std::string>& stop_names,
-    const std::deque<std::string>& bus_names);
+    const SpravSerialize::Mapper& m);
+
+  void Serialize(SpravSerialize::Mapper& m) const;
 
   const RenderSettings& GetSettings() const;
   const std::set<std::string_view>& GetStopNames() const;
