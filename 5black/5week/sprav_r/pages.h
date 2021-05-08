@@ -11,5 +11,10 @@ class Pages {
   Pages(const Json::Dict& dict);
   Pages(const YellowPages::Database& m);
   void Serialize(YellowPages::Database& m);
+
+ private:
+  YellowPages::Database db_;
+
+  void ParseFrom(const YellowPages::Database& m);
 };
 using PagesPtr = std::shared_ptr<Pages>;
