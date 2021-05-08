@@ -37,16 +37,16 @@ Svg::Point PointFromJson(const Json::Node& node) {
 }
 
 RenderSettings::RenderSettings(const Json::Dict& dict) {
-  width = dict.at("width").AsInt();
-  height = dict.at("height").AsInt();
-  padding = dict.at("padding").AsInt();
-  outer_margin = dict.at("outer_margin").AsInt();
+  width = dict.at("width").AsDouble();
+  height = dict.at("height").AsDouble();
+  padding = dict.at("padding").AsDouble();
+  outer_margin = dict.at("outer_margin").AsDouble();
 
   stop_radius = dict.at("stop_radius").AsInt();
-  line_width = dict.at("line_width").AsInt();
+  line_width = dict.at("line_width").AsDouble();
 
   underlayer_color = ColorFromJson(dict.at("underlayer_color"));
-  underlayer_width = dict.at("underlayer_width").AsInt();
+  underlayer_width = dict.at("underlayer_width").AsDouble();
 
   stop_label_font_size = dict.at("stop_label_font_size").AsInt();
   stop_label_offset = PointFromJson(dict.at("stop_label_offset"));

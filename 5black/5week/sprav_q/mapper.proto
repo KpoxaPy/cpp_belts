@@ -8,8 +8,8 @@ message ProjectIdToTag {
 }
 
 message PointProjector {
-  float x_step = 1;
-  float y_step = 2;
+  double x_step = 1;
+  double y_step = 2;
   repeated ProjectIdToTag x_map = 3;
   repeated ProjectIdToTag y_map = 4;
 }

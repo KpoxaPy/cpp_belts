@@ -8,7 +8,6 @@ PointProjector::PointProjector(const SpravMapper& mapper)
     : mapper_(mapper) {}
 
 void PointProjector::PushStop(const Stop& s) {
-
   for (auto bus_id : s.buses) {
     buses_.insert(bus_id);
   }

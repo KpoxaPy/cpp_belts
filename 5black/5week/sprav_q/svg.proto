@@ -3,8 +3,8 @@ syntax = "proto3";
 package SpravSerialize.Svg;
 
 message Point {
-  float x = 1;
-  float y = 2;
+  double x = 1;
+  double y = 2;
 }
 
 message Rgba {
@@ -12,7 +12,7 @@ message Rgba {
   uint32 g = 2;
   uint32 b = 3;
   bool has_aplha = 4;
-  float alpha = 5;
+  double alpha = 5;
 }
 
 message Color {
