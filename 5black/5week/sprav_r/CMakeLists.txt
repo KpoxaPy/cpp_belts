@@ -23,6 +23,7 @@ set(PROJECT_HDRS
   request.h
   request_base_bus.h
   request_base_stop.h
+  request_find.h
   request_map.h
   request_route.h
   request_stat_bus.h
@@ -57,6 +58,7 @@ set(PROJECT_SRCS
   request.cpp
   request_base_bus.cpp
   request_base_stop.cpp
+  request_find.cpp
   request_map.cpp
   request_route.cpp
   request_stat_bus.cpp

@@ -5,6 +5,7 @@
 
 #include "request_base_bus.h"
 #include "request_base_stop.h"
+#include "request_find.h"
 #include "request_map.h"
 #include "request_route.h"
 #include "request_stat_bus.h"
@@ -35,6 +36,8 @@ RequestPtr MakeRequest(const Json::Node& doc) {
     return make_shared<RouteRequest>(dict);
   } else if (type == "Map") {
     return make_shared<MapRequest>(dict);
+  } else if (type == "FindCompanies") {
+    return make_shared<FindRequest>(dict);
   }
   throw invalid_argument("");
 }

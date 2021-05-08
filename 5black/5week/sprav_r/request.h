@@ -17,7 +17,8 @@ enum class RequestType {
   STAT_BUS,
   STAT_STOP,
   ROUTE,
-  MAP
+  MAP,
+  FIND_COMPANIES
 };
 
 class Response {
