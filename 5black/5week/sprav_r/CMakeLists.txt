@@ -78,6 +78,15 @@ set(PROTOS
   render_settings.proto
   svg.proto
   mapper.proto
+  address.proto
+  company.proto
+  database.proto
+  name.proto
+  phone.proto
+  rubric.proto
+  sphere.proto
+  url.proto
+  working_time.proto
 )
 
 if(NOT CMAKE_BUILD_TYPE)
