@@ -139,6 +139,10 @@ const RenderSettings& Sprav::GetRenderSettings() const {
   return Pimpl()->GetRenderSettings();
 }
 
+void Sprav::SetPages(PagesPtr pages) {
+  Pimpl()->SetPages(std::move(pages));
+}
+
 void Sprav::AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances) {
   Pimpl()->AddStop(move(name), lat, lon, distances);
 }

@@ -97,11 +97,17 @@ void Sprav::PImpl::Serialize() {
   }
 
   {
+    LOG_DURATION("Sprav::Serialize pages");
+    pages_->Serialize(*catalog.p->mutable_pages());
+  }
+
+  {
     LOG_DURATION("Sprav::Serialize materialization");
     ofstream ofile(serialization_settings_.file, ios::binary | ios::trunc);
     catalog.p->SerializeToOstream(&ofile);
   }
 }
+
 
 void Sprav::PImpl::Deserialize() {
   LOG_DURATION("Sprav::Deserialize");
@@ -147,6 +153,11 @@ void Sprav::PImpl::Deserialize() {
     LOG_DURATION("Sprav::Deserialize mapper");
     mapper_ = make_shared<SpravMapper>(sprav_, catalog.p->mapper());
   }
+
+  {
+    LOG_DURATION("Sprav::Deserialize pages");
+    pages_ = make_shared<Pages>(catalog.p->pages());
+  }
 }
 
 void Sprav::PImpl::SetSerializationSettings(SerializationSettings s) {
@@ -163,6 +174,10 @@ void Sprav::PImpl::SetRenderSettings(RenderSettings s) {
 
 const RenderSettings& Sprav::PImpl::GetRenderSettings() const {
   return render_settings_;
+}
+
+void Sprav::PImpl::SetPages(PagesPtr pages) {
+  pages_ = std::move(pages);
 }
 
 void Sprav::PImpl::BuildBase() {

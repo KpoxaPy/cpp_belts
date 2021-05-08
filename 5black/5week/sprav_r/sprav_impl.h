@@ -21,6 +21,8 @@ class Sprav::PImpl {
   void SetRenderSettings(RenderSettings s);
   const RenderSettings& GetRenderSettings() const;
 
+  void SetPages(PagesPtr pages);
+
   void BuildBase();
 
   void AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances);
@@ -62,6 +64,8 @@ class Sprav::PImpl {
   std::shared_ptr<Router> router_;
 
   std::shared_ptr<SpravMapper> mapper_;
+
+  PagesPtr pages_;
 
   template <typename InputIt>
   void AddBusStops(size_t bus_id, InputIt begin, InputIt end);

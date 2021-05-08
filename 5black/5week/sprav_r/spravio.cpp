@@ -90,9 +90,16 @@ class SpravIO::PImpl {
     }
   }
 
+  void ReadPages(const Json::Dict& root) {
+    if (auto it = root.find("yellow_pages"); it != root.end()) {
+      sprav_->SetPages(std::make_shared<Pages>(it->second.AsDict()));
+    }
+  }
+
   void MakeBase(const Json::Dict& root) {
     ReadRoutingSettings(root);
     ReadRenderSettings(root);
+    ReadPages(root);
 
     for (auto& r : root.at("base_requests").AsArray()) {
       MakeBaseRequest(r)->Process(sprav_);

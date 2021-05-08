@@ -12,6 +12,7 @@ set(PROJECT_HDRS
   json.h
   macro.h
   map_builder.h
+  pages.h
   paletter.h
   point_projector.h
   profile.h
@@ -47,6 +48,7 @@ set(PROJECT_SRCS
   json.cpp
   main.cpp
   map_builder.cpp
+  pages.cpp
   paletter.cpp
   point_projector.cpp
   profile.cpp

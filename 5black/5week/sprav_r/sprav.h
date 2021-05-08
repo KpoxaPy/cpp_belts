@@ -12,6 +12,7 @@
 #include "routing_settings.h"
 #include "serialization_settings.h"
 #include "stop.h"
+#include "pages.h"
 
 enum class RoutePartType {
   NOOP,
@@ -76,6 +77,8 @@ class Sprav {
 
   void SetRenderSettings(RenderSettings s);
   const RenderSettings& GetRenderSettings() const;
+
+  void SetPages(PagesPtr pages);
 
   void AddStop(std::string_view name, double lat, double lon, const std::unordered_map<std::string, int>& distances);
   void AddBus(std::string_view name, const std::list<std::string> stops, bool is_roundtrip);
