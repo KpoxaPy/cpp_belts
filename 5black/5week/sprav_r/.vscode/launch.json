@@ -19,8 +19,8 @@
       "args": [
         "make_base",
         "<",
-        "${workspaceFolder}/example1_make_base.in.json",
-        // "${workspaceFolder}/example2_make_base.in.json",
+        // "${workspaceFolder}/example1_make_base.in.json",
+        "${workspaceFolder}/example2_make_base.in.json",
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -30,6 +30,11 @@
         {
           "description": "Enable pretty-printing for gdb",
           "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Enable break on all exceptions",
+          "text": "catch throw",
           "ignoreFailures": true
         }
       ],
@@ -44,8 +49,8 @@
         ">",
         "${env:TMP}/output.json",
         "<",
-        "${workspaceFolder}/example1_process_requests.in.json",
-        // "${workspaceFolder}/example2_process_requests.in.json",
+        // "${workspaceFolder}/example1_process_requests.in.json",
+        "${workspaceFolder}/example2_process_requests.in.json",
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -55,6 +60,11 @@
         {
           "description": "Enable pretty-printing for gdb",
           "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Enable break on all exceptions",
+          "text": "catch throw",
           "ignoreFailures": true
         }
       ],

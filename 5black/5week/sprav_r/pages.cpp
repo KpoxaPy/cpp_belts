@@ -7,6 +7,7 @@
 #include <optional>
 #include <sstream>
 #include <stdexcept>
+#include <functional>
 
 #include "profile.h"
 
@@ -43,6 +44,12 @@ void UnionIn(Pages::Companies& lhs, const Pages::Companies& rhs) {
   }
 }
 
+void UnionIn(Pages::Companies& lhs, const Pages::Companies* rhs) {
+  if (rhs) {
+    UnionIn(lhs, *rhs);
+  }
+}
+
 template <typename IndexType>
 const Pages::Companies*
 FindInIndex(const std::unordered_map<IndexType, Pages::Companies>& index, const IndexType& value) {
@@ -54,38 +61,15 @@ FindInIndex(const std::unordered_map<IndexType, Pages::Companies>& index, const 
   }
 }
 
-template <typename IndexType, typename ValuesContainer>
+template <typename Func, typename ValuesContainer>
 Pages::Companies
-FindOneOfInIndex(const std::unordered_map<IndexType, Pages::Companies>& index, const ValuesContainer& values) {
+FindOneOfInIndex(const ValuesContainer& values, Func f) {
   Pages::Companies result;
   for (const auto& v : values) {
-    if (const Pages::Companies* r = FindInIndex(index, v); r) {
-      UnionIn(result, *r);
-    }
+    UnionIn(result, f(v));
   }
   return result;
 }
-
-/* bool DoesPhoneMatch(const YellowPages::Phone& lhs, const YellowPages::Phone& rhs) {
-  const Phone& query_phone = query.phone;
-  if (!query_phone.extension().empty() && query_phone.extension() != object.extension()) {
-    return false;
-  }
-  if (query.has_type && query_phone.type() != object.type()) {
-    return false;
-  }
-  if (!query_phone.country_code().empty() && query_phone.country_code() != object.country_code()) {
-    return false;
-  }
-  if (
-      (!query_phone.local_code().empty() || !query_phone.country_code().empty())
-      && query_phone.local_code() != object.local_code()
-  ) {
-    return false;
-  }
-  return query_phone.number() == object.number();
-} */
-
 
 } // namespace
 
@@ -132,6 +116,10 @@ void Pages::BuildIndex() {
     for (auto& url : c.urls()) {
       urls_index_[url.value()].insert(id);
     }
+
+    for (auto& phone : c.phones()) {
+      AddPhoneToIndex(phone, id);
+    }
   }
 }
 
@@ -146,17 +134,30 @@ Pages::Companies Pages::Process(const YellowPages::Query& query) const {
     for (auto& r : query.rubrics()) {
       rubrics_ids.push_back(rubrics_projection_.at(r));
     }
-    rubrics_result = FindOneOfInIndex(rubrics_index_, rubrics_ids);
+    rubrics_result = FindOneOfInIndex(rubrics_ids, [this](size_t value) {
+      return FindInIndex(rubrics_index_, value);
+    });
   }
 
   optional<Companies> names_result;
   if (query.names().size() > 0) {
-    names_result = FindOneOfInIndex(names_index_, query.names());
+    names_result = FindOneOfInIndex(query.names(), [this](const std::string& value) {
+      return FindInIndex(names_index_, value);
+    });
   }
 
   optional<Companies> urls_result;
   if (query.urls().size() > 0) {
-    urls_result = FindOneOfInIndex(urls_index_, query.urls());
+    urls_result = FindOneOfInIndex(query.urls(), [this](const std::string& value) {
+      return FindInIndex(urls_index_, value);
+    });
+  }
+
+  optional<Companies> phones_result;
+  if (query.phones().size() > 0) {
+    phones_result = FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
+      return FindPhoneInIndex(value);
+    });
   }
 
   Companies result;
@@ -175,6 +176,7 @@ Pages::Companies Pages::Process(const YellowPages::Query& query) const {
   INTERSECT_WITH_PARTIAL_RESULT(rubrics_result);
   INTERSECT_WITH_PARTIAL_RESULT(names_result);
   INTERSECT_WITH_PARTIAL_RESULT(urls_result);
+  INTERSECT_WITH_PARTIAL_RESULT(phones_result);
 
 #undef INTERSECT_WITH_PARTIAL_RESULT
 
@@ -183,4 +185,72 @@ Pages::Companies Pages::Process(const YellowPages::Query& query) const {
 
 void Pages::ParseFrom(const YellowPages::Database& m) {
   db_.CopyFrom(m);
+}
+
+void Pages::AddPhoneToIndex(const YellowPages::Phone& m, size_t company_id) {
+  optional<string> number;
+  if (m.number().size() > 0) {
+    number = m.number();
+  }
+  phones_number_index_[number].insert(company_id);
+
+  optional<string> local_code;
+  if (m.local_code().size() > 0) {
+    number = m.local_code();
+  }
+  phones_local_code_index_[local_code].insert(company_id);
+
+  if (m.country_code().size() > 0) {
+    phones_country_code_index_[m.country_code()].insert(company_id);
+  }
+
+  if (m.extension().size() > 0) {
+    phones_extension_index_[m.extension()].insert(company_id);
+  }
+
+  if (m.type().size() > 0) {
+    phones_type_index_[m.type()].insert(company_id);
+  }
+}
+
+Pages::Companies Pages::FindPhoneInIndex(const YellowPages::Phone& m) const {
+  Companies result;
+
+  optional<string> number;
+  if (m.number().size() > 0) {
+    number = m.number();
+  }
+  if (auto c = FindInIndex(phones_number_index_, number); c) {
+    result = *c;
+  }
+
+  optional<string> local_code;
+  if (m.local_code().size() > 0) {
+    local_code = m.local_code();
+  }
+  if (m.country_code().size() > 0 || m.local_code().size() > 0) {
+    if (auto c = FindInIndex(phones_local_code_index_, local_code); c) {
+      Intersect(result, *c);
+    }
+  }
+
+  if (m.country_code().size() > 0) {
+    if (auto c = FindInIndex(phones_country_code_index_, m.country_code()); c) {
+      Intersect(result, *c);
+    }
+  }
+
+  if (m.extension().size() > 0) {
+    if (auto c = FindInIndex(phones_extension_index_, m.extension()); c) {
+      Intersect(result, *c);
+    }
+  }
+
+  if (m.type().size() > 0) {
+    if (auto c = FindInIndex(phones_type_index_, m.type()); c) {
+      Intersect(result, *c);
+    }
+  }
+
+  return result;
 }

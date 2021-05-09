@@ -9,6 +9,7 @@ set(ADDITIONAL_HDRS
 set(PROJECT_HDRS
   bus.h
   graph.h
+  hashing.h
   json.h
   macro.h
   map_builder.h
