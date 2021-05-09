@@ -103,7 +103,7 @@ void Pages::BuildIndex() {
 
   size_t companies_size = db_.companies_size();
   for (size_t id = 0; id < companies_size; ++id) {
-    auto& c = db_.companies().at(id);
+    auto& c = db_.companies()[id];
 
     for (auto r_id : c.rubrics()) {
       rubrics_index_[r_id].insert(id);
@@ -124,7 +124,7 @@ void Pages::BuildIndex() {
 }
 
 const YellowPages::Company& Pages::operator[](size_t id) const {
-  return db_.companies().at(id);
+  return db_.companies()[id];
 }
 
 Pages::Companies Pages::Process(const YellowPages::Query& query) const {
