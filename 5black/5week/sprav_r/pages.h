@@ -19,9 +19,7 @@ class Pages {
   using RubricsIndex = std::unordered_map<size_t, Companies>;
   using NamesIndex = std::unordered_map<std::string, Companies>;
   using UrlsIndex = std::unordered_map<std::string, Companies>;
-
-  using PhonesOptionalIndex = std::unordered_map<std::optional<std::string>, Companies>;
-  using PhonesIndex = std::unordered_map<std::string, Companies>;
+  using PhonesPartIndex = std::unordered_map<std::string, Companies>;
 
  public:
   Pages() = default;
@@ -44,11 +42,11 @@ class Pages {
   NamesIndex names_index_;
   UrlsIndex urls_index_;
 
-  PhonesOptionalIndex phones_number_index_;
-  PhonesOptionalIndex phones_local_code_index_;
-  PhonesIndex phones_country_code_index_;
-  PhonesIndex phones_extension_index_;
-  PhonesIndex phones_type_index_;
+  PhonesPartIndex phones_number_index_;
+  PhonesPartIndex phones_local_code_index_;
+  PhonesPartIndex phones_country_code_index_;
+  PhonesPartIndex phones_extension_index_;
+  PhonesPartIndex phones_type_index_;
 
   void ParseFrom(const YellowPages::Database& m);
 

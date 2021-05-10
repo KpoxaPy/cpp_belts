@@ -71,7 +71,26 @@ FindOneOfInIndex(const ValuesContainer& values, Func f) {
   return result;
 }
 
-} // namespace
+bool Match(const YellowPages::Phone& phone, const YellowPages::Phone& tmpl) {
+  if (!tmpl.extension().empty() && tmpl.extension() != phone.extension()) {
+    return false;
+  }
+  if (!tmpl.type().empty() && tmpl.type() != phone.type()) {
+    return false;
+  }
+  if (!tmpl.country_code().empty() && tmpl.country_code() != phone.country_code()) {
+    return false;
+  }
+  if (
+      (!tmpl.local_code().empty() || !tmpl.country_code().empty())
+      && tmpl.local_code() != phone.local_code()
+  ) {
+    return false;
+  }
+  return tmpl.number() == phone.number();
+}
+
+}  // namespace
 
 Pages::Pages(const Json::Dict& dict) {
   YellowPages::Database db;
@@ -117,9 +136,9 @@ void Pages::BuildIndex() {
       urls_index_[url.value()].insert(id);
     }
 
-    for (auto& phone : c.phones()) {
-      AddPhoneToIndex(phone, id);
-    }
+    // for (auto& phone : c.phones()) {
+    //   AddPhoneToIndex(phone, id);
+    // }
   }
 }
 
@@ -155,9 +174,22 @@ Pages::Companies Pages::Process(const YellowPages::Query& query) const {
 
   optional<Companies> phones_result;
   if (query.phones().size() > 0) {
-    phones_result = FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
-      return FindPhoneInIndex(value);
-    });
+    phones_result = Companies{};
+    size_t companies_size = db_.companies_size();
+    for (size_t id = 0; id < companies_size; ++id) {
+      auto& c = db_.companies()[id];
+      for (auto& phone : c.phones()) {
+        for (auto& tmpl : query.phones()) {
+          if (Match(phone, tmpl)) {
+            phones_result->insert(id);
+          }
+        }
+      }
+    }
+
+    // phones_result = FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
+    //   return FindPhoneInIndex(value);
+    // });
   }
 
   Companies result;
@@ -188,17 +220,8 @@ void Pages::ParseFrom(const YellowPages::Database& m) {
 }
 
 void Pages::AddPhoneToIndex(const YellowPages::Phone& m, size_t company_id) {
-  optional<string> number;
-  if (m.number().size() > 0) {
-    number = m.number();
-  }
-  phones_number_index_[number].insert(company_id);
-
-  optional<string> local_code;
-  if (m.local_code().size() > 0) {
-    number = m.local_code();
-  }
-  phones_local_code_index_[local_code].insert(company_id);
+  phones_number_index_[m.number()].insert(company_id);
+  phones_local_code_index_[m.local_code()].insert(company_id);
 
   if (m.country_code().size() > 0) {
     phones_country_code_index_[m.country_code()].insert(company_id);
@@ -208,28 +231,22 @@ void Pages::AddPhoneToIndex(const YellowPages::Phone& m, size_t company_id) {
     phones_extension_index_[m.extension()].insert(company_id);
   }
 
-  if (m.type().size() > 0) {
-    phones_type_index_[m.type()].insert(company_id);
+  if (m.type() == "FAX") {
+    phones_type_index_["FAX"].insert(company_id);
+  } else {
+    phones_type_index_["PHONE"].insert(company_id);
   }
 }
 
 Pages::Companies Pages::FindPhoneInIndex(const YellowPages::Phone& m) const {
   Companies result;
 
-  optional<string> number;
-  if (m.number().size() > 0) {
-    number = m.number();
-  }
-  if (auto c = FindInIndex(phones_number_index_, number); c) {
+  if (auto c = FindInIndex(phones_number_index_, m.number()); c) {
     result = *c;
   }
 
-  optional<string> local_code;
-  if (m.local_code().size() > 0) {
-    local_code = m.local_code();
-  }
   if (result.size() > 0 && (m.country_code().size() > 0 || m.local_code().size() > 0)) {
-    if (auto c = FindInIndex(phones_local_code_index_, local_code); c) {
+    if (auto c = FindInIndex(phones_local_code_index_, m.local_code()); c) {
       result = Intersect(result, *c);
     }
   }
