@@ -228,27 +228,27 @@ Pages::Companies Pages::FindPhoneInIndex(const YellowPages::Phone& m) const {
   if (m.local_code().size() > 0) {
     local_code = m.local_code();
   }
-  if (m.country_code().size() > 0 || m.local_code().size() > 0) {
+  if (result.size() > 0 && (m.country_code().size() > 0 || m.local_code().size() > 0)) {
     if (auto c = FindInIndex(phones_local_code_index_, local_code); c) {
-      Intersect(result, *c);
+      result = Intersect(result, *c);
     }
   }
 
-  if (m.country_code().size() > 0) {
+  if (result.size() > 0 && m.country_code().size() > 0) {
     if (auto c = FindInIndex(phones_country_code_index_, m.country_code()); c) {
-      Intersect(result, *c);
+      result = Intersect(result, *c);
     }
   }
 
-  if (m.extension().size() > 0) {
+  if (result.size() > 0 && m.extension().size() > 0) {
     if (auto c = FindInIndex(phones_extension_index_, m.extension()); c) {
-      Intersect(result, *c);
+      result = Intersect(result, *c);
     }
   }
 
-  if (m.type().size() > 0) {
+  if (result.size() > 0 && m.type().size() > 0) {
     if (auto c = FindInIndex(phones_type_index_, m.type()); c) {
-      Intersect(result, *c);
+      result = Intersect(result, *c);
     }
   }
 

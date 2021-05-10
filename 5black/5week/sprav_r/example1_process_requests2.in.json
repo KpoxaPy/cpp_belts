@@ -1,0 +1,15 @@
+{
+    "serialization_settings": {
+        "file": "data1.bin"
+    },
+    "stat_requests": [
+        {
+            "id": 379575119,
+            "type": "FindCompanies",
+            "names": [],
+            "rubrics": [],
+            "urls": [],
+            "phones": []
+        }
+    ]
+}
