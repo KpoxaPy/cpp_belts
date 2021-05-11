@@ -1,0 +1,355 @@
+{
+  "serialization_settings": {
+    "file": "data_phones.bin"
+  },
+  "stat_requests": [
+    {
+      "id": 0,
+      "type": "FindCompanies",
+      "phones": [
+        {}
+      ]
+    },
+    {
+      "id": 1,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "number": "3333333"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "number": "3333333",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 100,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "local_code": "222"
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "local_code": "222",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 110,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "local_code": "222",
+          "number": "3333333"
+        }
+      ]
+    },
+    {
+      "id": 111,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "local_code": "222",
+          "number": "3333333",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 1000,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "country_code": "1"
+        }
+      ]
+    },
+    {
+      "id": 1001,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "country_code": "1",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 1010,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "country_code": "1",
+          "number": "3333333"
+        }
+      ]
+    },
+    {
+      "id": 1011,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "country_code": "1",
+          "number": "3333333",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 1100,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "country_code": "1",
+          "local_code": "222"
+        }
+      ]
+    },
+    {
+      "id": 1101,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "country_code": "1",
+          "local_code": "222",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 1110,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "country_code": "1",
+          "local_code": "222",
+          "number": "3333333"
+        }
+      ]
+    },
+    {
+      "id": 1111,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "country_code": "1",
+          "local_code": "222",
+          "number": "3333333",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 10000,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX"
+        }
+      ]
+    },
+    {
+      "id": 10001,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 10010,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "number": "3333333"
+        }
+      ]
+    },
+    {
+      "id": 10011,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "number": "3333333",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 10100,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "local_code": "222"
+        }
+      ]
+    },
+    {
+      "id": 10101,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "local_code": "222",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 10110,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "local_code": "222",
+          "number": "3333333"
+        }
+      ]
+    },
+    {
+      "id": 10111,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "local_code": "222",
+          "number": "3333333",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 11000,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "country_code": "1"
+        }
+      ]
+    },
+    {
+      "id": 11001,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "country_code": "1",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 11010,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "country_code": "1",
+          "number": "3333333"
+        }
+      ]
+    },
+    {
+      "id": 11011,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "country_code": "1",
+          "number": "3333333",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 11100,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "country_code": "1",
+          "local_code": "222"
+        }
+      ]
+    },
+    {
+      "id": 11101,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "country_code": "1",
+          "local_code": "222",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 11110,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "country_code": "1",
+          "local_code": "222",
+          "number": "3333333"
+        }
+      ]
+    },
+    {
+      "id": 11111,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "FAX",
+          "country_code": "1",
+          "local_code": "222",
+          "number": "3333333",
+          "extension": "4444"
+        }
+      ]
+    },
+    {
+      "id": 66611111,
+      "type": "FindCompanies",
+      "phones": [
+        {
+          "type": "",
+          "country_code": "",
+          "local_code": "",
+          "number": "",
+          "extension": ""
+        }
+      ]
+    }
+  ]
+}

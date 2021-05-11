@@ -1,0 +1,486 @@
+{
+  "serialization_settings": {
+    "file": "data_phones.bin"
+  },
+  "routing_settings": {
+    "bus_wait_time": 2,
+    "bus_velocity": 30
+  },
+  "render_settings": {
+    "width": 1200,
+    "height": 500,
+    "padding": 50,
+    "outer_margin": 150,
+    "stop_radius": 5,
+    "line_width": 14,
+    "bus_label_font_size": 20,
+    "bus_label_offset": [
+      7,
+      15
+    ],
+    "stop_label_font_size": 18,
+    "stop_label_offset": [
+      7,
+      -3
+    ],
+    "underlayer_color": [
+      255,
+      255,
+      255,
+      0.85
+    ],
+    "underlayer_width": 3,
+    "color_palette": [
+      "green",
+      [
+        255,
+        160,
+        0
+      ],
+      "red"
+    ],
+    "layers": [
+      "bus_lines",
+      "bus_labels",
+      "stop_points",
+      "stop_labels"
+    ]
+  },
+  "base_requests": [],
+  "yellow_pages": {
+    "rubrics": {},
+    "companies": [
+      {
+        "names": [
+          {
+            "value": "EMPTY"
+          }
+        ],
+        "phones": [
+          {}
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "e"
+          }
+        ],
+        "phones": [
+          {
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "n"
+          }
+        ],
+        "phones": [
+          {
+            "number": "3333333"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "n+e"
+          }
+        ],
+        "phones": [
+          {
+            "number": "3333333",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "lc"
+          }
+        ],
+        "phones": [
+          {
+            "local_code": "222"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "lc+e"
+          }
+        ],
+        "phones": [
+          {
+            "local_code": "222",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "lc+n"
+          }
+        ],
+        "phones": [
+          {
+            "local_code": "222",
+            "number": "3333333"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "lc+n+e"
+          }
+        ],
+        "phones": [
+          {
+            "local_code": "222",
+            "number": "3333333",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "cc"
+          }
+        ],
+        "phones": [
+          {
+            "country_code": "1"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "cc+e"
+          }
+        ],
+        "phones": [
+          {
+            "country_code": "1",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "cc+n"
+          }
+        ],
+        "phones": [
+          {
+            "country_code": "1",
+            "number": "3333333"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "cc+n+e"
+          }
+        ],
+        "phones": [
+          {
+            "country_code": "1",
+            "number": "3333333",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "cc+lc"
+          }
+        ],
+        "phones": [
+          {
+            "country_code": "1",
+            "local_code": "222"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "cc+lc+e"
+          }
+        ],
+        "phones": [
+          {
+            "country_code": "1",
+            "local_code": "222",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "cc+lc+n"
+          }
+        ],
+        "phones": [
+          {
+            "country_code": "1",
+            "local_code": "222",
+            "number": "3333333"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "cc+lc+n+e"
+          }
+        ],
+        "phones": [
+          {
+            "country_code": "1",
+            "local_code": "222",
+            "number": "3333333",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+e"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+n"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "number": "3333333"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+n+e"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "number": "3333333",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+lc"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "local_code": "222"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+lc+e"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "local_code": "222",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+lc+n"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "local_code": "222",
+            "number": "3333333"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+lc+n+e"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "local_code": "222",
+            "number": "3333333",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+cc"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "country_code": "1"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+cc+e"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "country_code": "1",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+cc+n"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "country_code": "1",
+            "number": "3333333"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+cc+n+e"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "country_code": "1",
+            "number": "3333333",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+cc+lc"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "country_code": "1",
+            "local_code": "222"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+cc+lc+e"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "country_code": "1",
+            "local_code": "222",
+            "extension": "4444"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+cc+lc+n"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "country_code": "1",
+            "local_code": "222",
+            "number": "3333333"
+          }
+        ]
+      },
+      {
+        "names": [
+          {
+            "value": "t+cc+lc+n+e"
+          }
+        ],
+        "phones": [
+          {
+            "type": "FAX",
+            "country_code": "1",
+            "local_code": "222",
+            "number": "3333333",
+            "extension": "4444"
+          }
+        ]
+      }
+    ]
+  }
+}
