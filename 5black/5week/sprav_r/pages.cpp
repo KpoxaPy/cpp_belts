@@ -38,17 +38,17 @@ Pages::Companies Intersect(const Pages::Companies& lhs, const Pages::Companies& 
   return result;
 }
 
-// void UnionIn(Pages::Companies& lhs, const Pages::Companies& rhs) {
-//   for (auto& id : rhs) {
-//     lhs.insert(id);
-//   }
-// }
+void UnionIn(Pages::Companies& lhs, const Pages::Companies& rhs) {
+  for (auto& id : rhs) {
+    lhs.insert(id);
+  }
+}
 
-// void UnionIn(Pages::Companies& lhs, const Pages::Companies* rhs) {
-//   if (rhs) {
-//     UnionIn(lhs, *rhs);
-//   }
-// }
+void UnionIn(Pages::Companies& lhs, const Pages::Companies* rhs) {
+  if (rhs) {
+    UnionIn(lhs, *rhs);
+  }
+}
 
 template <typename IndexType>
 const Pages::Companies*
@@ -71,27 +71,27 @@ FindOneOfInIndex(const ValuesContainer& values, Func f) {
   return result;
 }
 
-bool Match(const YellowPages::Phone& phone, const YellowPages::Phone& tmpl) {
-  if (!tmpl.extension().empty() && tmpl.extension() != phone.extension()) {
-    return false;
-  }
-  if (!tmpl.type().empty()) {
-    string type = (phone.type().empty() ? "PHONE" : phone.type());
-    if (tmpl.type() != type) {
-      return false;
-    }
-  }
-  if (!tmpl.country_code().empty() && tmpl.country_code() != phone.country_code()) {
-    return false;
-  }
-  if (
-      (!tmpl.local_code().empty() || !tmpl.country_code().empty())
-      && tmpl.local_code() != phone.local_code()
-  ) {
-    return false;
-  }
-  return tmpl.number() == phone.number();
-}
+// bool Match(const YellowPages::Phone& phone, const YellowPages::Phone& tmpl) {
+//   if (!tmpl.extension().empty() && tmpl.extension() != phone.extension()) {
+//     return false;
+//   }
+//   if (!tmpl.type().empty()) {
+//     string type = (phone.type().empty() ? "PHONE" : phone.type());
+//     if (tmpl.type() != type) {
+//       return false;
+//     }
+//   }
+//   if (!tmpl.country_code().empty() && tmpl.country_code() != phone.country_code()) {
+//     return false;
+//   }
+//   if (
+//       (!tmpl.local_code().empty() || !tmpl.country_code().empty())
+//       && tmpl.local_code() != phone.local_code()
+//   ) {
+//     return false;
+//   }
+//   return tmpl.number() == phone.number();
+// }
 
 }  // namespace
 
@@ -149,56 +149,56 @@ const YellowPages::Company& Pages::operator[](size_t id) const {
   return db_.companies()[id];
 }
 
-// Pages::Companies Pages::Process(const YellowPages::Query& query) const {
-//   optional<Companies> rubrics_result;
-//   if (query.rubrics().size() > 0) {
-//     deque<size_t> rubrics_ids;
-//     for (auto& r : query.rubrics()) {
-//       rubrics_ids.push_back(rubrics_projection_.at(r));
-//     }
-//     rubrics_result = FindOneOfInIndex(rubrics_ids, [this](size_t value) {
-//       return FindInIndex(rubrics_index_, value);
-//     });
-//   }
+Pages::Companies Pages::Process(const YellowPages::Query& query) const {
+  optional<Companies> rubrics_result;
+  if (query.rubrics().size() > 0) {
+    deque<size_t> rubrics_ids;
+    for (auto& r : query.rubrics()) {
+      rubrics_ids.push_back(rubrics_projection_.at(r));
+    }
+    rubrics_result = FindOneOfInIndex(rubrics_ids, [this](size_t value) {
+      return FindInIndex(rubrics_index_, value);
+    });
+  }
 
-//   optional<Companies> names_result;
-//   if (query.names().size() > 0) {
-//     names_result = FindOneOfInIndex(query.names(), [this](const std::string& value) {
-//       return FindInIndex(names_index_, value);
-//     });
-//   }
+  optional<Companies> names_result;
+  if (query.names().size() > 0) {
+    names_result = FindOneOfInIndex(query.names(), [this](const std::string& value) {
+      return FindInIndex(names_index_, value);
+    });
+  }
 
-//   optional<Companies> urls_result;
-//   if (query.urls().size() > 0) {
-//     urls_result = FindOneOfInIndex(query.urls(), [this](const std::string& value) {
-//       return FindInIndex(urls_index_, value);
-//     });
-//   }
+  optional<Companies> urls_result;
+  if (query.urls().size() > 0) {
+    urls_result = FindOneOfInIndex(query.urls(), [this](const std::string& value) {
+      return FindInIndex(urls_index_, value);
+    });
+  }
 
-//   optional<Companies> phones_result;
-//   if (query.phones().size() > 0) {
-//     // phones_result = Companies{};
-//     // size_t companies_size = db_.companies_size();
-//     // for (size_t id = 0; id < companies_size; ++id) {
-//     //   auto& c = db_.companies()[id];
-//     //   for (auto& phone : c.phones()) {
-//     //     for (auto& tmpl : query.phones()) {
-//     //       if (Match(phone, tmpl)) {
-//     //         phones_result->insert(id);
-//     //       }
-//     //     }
-//     //   }
-//     // }
+  optional<Companies> phones_result;
+  if (query.phones().size() > 0) {
+    // phones_result = Companies{};
+    // size_t companies_size = db_.companies_size();
+    // for (size_t id = 0; id < companies_size; ++id) {
+    //   auto& c = db_.companies()[id];
+    //   for (auto& phone : c.phones()) {
+    //     for (auto& tmpl : query.phones()) {
+    //       if (Match(phone, tmpl)) {
+    //         phones_result->insert(id);
+    //       }
+    //     }
+    //   }
+    // }
 
-//     phones_result = FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
-//       return FindPhoneInIndex(value);
-//     });
-//   }
+    phones_result = FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
+      return FindPhoneInIndex(value);
+    });
+  }
 
-//   Companies result;
-//   bool first_added = false;
+  Companies result;
+  bool first_added = false;
 
-/* #define INTERSECT_WITH_PARTIAL_RESULT(part)     \
+#define INTERSECT_WITH_PARTIAL_RESULT(part)     \
   if (part) {                                   \
     if (!first_added) {                         \
       result = std::move(part.value());         \
@@ -206,94 +206,14 @@ const YellowPages::Company& Pages::operator[](size_t id) const {
     } else {                                    \
       result = Intersect(result, part.value()); \
     }                                           \
-  } */
-
-//   INTERSECT_WITH_PARTIAL_RESULT(rubrics_result);
-//   INTERSECT_WITH_PARTIAL_RESULT(names_result);
-//   INTERSECT_WITH_PARTIAL_RESULT(urls_result);
-//   INTERSECT_WITH_PARTIAL_RESULT(phones_result);
-
-// #undef INTERSECT_WITH_PARTIAL_RESULT
-
-//   return result;
-// }
-
-Pages::Companies Pages::Process(const YellowPages::Query& query) const {
-  deque<size_t> queried_rubrics;
-  for (auto& r : query.rubrics()) {
-    queried_rubrics.push_back(rubrics_projection_.at(r));
   }
 
-  Companies result;
-  size_t companies_size = db_.companies_size();
-  for (size_t id = 0; id < companies_size; ++id) {
-    auto& c = db_.companies()[id];
-    bool ok = true;
+  INTERSECT_WITH_PARTIAL_RESULT(rubrics_result);
+  INTERSECT_WITH_PARTIAL_RESULT(names_result);
+  INTERSECT_WITH_PARTIAL_RESULT(urls_result);
+  INTERSECT_WITH_PARTIAL_RESULT(phones_result);
 
-    if (ok && query.names().size() > 0) {
-      ok = false;
-      for (auto& name : c.names()) {
-        for (auto& tmpl : query.names()) {
-          if (name.value() == tmpl) {
-            ok = true;
-            break;
-          }
-        }
-        if (ok) {
-          break;
-        }
-      }
-    }
-
-    if (ok && query.urls().size() > 0) {
-      ok = false;
-      for (auto& url : c.urls()) {
-        for (auto& tmpl : query.urls()) {
-          if (url.value() == tmpl) {
-            ok = true;
-            break;
-          }
-        }
-        if (ok) {
-          break;
-        }
-      }
-    }
-
-    if (ok && query.rubrics().size() > 0) {
-      ok = false;
-      for (auto& rubric : c.rubrics()) {
-        for (auto& tmpl : queried_rubrics) {
-          if (rubric == tmpl) {
-            ok = true;
-            break;
-          }
-        }
-        if (ok) {
-          break;
-        }
-      }
-    }
-
-    if (ok && query.phones().size() > 0) {
-      ok = false;
-      for (auto& phone : c.phones()) {
-        for (auto& tmpl : query.phones()) {
-          if (Match(phone, tmpl)) {
-            ok = true;
-            break;
-          }
-        }
-        if (ok) {
-          break;
-        }
-      }
-    }
-
-    if (ok) {
-      result.insert(id);
-    }
-  }
+#undef INTERSECT_WITH_PARTIAL_RESULT
 
   return result;
 }
