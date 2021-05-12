@@ -105,6 +105,8 @@ void Pages::BuildIndex() {
   for (size_t id = 0; id < companies_size; ++id) {
     auto& c = db_.companies()[id];
 
+    all_companies_.insert(id);
+
     for (auto r_id : c.rubrics()) {
       rubrics_index_[r_id].insert(id);
     }
@@ -128,57 +130,35 @@ const YellowPages::Company& Pages::operator[](size_t id) const {
 }
 
 Pages::Companies Pages::Process(const YellowPages::Query& query) const {
-  optional<Companies> rubrics_result;
+  Companies result = all_companies_;
+
   if (query.rubrics().size() > 0) {
     deque<size_t> rubrics_ids;
     for (auto& r : query.rubrics()) {
       rubrics_ids.push_back(rubrics_projection_.at(r));
     }
-    rubrics_result = FindOneOfInIndex(rubrics_ids, [this](size_t value) {
+    result = Intersect(result, FindOneOfInIndex(rubrics_ids, [this](size_t value) {
       return FindInIndex(rubrics_index_, value);
-    });
+    }));
   }
 
-  optional<Companies> names_result;
   if (query.names().size() > 0) {
-    names_result = FindOneOfInIndex(query.names(), [this](const std::string& value) {
+    result = Intersect(result, FindOneOfInIndex(query.names(), [this](const std::string& value) {
       return FindInIndex(names_index_, value);
-    });
+    }));
   }
 
-  optional<Companies> urls_result;
   if (query.urls().size() > 0) {
-    urls_result = FindOneOfInIndex(query.urls(), [this](const std::string& value) {
+    result = Intersect(result, FindOneOfInIndex(query.urls(), [this](const std::string& value) {
       return FindInIndex(urls_index_, value);
-    });
+    }));
   }
 
-  optional<Companies> phones_result;
   if (query.phones().size() > 0) {
-    phones_result = FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
+    result = Intersect(result, FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
       return FindPhoneInIndex(value);
-    });
+    }));
   }
-
-  Companies result;
-  bool first_added = false;
-
-#define INTERSECT_WITH_PARTIAL_RESULT(part)     \
-  if (part) {                                   \
-    if (!first_added) {                         \
-      result = std::move(part.value());         \
-      first_added = true;                       \
-    } else {                                    \
-      result = Intersect(result, part.value()); \
-    }                                           \
-  }
-
-  INTERSECT_WITH_PARTIAL_RESULT(rubrics_result);
-  INTERSECT_WITH_PARTIAL_RESULT(names_result);
-  INTERSECT_WITH_PARTIAL_RESULT(urls_result);
-  INTERSECT_WITH_PARTIAL_RESULT(phones_result);
-
-#undef INTERSECT_WITH_PARTIAL_RESULT
 
   return result;
 }

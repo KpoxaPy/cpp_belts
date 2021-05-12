@@ -36,6 +36,7 @@ class Pages {
  private:
   YellowPages::Database db_;
 
+  Companies all_companies_;
   RubricsProjection rubrics_projection_;
 
   RubricsIndex rubrics_index_;

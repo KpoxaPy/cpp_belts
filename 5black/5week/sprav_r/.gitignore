@@ -9,3 +9,5 @@ load_process_requests_routes.in.json
 output.json
 find_output.json
 find_output_ref.json
+find_output_counted.json
+find_output_ref_counted.json
