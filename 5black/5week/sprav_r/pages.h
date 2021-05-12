@@ -7,11 +7,13 @@
 
 #include "database.pb.h"
 #include "database_queries.pb.h"
+#include "hash_extra.h"
 #include "json.h"
 
 class Pages {
  public:
   using Companies = std::unordered_set<size_t>;
+  using CompaniesSubIndex = std::unordered_set<std::pair<size_t, size_t>>;
 
  private:
   using RubricsProjection = std::unordered_map<std::string, size_t>;
@@ -19,7 +21,7 @@ class Pages {
   using RubricsIndex = std::unordered_map<size_t, Companies>;
   using NamesIndex = std::unordered_map<std::string, Companies>;
   using UrlsIndex = std::unordered_map<std::string, Companies>;
-  using PhonesPartIndex = std::unordered_map<std::string, Companies>;
+  using PhonesPartIndex = std::unordered_map<std::string, CompaniesSubIndex>;
 
  public:
   Pages() = default;
@@ -51,7 +53,7 @@ class Pages {
 
   void ParseFrom(const YellowPages::Database& m);
 
-  void AddPhoneToIndex(const YellowPages::Phone& m, size_t company_id);
+  void AddPhoneToIndex(const YellowPages::Phone& m, std::pair<size_t, size_t> id);
 
   Companies FindPhoneInIndex(const YellowPages::Phone& m) const;
 

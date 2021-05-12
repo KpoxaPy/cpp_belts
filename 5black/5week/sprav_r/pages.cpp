@@ -24,13 +24,14 @@ const JsonParseOptions JSON_PARSE_OPTIONS = [](){
   return o;
 }();
 
-Pages::Companies Intersect(const Pages::Companies& lhs, const Pages::Companies& rhs) {
+template <typename Set>
+Set Intersect(const Set& lhs, const Set& rhs) {
   if (lhs.size() > rhs.size()) {
     return Intersect(rhs, lhs);
   }
 
-  Pages::Companies result;
-  for (size_t id : lhs) {
+  Set result;
+  for (auto& id : lhs) {
     if (rhs.count(id) > 0) {
       result.insert(id);
     }
@@ -38,21 +39,23 @@ Pages::Companies Intersect(const Pages::Companies& lhs, const Pages::Companies& 
   return result;
 }
 
-void UnionIn(Pages::Companies& lhs, const Pages::Companies& rhs) {
+template <typename Set>
+void UnionIn(Set& lhs, const Set& rhs) {
   for (auto& id : rhs) {
     lhs.insert(id);
   }
 }
 
-void UnionIn(Pages::Companies& lhs, const Pages::Companies* rhs) {
+template <typename Set>
+void UnionIn(Set& lhs, const Set* rhs) {
   if (rhs) {
     UnionIn(lhs, *rhs);
   }
 }
 
-template <typename IndexType>
-const Pages::Companies*
-FindInIndex(const std::unordered_map<IndexType, Pages::Companies>& index, const IndexType& value) {
+template <typename IndexValue, typename IndexKey>
+const IndexValue*
+FindInIndex(const std::unordered_map<IndexKey, IndexValue>& index, const IndexKey& value) {
   auto it = index.find(value);
   if (it != index.end()) {
     return &it->second;
@@ -119,8 +122,9 @@ void Pages::BuildIndex() {
       urls_index_[url.value()].insert(id);
     }
 
-    for (auto& phone : c.phones()) {
-      AddPhoneToIndex(phone, id);
+    size_t phones_size = c.phones().size();
+    for (size_t phone_id = 0; phone_id < phones_size; ++phone_id) {
+      AddPhoneToIndex(c.phones()[phone_id], {id, phone_id});
     }
   }
 }
@@ -167,55 +171,67 @@ void Pages::ParseFrom(const YellowPages::Database& m) {
   db_.CopyFrom(m);
 }
 
-void Pages::AddPhoneToIndex(const YellowPages::Phone& m, size_t company_id) {
-  phones_number_index_[m.number()].insert(company_id);
-  phones_local_code_index_[m.local_code()].insert(company_id);
+void Pages::AddPhoneToIndex(const YellowPages::Phone& m, std::pair<size_t, size_t> id) {
+  phones_number_index_[m.number()].insert(id);
+  phones_local_code_index_[m.local_code()].insert(id);
 
   if (m.country_code().size() > 0) {
-    phones_country_code_index_[m.country_code()].insert(company_id);
+    phones_country_code_index_[m.country_code()].insert(id);
   }
 
   if (m.extension().size() > 0) {
-    phones_extension_index_[m.extension()].insert(company_id);
+    phones_extension_index_[m.extension()].insert(id);
   }
 
   if (m.type().empty()) {
-    phones_type_index_["PHONE"].insert(company_id);
+    phones_type_index_["PHONE"].insert(id);
   } else {
-    phones_type_index_[m.type()].insert(company_id);
+    phones_type_index_[m.type()].insert(id);
   }
 }
 
 Pages::Companies Pages::FindPhoneInIndex(const YellowPages::Phone& m) const {
-  Companies result;
+  CompaniesSubIndex pairs;
 
   if (auto c = FindInIndex(phones_number_index_, m.number()); c) {
-    result = *c;
-  }
+    pairs = *c;
+  };
 
-  if (result.size() > 0 && (m.country_code().size() > 0 || m.local_code().size() > 0)) {
-    if (auto c = FindInIndex(phones_local_code_index_, m.local_code()); c) {
-      result = Intersect(result, *c);
-    }
-  }
-
-  if (result.size() > 0 && m.country_code().size() > 0) {
-    if (auto c = FindInIndex(phones_country_code_index_, m.country_code()); c) {
-      result = Intersect(result, *c);
-    }
-  }
-
-  if (result.size() > 0 && m.extension().size() > 0) {
+  if (pairs.size() > 0 && m.extension().size() > 0) {
     if (auto c = FindInIndex(phones_extension_index_, m.extension()); c) {
-      result = Intersect(result, *c);
+      pairs = Intersect(pairs, *c);
+    } else {
+      pairs = {};
     }
   }
 
-  if (result.size() > 0 && m.type().size() > 0) {
+  if (pairs.size() > 0 && m.type().size() > 0) {
     if (auto c = FindInIndex(phones_type_index_, m.type()); c) {
-      result = Intersect(result, *c);
+      pairs = Intersect(pairs, *c);
+    } else {
+      pairs = {};
     }
   }
 
+  if (pairs.size() > 0 && (m.country_code().size() > 0 || m.local_code().size() > 0)) {
+    if (auto c = FindInIndex(phones_local_code_index_, m.local_code()); c) {
+      pairs = Intersect(pairs, *c);
+    } else {
+      pairs = {};
+    }
+  }
+
+  if (pairs.size() > 0 && m.country_code().size() > 0) {
+    if (auto c = FindInIndex(phones_country_code_index_, m.country_code()); c) {
+      pairs = Intersect(pairs, *c);
+    } else {
+      pairs = {};
+    }
+  }
+
+  Companies result;
+  for (const auto& p : pairs) {
+    result.insert(p.first);
+  }
   return result;
 }

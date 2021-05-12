@@ -1,13 +1,14 @@
 #pragma once
 
-#include <sstream>
+#include <deque>
 #include <iostream>
 #include <map>
-#include <unordered_map>
 #include <set>
+#include <sstream>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
-#include <deque>
 
 using namespace std;
 
@@ -45,6 +46,20 @@ ostream& operator << (ostream& os, const deque<T>& s) {
 
 template <class T>
 ostream& operator << (ostream& os, const set<T>& s) {
+  os << "{";
+  bool first = true;
+  for (const auto& x : s) {
+    if (!first) {
+      os << ", ";
+    }
+    first = false;
+    os << x;
+  }
+  return os << "}";
+}
+
+template <class T>
+ostream& operator << (ostream& os, const unordered_set<T>& s) {
   os << "{";
   bool first = true;
   for (const auto& x : s) {
