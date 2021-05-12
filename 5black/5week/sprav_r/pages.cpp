@@ -71,28 +71,6 @@ FindOneOfInIndex(const ValuesContainer& values, Func f) {
   return result;
 }
 
-// bool Match(const YellowPages::Phone& phone, const YellowPages::Phone& tmpl) {
-//   if (!tmpl.extension().empty() && tmpl.extension() != phone.extension()) {
-//     return false;
-//   }
-//   if (!tmpl.type().empty()) {
-//     string type = (phone.type().empty() ? "PHONE" : phone.type());
-//     if (tmpl.type() != type) {
-//       return false;
-//     }
-//   }
-//   if (!tmpl.country_code().empty() && tmpl.country_code() != phone.country_code()) {
-//     return false;
-//   }
-//   if (
-//       (!tmpl.local_code().empty() || !tmpl.country_code().empty())
-//       && tmpl.local_code() != phone.local_code()
-//   ) {
-//     return false;
-//   }
-//   return tmpl.number() == phone.number();
-// }
-
 }  // namespace
 
 Pages::Pages(const Json::Dict& dict) {
@@ -177,19 +155,6 @@ Pages::Companies Pages::Process(const YellowPages::Query& query) const {
 
   optional<Companies> phones_result;
   if (query.phones().size() > 0) {
-    // phones_result = Companies{};
-    // size_t companies_size = db_.companies_size();
-    // for (size_t id = 0; id < companies_size; ++id) {
-    //   auto& c = db_.companies()[id];
-    //   for (auto& phone : c.phones()) {
-    //     for (auto& tmpl : query.phones()) {
-    //       if (Match(phone, tmpl)) {
-    //         phones_result->insert(id);
-    //       }
-    //     }
-    //   }
-    // }
-
     phones_result = FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
       return FindPhoneInIndex(value);
     });
@@ -234,10 +199,10 @@ void Pages::AddPhoneToIndex(const YellowPages::Phone& m, size_t company_id) {
     phones_extension_index_[m.extension()].insert(company_id);
   }
 
-  if (m.type() == "FAX") {
-    phones_type_index_["FAX"].insert(company_id);
-  } else {
+  if (m.type().empty()) {
     phones_type_index_["PHONE"].insert(company_id);
+  } else {
+    phones_type_index_[m.type()].insert(company_id);
   }
 }
 

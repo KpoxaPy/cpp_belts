@@ -1,6 +1,6 @@
 {
   "serialization_settings": {
-    "file": "data_phones.bin"
+    "file": "data_find.bin"
   },
   "routing_settings": {
     "bus_wait_time": 2,
