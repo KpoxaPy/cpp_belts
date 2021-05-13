@@ -24,54 +24,26 @@ const JsonParseOptions JSON_PARSE_OPTIONS = [](){
   return o;
 }();
 
-template <typename Set>
-Set Intersect(const Set& lhs, const Set& rhs) {
-  if (lhs.size() > rhs.size()) {
-    return Intersect(rhs, lhs);
+bool Match(const YellowPages::Phone& phone, const YellowPages::Phone& tmpl) {
+  if (!tmpl.extension().empty() && tmpl.extension() != phone.extension()) {
+    return false;
   }
-
-  Set result;
-  for (auto& id : lhs) {
-    if (rhs.count(id) > 0) {
-      result.insert(id);
+  if (!tmpl.type().empty()) {
+    string type = (phone.type().empty() ? "PHONE" : phone.type());
+    if (tmpl.type() != type) {
+      return false;
     }
   }
-  return result;
-}
-
-template <typename Set>
-void UnionIn(Set& lhs, const Set& rhs) {
-  for (auto& id : rhs) {
-    lhs.insert(id);
+  if (!tmpl.country_code().empty() && tmpl.country_code() != phone.country_code()) {
+    return false;
   }
-}
-
-template <typename Set>
-void UnionIn(Set& lhs, const Set* rhs) {
-  if (rhs) {
-    UnionIn(lhs, *rhs);
+  if (
+      (!tmpl.local_code().empty() || !tmpl.country_code().empty())
+      && tmpl.local_code() != phone.local_code()
+  ) {
+    return false;
   }
-}
-
-template <typename IndexValue, typename IndexKey>
-const IndexValue*
-FindInIndex(const std::unordered_map<IndexKey, IndexValue>& index, const IndexKey& value) {
-  auto it = index.find(value);
-  if (it != index.end()) {
-    return &it->second;
-  } else {
-    return nullptr;
-  }
-}
-
-template <typename Func, typename ValuesContainer>
-Pages::Companies
-FindOneOfInIndex(const ValuesContainer& values, Func f) {
-  Pages::Companies result;
-  for (const auto& v : values) {
-    UnionIn(result, f(v));
-  }
-  return result;
+  return tmpl.number() == phone.number();
 }
 
 }  // namespace
@@ -103,30 +75,6 @@ void Pages::BuildIndex() {
   for (auto& r : db_.rubrics()) {
     rubrics_projection_[r.second.name()] = r.first;
   }
-
-  size_t companies_size = db_.companies_size();
-  for (size_t id = 0; id < companies_size; ++id) {
-    auto& c = db_.companies()[id];
-
-    all_companies_.insert(id);
-
-    for (auto r_id : c.rubrics()) {
-      rubrics_index_[r_id].insert(id);
-    }
-
-    for (auto& n : c.names()) {
-      names_index_[n.value()].insert(id);
-    }
-
-    for (auto& url : c.urls()) {
-      urls_index_[url.value()].insert(id);
-    }
-
-    size_t phones_size = c.phones().size();
-    for (size_t phone_id = 0; phone_id < phones_size; ++phone_id) {
-      AddPhoneToIndex(c.phones()[phone_id], {id, phone_id});
-    }
-  }
 }
 
 const YellowPages::Company& Pages::operator[](size_t id) const {
@@ -134,34 +82,80 @@ const YellowPages::Company& Pages::operator[](size_t id) const {
 }
 
 Pages::Companies Pages::Process(const YellowPages::Query& query) const {
-  Companies result = all_companies_;
+  deque<size_t> queried_rubrics;
+  for (auto& r : query.rubrics()) {
+    queried_rubrics.push_back(rubrics_projection_.at(r));
+  }
 
-  if (query.rubrics().size() > 0) {
-    deque<size_t> rubrics_ids;
-    for (auto& r : query.rubrics()) {
-      rubrics_ids.push_back(rubrics_projection_.at(r));
+  Companies result;
+  size_t companies_size = db_.companies_size();
+  for (size_t id = 0; id < companies_size; ++id) {
+    auto& c = db_.companies()[id];
+    bool ok = true;
+
+    if (ok && query.names().size() > 0) {
+      ok = false;
+      for (auto& name : c.names()) {
+        for (auto& tmpl : query.names()) {
+          if (name.value() == tmpl) {
+            ok = true;
+            break;
+          }
+        }
+        if (ok) {
+          break;
+        }
+      }
     }
-    result = Intersect(result, FindOneOfInIndex(rubrics_ids, [this](size_t value) {
-      return FindInIndex(rubrics_index_, value);
-    }));
-  }
 
-  if (query.names().size() > 0) {
-    result = Intersect(result, FindOneOfInIndex(query.names(), [this](const std::string& value) {
-      return FindInIndex(names_index_, value);
-    }));
-  }
+    if (ok && query.urls().size() > 0) {
+      ok = false;
+      for (auto& url : c.urls()) {
+        for (auto& tmpl : query.urls()) {
+          if (url.value() == tmpl) {
+            ok = true;
+            break;
+          }
+        }
+        if (ok) {
+          break;
+        }
+      }
+    }
 
-  if (query.urls().size() > 0) {
-    result = Intersect(result, FindOneOfInIndex(query.urls(), [this](const std::string& value) {
-      return FindInIndex(urls_index_, value);
-    }));
-  }
+    if (ok && query.rubrics().size() > 0) {
+      ok = false;
+      for (auto& rubric : c.rubrics()) {
+        for (auto& tmpl : queried_rubrics) {
+          if (rubric == tmpl) {
+            ok = true;
+            break;
+          }
+        }
+        if (ok) {
+          break;
+        }
+      }
+    }
 
-  if (query.phones().size() > 0) {
-    result = Intersect(result, FindOneOfInIndex(query.phones(), [this](const YellowPages::Phone& value) {
-      return FindPhoneInIndex(value);
-    }));
+    if (ok && query.phones().size() > 0) {
+      ok = false;
+      for (auto& phone : c.phones()) {
+        for (auto& tmpl : query.phones()) {
+          if (Match(phone, tmpl)) {
+            ok = true;
+            break;
+          }
+        }
+        if (ok) {
+          break;
+        }
+      }
+    }
+
+    if (ok) {
+      result.insert(id);
+    }
   }
 
   return result;
@@ -169,69 +163,4 @@ Pages::Companies Pages::Process(const YellowPages::Query& query) const {
 
 void Pages::ParseFrom(const YellowPages::Database& m) {
   db_.CopyFrom(m);
-}
-
-void Pages::AddPhoneToIndex(const YellowPages::Phone& m, std::pair<size_t, size_t> id) {
-  phones_number_index_[m.number()].insert(id);
-  phones_local_code_index_[m.local_code()].insert(id);
-
-  if (m.country_code().size() > 0) {
-    phones_country_code_index_[m.country_code()].insert(id);
-  }
-
-  if (m.extension().size() > 0) {
-    phones_extension_index_[m.extension()].insert(id);
-  }
-
-  if (m.type().empty()) {
-    phones_type_index_["PHONE"].insert(id);
-  } else {
-    phones_type_index_[m.type()].insert(id);
-  }
-}
-
-Pages::Companies Pages::FindPhoneInIndex(const YellowPages::Phone& m) const {
-  CompaniesSubIndex pairs;
-
-  if (auto c = FindInIndex(phones_number_index_, m.number()); c) {
-    pairs = *c;
-  };
-
-  if (pairs.size() > 0 && m.extension().size() > 0) {
-    if (auto c = FindInIndex(phones_extension_index_, m.extension()); c) {
-      pairs = Intersect(pairs, *c);
-    } else {
-      pairs = {};
-    }
-  }
-
-  if (pairs.size() > 0 && m.type().size() > 0) {
-    if (auto c = FindInIndex(phones_type_index_, m.type()); c) {
-      pairs = Intersect(pairs, *c);
-    } else {
-      pairs = {};
-    }
-  }
-
-  if (pairs.size() > 0 && (m.country_code().size() > 0 || m.local_code().size() > 0)) {
-    if (auto c = FindInIndex(phones_local_code_index_, m.local_code()); c) {
-      pairs = Intersect(pairs, *c);
-    } else {
-      pairs = {};
-    }
-  }
-
-  if (pairs.size() > 0 && m.country_code().size() > 0) {
-    if (auto c = FindInIndex(phones_country_code_index_, m.country_code()); c) {
-      pairs = Intersect(pairs, *c);
-    } else {
-      pairs = {};
-    }
-  }
-
-  Companies result;
-  for (const auto& p : pairs) {
-    result.insert(p.first);
-  }
-  return result;
 }
