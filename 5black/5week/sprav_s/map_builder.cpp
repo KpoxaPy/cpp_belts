@@ -19,7 +19,7 @@ Builder::Builder(const SpravMapper& mapper)
 void Builder::DrawBusLines(const Sprav::Route* route) {
   if (route) {
     for (auto part : *route) {
-      if (part.type == RoutePartType::BUS) {
+      if (part.type == RoutePartType::RIDE_BUS) {
         DrawLine(bus_lines_palette_[part.name], part.stops);
       }
     }
@@ -34,7 +34,7 @@ void Builder::DrawBusLines(const Sprav::Route* route) {
 void Builder::DrawStops(const Sprav::Route* route) {
   if (route) {
     for (auto part : *route) {
-      if (part.type == RoutePartType::BUS) {
+      if (part.type == RoutePartType::RIDE_BUS) {
         for (auto stop_id : part.stops) {
           DrawStop(mapper_.GetSprav()->GetStop(stop_id));
         }
@@ -51,9 +51,9 @@ void Builder::DrawStopNames(const Sprav::Route* route) {
   if (route) {
     std::optional<size_t> last_stop_id;
     for (auto part : *route) {
-      if (part.type == RoutePartType::WAIT) {
+      if (part.type == RoutePartType::WAIT_BUS) {
         DrawStopName(*mapper_.GetSprav()->FindStop(part.name));
-      } else if (part.type == RoutePartType::BUS) {
+      } else if (part.type == RoutePartType::RIDE_BUS) {
         last_stop_id = *part.stops.rbegin();
       }
     }
@@ -70,7 +70,7 @@ void Builder::DrawStopNames(const Sprav::Route* route) {
 void Builder::DrawBusEndPoints(const Sprav::Route* route) {
   if (route) {
     for (auto part : *route) {
-      if (part.type == RoutePartType::BUS) {
+      if (part.type == RoutePartType::RIDE_BUS) {
         const Bus& bus = *mapper_.GetSprav()->FindBus(part.name);
         size_t first_end_stop_id = *begin(bus.stops);
         size_t last_end_stop_id = *rbegin(bus.stops);

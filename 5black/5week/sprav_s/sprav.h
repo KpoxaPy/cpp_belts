@@ -17,8 +17,9 @@
 
 enum class RoutePartType {
   NOOP,
-  BUS,
-  WAIT
+  RIDE_BUS,
+  WAIT_BUS,
+  WALK_TO_COMPANY
 };
 
 class Sprav {
@@ -27,6 +28,7 @@ class Sprav {
     RoutePartType type;
     size_t id = 0;
     size_t span_count = 0;
+    size_t company_id = 0;
     std::list<size_t> stops = {};
 
     void Serialize(SpravSerialize::Graph::Edge& m) const;
@@ -43,6 +45,7 @@ class Sprav {
     RoutePartType type;
     double time;
     std::string_view name;
+    std::string_view company_name;
     size_t span_count = 0;
 
     std::list<size_t> stops = {};
@@ -56,6 +59,8 @@ class Sprav {
    public:
     double GetTotalTime() const;
     operator bool() const;
+
+    Json::Node AsJson() const;
 
    private:
     const Sprav& sprav_;
@@ -98,6 +103,7 @@ class Sprav {
 
   Router* GetRouter() const;
   Route FindRoute(std::string_view from, std::string_view to) const;
+  Route FindRouteToCompany(std::string_view from, const YellowPages::Query& query) const;
 
   std::string GetMap() const;
   std::string GetRouteMap(const Route& route) const;

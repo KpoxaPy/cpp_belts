@@ -8,6 +8,7 @@
 #include "request_find.h"
 #include "request_map.h"
 #include "request_route.h"
+#include "request_route_to_company.h"
 #include "request_stat_bus.h"
 #include "request_stat_stop.h"
 #include "string_view_utils.h"
@@ -38,6 +39,8 @@ RequestPtr MakeRequest(const Json::Node& doc) {
     return make_shared<MapRequest>(dict);
   } else if (type == "FindCompanies") {
     return make_shared<FindRequest>(dict);
+  } else if (type == "RouteToCompany") {
+    return make_shared<RouteToCompanyRequest>(dict);
   }
   throw invalid_argument("");
 }

@@ -14,8 +14,6 @@ class FindResponse : public Response {
   size_t id_ = 0;
   SpravPtr sprav_;
   Pages::Companies result_;
-
-  std::string GetCompanyMainName(size_t id) const;
 };
 using FindResponsePtr = std::shared_ptr<FindResponse>;
 

@@ -31,8 +31,9 @@ message Graph {
   message Edge {
     enum Type {
       NOOP = 0;
-      BUS = 1;
-      WAIT = 2;
+      RIDE_BUS = 1;
+      WAIT_BUS = 2;
+      WALK_TO_COMPANY = 3;
     }
 
     uint32 from = 1;

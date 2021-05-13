@@ -34,26 +34,13 @@ Json::Node FindResponse::AsJson() const {
   Json::Array companies;
   companies.reserve(result_.size());
   for (auto id : result_) {
-    companies.push_back(GetCompanyMainName(id));
+    companies.push_back(sprav_->GetPages()->GetCompanyMainName(id));
   }
 
   return Json::Dict{
     {"request_id", id_},
     {"companies", std::move(companies)}
   };
-}
-
-std::string FindResponse::GetCompanyMainName(size_t id) const {
-  auto& c = (*sprav_->GetPages())[id];
-  for (auto& n : c.names()) {
-    if (n.type() == YellowPages::Name_Type_MAIN) {
-      return n.value();
-    }
-  }
-
-  ostringstream err_ss;
-  err_ss << "Could not find MAIN name for company with id=" << id;
-  throw runtime_error(err_ss.str());
 }
 
 FindRequest::FindRequest(const Json::Dict& dict)

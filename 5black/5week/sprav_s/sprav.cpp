@@ -10,10 +10,12 @@ using SerializedExtra = SpravSerialize::Graph::Edge;
 
 SerializedExtra::Type SerializeType(RoutePartType t) {
   switch (t) {
-  case RoutePartType::BUS:
-    return SerializedExtra::Type::Graph_Edge_Type_BUS;
-  case RoutePartType::WAIT:
-    return SerializedExtra::Type::Graph_Edge_Type_WAIT;
+  case RoutePartType::RIDE_BUS:
+    return SerializedExtra::Type::Graph_Edge_Type_RIDE_BUS;
+  case RoutePartType::WAIT_BUS:
+    return SerializedExtra::Type::Graph_Edge_Type_WAIT_BUS;
+  case RoutePartType::WALK_TO_COMPANY:
+    return SerializedExtra::Type::Graph_Edge_Type_WALK_TO_COMPANY;
   default:
     return SerializedExtra::Type::Graph_Edge_Type_NOOP;
   }
@@ -21,10 +23,12 @@ SerializedExtra::Type SerializeType(RoutePartType t) {
 
 RoutePartType SerializeType(SerializedExtra::Type t) {
   switch (t) {
-  case SerializedExtra::Type::Graph_Edge_Type_BUS:
-    return RoutePartType::BUS;
-  case SerializedExtra::Type::Graph_Edge_Type_WAIT:
-    return RoutePartType::WAIT;
+  case SerializedExtra::Type::Graph_Edge_Type_RIDE_BUS:
+    return RoutePartType::RIDE_BUS;
+  case SerializedExtra::Type::Graph_Edge_Type_WAIT_BUS:
+    return RoutePartType::WAIT_BUS;
+  case SerializedExtra::Type::Graph_Edge_Type_WALK_TO_COMPANY:
+    return RoutePartType::WALK_TO_COMPANY;
   default:
     return RoutePartType::NOOP;
   }
@@ -66,7 +70,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
         default:
         case RoutePartType::NOOP:
           break; 
-        case RoutePartType::BUS:
+        case RoutePartType::RIDE_BUS:
         {
           auto name = sprav_.GetBus(edge.extra.id).name;
           if (name == last_bus) {
@@ -75,7 +79,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
             bus_stops.insert(bus_stops.end(), edge.extra.stops.begin(), edge.extra.stops.end());
           } else if (last_bus != name) {
             if (!last_bus.empty()) {
-              push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count, bus_stops});
+              push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
             }
             last_bus = name;
             bus_total_time = edge.weight;
@@ -84,19 +88,30 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
           }
           break;
         }
-        case RoutePartType::WAIT:
+        case RoutePartType::WAIT_BUS:
           if (!last_bus.empty()) {
-            push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count, bus_stops});
+            push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
             last_bus = {};
             bus_total_time = 0;
             bus_span_count = 0;
           }
-          push_back({RoutePartType::WAIT, edge.weight, sprav_.GetStop(edge.extra.id).name});
+          push_back({RoutePartType::WAIT_BUS, edge.weight, sprav_.GetStop(edge.extra.id).name, {}});
+          break;
+        case RoutePartType::WALK_TO_COMPANY:
+          if (!last_bus.empty()) {
+            push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
+          }
+          push_back({
+            RoutePartType::WALK_TO_COMPANY,
+            edge.weight,
+            sprav_.GetStop(edge.extra.id).name,
+            sprav_.GetPages()->GetCompanyMainName(edge.extra.company_id)
+          });
           break;
       }
     }
     if (!last_bus.empty()) {
-      push_back({RoutePartType::BUS, bus_total_time, last_bus, bus_span_count, bus_stops});
+      push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
     }
     sprav_.GetRouter()->ReleaseRoute(info.id);
   }
@@ -108,6 +123,34 @@ double Sprav::Route::GetTotalTime() const {
 
 Sprav::Route::operator bool() const {
   return info_opt_.has_value();
+}
+
+Json::Node Sprav::Route::AsJson() const {
+  Json::Array items;
+  for (auto part : *this) {
+    if (part.type == RoutePartType::NOOP) {
+      continue;
+    }
+
+    Json::Dict item_dict;
+    if (part.type == RoutePartType::WAIT_BUS) {
+      item_dict["type"] = "WaitBus";
+      item_dict["time"] = part.time;
+      item_dict["stop_name"] = string(part.name);
+    } else if (part.type == RoutePartType::RIDE_BUS) {
+      item_dict["type"] = "RideBus";
+      item_dict["time"] = part.time;
+      item_dict["bus"] = string(part.name);
+      item_dict["span_count"] = part.span_count;
+    } else if (part.type == RoutePartType::WALK_TO_COMPANY) {
+      item_dict["type"] = "WalkToCompany";
+      item_dict["time"] = part.time;
+      item_dict["stop_name"] = string(part.name);
+      item_dict["company"] = string(part.company_name);
+    }
+    items.push_back(move(item_dict));
+  }
+  return items;
 }
 
 Sprav::Sprav()
@@ -189,6 +232,10 @@ Sprav::Router* Sprav::GetRouter() const {
 
 Sprav::Route Sprav::FindRoute(std::string_view from, std::string_view to) const {
   return Pimpl()->FindRoute(from, to);
+}
+
+Sprav::Route Sprav::FindRouteToCompany(std::string_view from, const YellowPages::Query& query) const {
+  return Pimpl()->FindRouteToCompany(from, query);
 }
 
 std::string Sprav::GetMap() const {

@@ -281,6 +281,14 @@ Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
   return {*sprav_, std::move(route)};
 }
 
+Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view /* from */, const YellowPages::Query& /* query */) const {
+  if (!router_) {
+    throw runtime_error("Failed to find route: no router");
+  }
+
+  return {*sprav_, {}};
+}
+
 std::string Sprav::PImpl::GetMap() const {
   return GetMapper().Render();
 }
@@ -304,7 +312,7 @@ void Sprav::PImpl::AddBusStops(size_t bus_id, InputIt begin, InputIt end) {
       time += GetStop(*prev(it_to)).DistanceTo(*it_to) / routing_settings_.bus_velocity;
       count += 1;
       stops.push_back(*it_to);
-      router_graph_->AddEdge({*it_from * 2, *it_to * 2 + 1, time, {RoutePartType::BUS, bus_id, count, stops}});
+      router_graph_->AddEdge({*it_from * 2, *it_to * 2 + 1, time, {RoutePartType::RIDE_BUS, bus_id, 0, count, stops}});
     }
   }
 }
@@ -316,7 +324,7 @@ void Sprav::PImpl::BuildGraph() {
   // Fill stop edges
   // (stop*) --w--> (stop)
   for (size_t i = 0; i < stop_names_.size(); ++i) {
-    router_graph_->AddEdge({i*2 + 1, i*2, routing_settings_.bus_wait_time, {RoutePartType::WAIT, i}});
+    router_graph_->AddEdge({i*2 + 1, i*2, routing_settings_.bus_wait_time, {RoutePartType::WAIT_BUS, i}});
   }
 
   // Fill route point edges

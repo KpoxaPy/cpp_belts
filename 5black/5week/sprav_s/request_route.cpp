@@ -11,26 +11,7 @@ Json::Node RouteResponse::AsJson() const {
   if (route_) {
     dict["map"] = map_;
     dict["total_time"] = route_.GetTotalTime();
-    Json::Array items;
-    for (auto part : route_) {
-      if (part.type == RoutePartType::NOOP) {
-        continue;
-      }
-
-      Json::Dict item_dict;
-      if (part.type == RoutePartType::WAIT) {
-        item_dict["type"] = "Wait";
-        item_dict["time"] = part.time;
-        item_dict["stop_name"] = string(part.name);
-      } else if (part.type == RoutePartType::BUS) {
-        item_dict["type"] = "Bus";
-        item_dict["time"] = part.time;
-        item_dict["bus"] = string(part.name);
-        item_dict["span_count"] = part.span_count;
-      }
-      items.push_back(move(item_dict));
-    }
-    dict["items"] = move(items);
+    dict["items"] = route_.AsJson();
   } else {
     dict["error_message"] = "not found";
   }

@@ -81,6 +81,19 @@ const YellowPages::Company& Pages::operator[](size_t id) const {
   return db_.companies()[id];
 }
 
+const std::string& Pages::GetCompanyMainName(size_t id) const {
+  auto& c = db_.companies()[id];
+  for (auto& n : c.names()) {
+    if (n.type() == YellowPages::Name_Type_MAIN) {
+      return n.value();
+    }
+  }
+
+  ostringstream err_ss;
+  err_ss << "Could not find MAIN name for company with id=" << id;
+  throw runtime_error(err_ss.str());
+}
+
 Pages::Companies Pages::Process(const YellowPages::Query& query) const {
   deque<size_t> queried_rubrics;
   for (auto& r : query.rubrics()) {

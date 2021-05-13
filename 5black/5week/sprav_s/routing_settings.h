@@ -8,4 +8,5 @@ struct RoutingSettings {
 
   double bus_wait_time = 1;
   double bus_velocity = 1;
+  double pedestrian_velocity = 1;
 };
