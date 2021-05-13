@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "mapper.pb.h"
+#include "company.pb.h"
 #include "svg.h"
 
 class SpravMapper;
@@ -22,6 +23,7 @@ class PointProjector {
   using CoordCompressMap = std::unordered_map<size_t, size_t>;
 
   using BusLines = std::unordered_set<size_t>;
+  using Companies = std::unordered_set<size_t>;
   using BearingStops = std::unordered_set<size_t>;
   using Stops = std::list<size_t>;
 
@@ -36,16 +38,20 @@ public:
   PointProjector(const SpravMapper& mapper);
 
   void PushStop(const Stop& s);
+  void PushCompany(size_t id, const YellowPages::Company& c);
   void Process();
   void ParseFrom(const SpravSerialize::PointProjector& m);
 
   void Serialize(SpravSerialize::PointProjector& m) const;
 
   Svg::Point operator()(const Stop& s) const;
+  Svg::Point operator()(size_t company_id) const;
 
 private:
   const SpravMapper& mapper_;
+  size_t stops_id_bound_;
 
+  Companies companies_;
   BusLines buses_;
   StopMovedCoords moved_coords_;
 

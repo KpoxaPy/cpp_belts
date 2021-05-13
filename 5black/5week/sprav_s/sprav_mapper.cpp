@@ -19,6 +19,9 @@ SpravMapper::SpravMapper(const Sprav* sprav)
   for (const auto& name : sorted_stop_names_) {
     projector_->PushStop(*sprav_->FindStop(name));
   }
+  for (size_t id = 0; id < sprav_->GetPages()->Size(); ++id) {
+    projector_->PushCompany(id, sprav_->GetPages()->Get(id));
+  }
   projector_->Process();
 }
 

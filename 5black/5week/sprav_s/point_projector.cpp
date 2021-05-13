@@ -5,7 +5,10 @@
 using namespace std;
 
 PointProjector::PointProjector(const SpravMapper& mapper)
-    : mapper_(mapper) {}
+  : mapper_(mapper)
+{
+  stops_id_bound_ = mapper_.GetSprav()->GetStopNames().size();
+}
 
 void PointProjector::PushStop(const Stop& s) {
   for (auto bus_id : s.buses) {
@@ -16,12 +19,24 @@ void PointProjector::PushStop(const Stop& s) {
   y_compress_data_.push_back(s.id);
 }
 
+void PointProjector::PushCompany(size_t id, const YellowPages::Company& c) {
+  const size_t c_id = stops_id_bound_ + id;
+  companies_.insert(id);
+  moved_coords_[c_id] = {
+    c.address().coords().lat(),
+    c.address().coords().lon()
+  };
+  x_compress_data_.push_back(c_id);
+  y_compress_data_.push_back(c_id);
+}
+
 void PointProjector::Process() {
   UniformCoords();
   CompressCoords();
 }
 
 void PointProjector::ParseFrom(const SpravSerialize::PointProjector& m) {
+  stops_id_bound_ = m.stops_id_bound();
   x_step = m.x_step();
   y_step = m.y_step();
   for (const auto& p : m.x_map()) {
@@ -33,6 +48,7 @@ void PointProjector::ParseFrom(const SpravSerialize::PointProjector& m) {
 }
 
 void PointProjector::Serialize(SpravSerialize::PointProjector& m) const {
+  m.set_stops_id_bound(stops_id_bound_);
   m.set_x_step(x_step);
   m.set_y_step(y_step);
   for (const auto& [id, tag] : x_compress_map_) {
@@ -48,9 +64,17 @@ void PointProjector::Serialize(SpravSerialize::PointProjector& m) const {
 }
 
 Svg::Point PointProjector::operator()(const Stop& s) const {
-  double padding = mapper_.GetSettings().padding;
-  double x = x_compress_map_.at(s.id) * x_step + padding;
-  double y = mapper_.GetSettings().height - padding - y_compress_map_.at(s.id) * y_step;
+  const double padding = mapper_.GetSettings().padding;
+  const double x = x_compress_map_.at(s.id) * x_step + padding;
+  const double y = mapper_.GetSettings().height - padding - y_compress_map_.at(s.id) * y_step;
+  return {x, y};
+}
+
+Svg::Point PointProjector::operator()(size_t company_id) const {
+  const size_t derived_id = stops_id_bound_ + company_id;
+  const double padding = mapper_.GetSettings().padding;
+  const double x = x_compress_map_.at(derived_id) * x_step + padding;
+  const double y = mapper_.GetSettings().height - padding - y_compress_map_.at(derived_id) * y_step;
   return {x, y};
 }
 
@@ -167,6 +191,19 @@ PointProjector::AdjacentStops PointProjector::BuildAdjacentStops() const {
       }
       if (it != prev(bus.stops.end())) {
         map[*it].insert(*next(it));
+      }
+    }
+  }
+
+  for (auto id : companies_) {
+    const auto& company = mapper_.GetSprav()->GetPages()->Get(id);
+    const size_t c_id = stops_id_bound_ + id;
+
+    for (auto& nearby : company.nearby_stops()) {
+      if (auto ptr = mapper_.GetSprav()->FindStop(nearby.name()); ptr) {
+        const size_t s_id = ptr->id;
+        map[c_id].insert(s_id);
+        map[s_id].insert(c_id);
       }
     }
   }

@@ -8,10 +8,11 @@ message ProjectIdToTag {
 }
 
 message PointProjector {
-  double x_step = 1;
-  double y_step = 2;
-  repeated ProjectIdToTag x_map = 3;
-  repeated ProjectIdToTag y_map = 4;
+  uint64 stops_id_bound = 1;
+  double x_step = 2;
+  double y_step = 3;
+  repeated ProjectIdToTag x_map = 4;
+  repeated ProjectIdToTag y_map = 5;
 }
 
 message Mapper {
