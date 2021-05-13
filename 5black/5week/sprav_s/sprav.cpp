@@ -39,6 +39,7 @@ RoutePartType SerializeType(SerializedExtra::Type t) {
 void Sprav::RouteExtra::Serialize(SerializedExtra& m) const {
   m.set_type(SerializeType(type));
   m.set_id(id);
+  m.set_company_id(company_id);
   m.set_span_count(span_count);
   for (auto stop : stops) {
     m.mutable_stops()->Add(stop);
@@ -49,6 +50,7 @@ Sprav::RouteExtra Sprav::RouteExtra::ParseFrom(const SerializedExtra& m) {
   RouteExtra e;
   e.type = SerializeType(m.type());
   e.id = m.id();
+  e.company_id = m.company_id();
   e.span_count = m.span_count();
   e.stops.assign(m.stops().begin(), m.stops().end());
   return e;

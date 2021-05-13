@@ -41,8 +41,9 @@ message Graph {
     float weight = 3;
     Type type = 4;
     uint32 id = 5;
-    uint32 span_count = 6;
-    repeated uint32 stops = 7;
+    uint32 company_id = 6;
+    uint32 span_count = 7;
+    repeated uint32 stops = 8;
   }
 
   repeated Edge edge = 1;

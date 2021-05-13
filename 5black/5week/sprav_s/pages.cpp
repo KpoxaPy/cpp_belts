@@ -78,7 +78,15 @@ void Pages::BuildIndex() {
 }
 
 const YellowPages::Company& Pages::operator[](size_t id) const {
+  return Get(id);
+}
+
+const YellowPages::Company& Pages::Get(size_t id) const {
   return db_.companies()[id];
+}
+
+size_t Pages::Size() const {
+  return db_.companies().size();
 }
 
 const std::string& Pages::GetCompanyMainName(size_t id) const {

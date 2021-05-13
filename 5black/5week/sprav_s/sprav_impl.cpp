@@ -312,14 +312,30 @@ void Sprav::PImpl::AddBusStops(size_t bus_id, InputIt begin, InputIt end) {
       time += GetStop(*prev(it_to)).DistanceTo(*it_to) / routing_settings_.bus_velocity;
       count += 1;
       stops.push_back(*it_to);
-      router_graph_->AddEdge({*it_from * 2, *it_to * 2 + 1, time, {RoutePartType::RIDE_BUS, bus_id, 0, count, stops}});
+      router_graph_->AddEdge({*it_from * 2, *it_to * 2 + 1, time, {RoutePartType::RIDE_BUS, bus_id, count, 0, stops}});
     }
+  }
+}
+
+void Sprav::PImpl::AddCompany(size_t id, const YellowPages::Company& company) {
+  const size_t vertex_id = stop_names_.size() * 2 + id;
+  for (auto& s : company.nearby_stops()) {
+    auto& stop = GetStop(s.name());
+    double time = s.meters() / routing_settings_.pedestrian_velocity;
+
+    router_graph_->AddEdge({stop.id * 2 + 1, vertex_id, time,
+      {RoutePartType::WALK_TO_COMPANY, stop.id, 0, id, {}}}
+    );
   }
 }
 
 void Sprav::PImpl::BuildGraph() {
   LOG_DURATION("Sprav::BuildGraph");
-  router_graph_ = make_shared<Graph>(stop_names_.size() * 2);
+
+  const size_t stops_border = stop_names_.size() * 2;
+  const size_t companies_border = stops_border + pages_->Size();
+
+  router_graph_ = make_shared<Graph>(companies_border);
 
   // Fill stop edges
   // (stop*) --w--> (stop)
@@ -333,6 +349,11 @@ void Sprav::PImpl::BuildGraph() {
     if (!bus.is_roundtrip) {
       AddBusStops(bus.id, bus.stops.rbegin(), bus.stops.rend());
     }
+  }
+
+  // Fill company edges
+  for (size_t id = 0; id < pages_->Size(); ++id) {
+    AddCompany(id, pages_->Get(id));
   }
 }
 

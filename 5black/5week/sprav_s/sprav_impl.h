@@ -73,6 +73,7 @@ class Sprav::PImpl {
 
   template <typename InputIt>
   void AddBusStops(size_t bus_id, InputIt begin, InputIt end);
+  void AddCompany(size_t id, const YellowPages::Company& company);
   void BuildGraph();
 
   void BuildRouter();

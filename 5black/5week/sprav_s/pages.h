@@ -26,6 +26,8 @@ class Pages {
   void BuildIndex();
 
   const YellowPages::Company& operator[](size_t id) const;
+  const YellowPages::Company& Get(size_t id) const;
+  size_t Size() const;
   const std::string& GetCompanyMainName(size_t id) const;
 
   Companies Process(const YellowPages::Query& query) const;
