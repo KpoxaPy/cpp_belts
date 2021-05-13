@@ -1,0 +1,74 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Make base",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [
+        "make_base",
+        "<",
+        "${workspaceFolder}/example1_make_base.in.json",
+        // "${workspaceFolder}/example2_make_base.in.json",
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Enable break on all exceptions",
+          "text": "catch throw",
+          "ignoreFailures": true
+        }
+      ],
+    },
+    {
+      "name": "Process requests",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [
+        "process_requests",
+        ">",
+        "${env:TMP}/output.json",
+        "<",
+        "${workspaceFolder}/example1_process_requests.in.json",
+        // "${workspaceFolder}/example2_process_requests.in.json",
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Enable break on all exceptions",
+          "text": "catch throw",
+          "ignoreFailures": true
+        }
+      ],
+      "postDebugTask": "Make Svg"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+    "serialization_settings": {
+        "file": "/tmp/tmp2f3570x9"
+    },
+    "stat_requests": [
+        {
+            "id": 1804726714,
+            "type": "Bus",
+            "name": "13"
+        },
+        {
+            "id": 1601390749,
+            "type": "Stop",
+            "name": "Морской вокзал"
+        },
+        {
+            "id": 1804743431,
+            "type": "FindCompanies",
+            "rubrics": [
+                "Парк"
+            ]
+        },
+        {
+            "id": 179918605,
+            "type": "Route",
+            "from": "Краево-Греческая улица",
+            "to": "Органный зал"
+        },
+        {
+            "id": 1578968634,
+            "type": "RouteToCompany",
+            "from": "Краево-Греческая улица",
+            "companies": {
+                "rubrics": [
+                    "Парк"
+                ]
+            }
+        },
+        {
+            "id": 1499333079,
+            "type": "RouteToCompany",
+            "from": "Цирк",
+            "companies": {
+                "rubrics": [
+                    "Парк"
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package YellowPages;
+
+import "phone.proto";
+
+message Query {
+  repeated string names = 1;
+  repeated string rubrics = 2;
+  repeated string urls = 3;
+  repeated Phone phones = 4;
+}
