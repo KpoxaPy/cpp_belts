@@ -53,11 +53,16 @@ void Builder::DrawStops(const Sprav::Route* route) {
 void Builder::DrawStopNames(const Sprav::Route* route) {
   if (route) {
     std::optional<size_t> last_stop_id;
+    bool only_walk = true;
     for (auto part : *route) {
       if (part.type == RoutePartType::WAIT_BUS) {
         DrawStopName(*mapper_.GetSprav()->FindStop(part.name));
+        only_walk = false;
       } else if (part.type == RoutePartType::RIDE_BUS) {
         last_stop_id = *part.stops.rbegin();
+        only_walk = false;
+      } else if (part.type == RoutePartType::WALK_TO_COMPANY && only_walk) {
+        DrawStopName(*mapper_.GetSprav()->FindStop(part.name));
       }
     }
     if (last_stop_id) {
