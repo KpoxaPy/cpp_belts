@@ -354,7 +354,7 @@ void Sprav::PImpl::AddCompany(size_t id, const YellowPages::Company& company) {
   const size_t vertex_id = stop_names_.size() * 2 + id;
   for (auto& s : company.nearby_stops()) {
     auto& stop = GetStop(s.name());
-    double time = s.meters() / routing_settings_.pedestrian_velocity;
+    const double time = s.meters() / routing_settings_.pedestrian_velocity;
 
     router_graph_->AddEdge({stop.id * 2 + 1, vertex_id, time,
       {RoutePartType::WALK_TO_COMPANY, stop.id, 0, id, {}}}

@@ -186,14 +186,12 @@ void Builder::BuildBusLinesPalette() {
 
 void Builder::DrawLineFull(const Svg::Color& line_color, const Bus& bus) {
   std::list<size_t> stops;
-  if (bus.stops.size() > 1) {
-    for (const auto& stop_id : bus.stops) {
-      stops.push_back(stop_id);
-    }
-    if (!bus.is_roundtrip) {
-      for (auto it = ++rbegin(bus.stops); it != rend(bus.stops); ++it) {
-        stops.push_back(*it);
-      }
+  for (const auto& stop_id : bus.stops) {
+    stops.push_back(stop_id);
+  }
+  if (!bus.is_roundtrip) {
+    for (auto it = ++rbegin(bus.stops); it != rend(bus.stops); ++it) {
+      stops.push_back(*it);
     }
   }
   DrawLine(line_color, stops);

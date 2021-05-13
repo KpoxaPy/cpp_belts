@@ -81,7 +81,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
             bus_stops.insert(bus_stops.end(), edge.extra.stops.begin(), edge.extra.stops.end());
           } else if (last_bus != name) {
             if (!last_bus.empty()) {
-              push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
+              push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, 0, bus_span_count, bus_stops});
             }
             last_bus = name;
             bus_total_time = edge.weight;
@@ -92,19 +92,21 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
         }
         case RoutePartType::WAIT_BUS:
           if (!last_bus.empty()) {
-            push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
+            push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, 0, bus_span_count, bus_stops});
             last_bus = {};
             bus_total_time = 0;
             bus_span_count = 0;
+            bus_stops.clear();
           }
-          push_back({RoutePartType::WAIT_BUS, edge.weight, sprav_.GetStop(edge.extra.id).name, {}});
+          push_back({RoutePartType::WAIT_BUS, edge.weight, sprav_.GetStop(edge.extra.id).name});
           break;
         case RoutePartType::WALK_TO_COMPANY:
           if (!last_bus.empty()) {
-            push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
+            push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, 0, bus_span_count, bus_stops});
             last_bus = {};
             bus_total_time = 0;
             bus_span_count = 0;
+            bus_stops.clear();
           }
           push_back({
             RoutePartType::WALK_TO_COMPANY,
@@ -116,7 +118,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
       }
     }
     if (!last_bus.empty()) {
-      push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
+      push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, 0, bus_span_count, bus_stops});
     }
     sprav_.GetRouter()->ReleaseRoute(info.id);
   }
