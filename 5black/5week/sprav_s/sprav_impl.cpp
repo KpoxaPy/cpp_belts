@@ -281,12 +281,45 @@ Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
   return {*sprav_, std::move(route)};
 }
 
-Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view /* from */, const YellowPages::Query& /* query */) const {
+Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const YellowPages::Query& query) const {
+  using Info = Sprav::Router::RouteInfo;
+
   if (!router_) {
     throw runtime_error("Failed to find route: no router");
   }
 
-  return {*sprav_, {}};
+  const auto companies = pages_->Process(query);
+  if (companies.empty()) {
+    return {*sprav_, {}};
+  }
+
+  deque<Info> route_candidates;
+  const size_t stop_vid = FindStop(from)->id * 2 + 1;
+  for (size_t id : companies) {
+    const size_t company_vid = stop_names_.size() * 2 + id;
+    auto route_opt = router_->BuildRoute(stop_vid, company_vid);
+    if (route_opt) {
+      route_candidates.push_back(std::move(route_opt.value()));
+    }
+  }
+
+  if (route_candidates.empty()) {
+    return {*sprav_, {}};
+  }
+
+  auto it = std::min_element(begin(route_candidates), end(route_candidates),
+    [](const Info& lhs, const Info& rhs){
+      return lhs.weight < rhs.weight;
+    }
+  );
+
+  for (auto& c : route_candidates) {
+    if (c.id != it->id) {
+      sprav_->GetRouter()->ReleaseRoute(c.id);
+    }
+  }
+
+  return {*sprav_, std::move(*it)};
 }
 
 std::string Sprav::PImpl::GetMap() const {
