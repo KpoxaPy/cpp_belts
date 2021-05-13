@@ -110,7 +110,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
             RoutePartType::WALK_TO_COMPANY,
             edge.weight,
             sprav_.GetStop(edge.extra.id).name,
-            sprav_.GetPages()->GetCompanyMainName(edge.extra.company_id)
+            edge.extra.company_id
           });
           break;
       }
@@ -151,7 +151,7 @@ Json::Node Sprav::Route::AsJson() const {
       item_dict["type"] = "WalkToCompany";
       item_dict["time"] = part.time;
       item_dict["stop_name"] = string(part.name);
-      item_dict["company"] = string(part.company_name);
+      item_dict["company"] = sprav_.GetPages()->GetCompanyMainName(part.company_id);
     }
     items.push_back(move(item_dict));
   }

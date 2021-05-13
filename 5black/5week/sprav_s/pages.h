@@ -29,6 +29,7 @@ class Pages {
   const YellowPages::Company& Get(size_t id) const;
   size_t Size() const;
   const std::string& GetCompanyMainName(size_t id) const;
+  std::string GetCompanyFullName(size_t id) const;
 
   Companies Process(const YellowPages::Query& query) const;
 

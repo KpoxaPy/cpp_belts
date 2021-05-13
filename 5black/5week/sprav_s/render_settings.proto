@@ -10,6 +10,9 @@ enum MapLayerType {
   BUS_LABELS = 2;
   STOP_POINTS = 3;
   STOP_LABELS = 4;
+  COMPANY_LINES = 5;
+  COMPANY_POINTS = 6;
+  COMPANY_LABELS = 7;
 }
 
 message RenderSettings {
@@ -34,4 +37,7 @@ message RenderSettings {
   repeated Svg.Color color_palette = 13;
 
   repeated MapLayerType layers = 14;
+
+  double company_radius = 15;
+  double company_line_width = 16;
 }

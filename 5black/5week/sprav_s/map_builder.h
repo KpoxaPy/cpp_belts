@@ -18,6 +18,9 @@ class Builder {
   void DrawStops(const Sprav::Route* route = nullptr);
   void DrawStopNames(const Sprav::Route* route = nullptr);
   void DrawBusEndPoints(const Sprav::Route* route = nullptr);
+  void DrawCompanyLines(const Sprav::Route* route = nullptr);
+  void DrawCompanyPoints(const Sprav::Route* route = nullptr);
+  void DrawCompanyLabels(const Sprav::Route* route = nullptr);
 
   void DrawRouterCover();
 
@@ -38,5 +41,6 @@ class Builder {
 
   void DrawStop(const Stop& stop);
   void DrawStopName(const Stop& stop);
+  void DrawStopName(Svg::Point point, std::string name);
   void DrawBusEndPoint(const Svg::Color& line_color, const Bus& bus, const Stop& stop);
 };

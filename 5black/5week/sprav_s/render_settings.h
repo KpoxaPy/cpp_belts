@@ -10,7 +10,10 @@ enum class MapLayerType {
   BUS_LINES,
   BUS_LABELS,
   STOP_POINTS,
-  STOP_LABELS
+  STOP_LABELS,
+  COMPANY_LINES,
+  COMPANY_POINTS,
+  COMPANY_LABELS
 };
 
 struct RenderSettings {
@@ -27,6 +30,9 @@ struct RenderSettings {
 
   double stop_radius = 6;
   double line_width = 16;
+
+  double company_radius = 5;
+  double company_line_width = 8;
 
   uint32_t stop_label_font_size = 1;
   Svg::Point stop_label_offset = {1, 1};

@@ -8,7 +8,10 @@ const unordered_map<MapLayerType, void (Builder::*)(const Sprav::Route*)> Builde
     {MapLayerType::BUS_LINES, &Builder::DrawBusLines},
     {MapLayerType::BUS_LABELS, &Builder::DrawBusEndPoints},
     {MapLayerType::STOP_POINTS, &Builder::DrawStops},
-    {MapLayerType::STOP_LABELS, &Builder::DrawStopNames}};
+    {MapLayerType::STOP_LABELS, &Builder::DrawStopNames},
+    {MapLayerType::COMPANY_LINES, &Builder::DrawCompanyLines},
+    {MapLayerType::COMPANY_POINTS, &Builder::DrawCompanyPoints},
+    {MapLayerType::COMPANY_LABELS, &Builder::DrawCompanyLabels}};
 
 Builder::Builder(const SpravMapper& mapper)
   : mapper_(mapper)
@@ -102,6 +105,54 @@ void Builder::DrawBusEndPoints(const Sprav::Route* route) {
   }
 }
 
+void Builder::DrawCompanyLines(const Sprav::Route* route) {
+  if (!route) {
+    return;
+  }
+
+  for (auto part : *route) {
+    if (part.type == RoutePartType::WALK_TO_COMPANY) {
+      const auto& stop = *mapper_.GetSprav()->FindStop(part.name);
+      Svg::Polyline line;
+      line.SetStrokeColor("black");
+      line.SetStrokeWidth(mapper_.GetSettings().company_line_width);
+      line.SetStrokeLineCap("round");
+      line.SetStrokeLineJoin("round");
+      line.AddPoint(mapper_.GetProjector()(stop));
+      line.AddPoint(mapper_.GetProjector()(part.company_id));
+      doc_.Add(line);
+    }
+  }
+}
+
+void Builder::DrawCompanyPoints(const Sprav::Route* route) {
+  if (!route) {
+    return;
+  }
+
+  for (auto part : *route) {
+    if (part.type == RoutePartType::WALK_TO_COMPANY) {
+      doc_.Add(Svg::Circle{}
+                  .SetCenter(mapper_.GetProjector()(part.company_id))
+                  .SetRadius(mapper_.GetSettings().company_radius)
+                  .SetFillColor("black"));
+    }
+  }
+}
+
+void Builder::DrawCompanyLabels(const Sprav::Route* route) {
+  if (!route) {
+    return;
+  }
+
+  for (auto part : *route) {
+    if (part.type == RoutePartType::WALK_TO_COMPANY) {
+      string name = mapper_.GetSprav()->GetPages()->GetCompanyFullName(part.company_id);
+      DrawStopName(mapper_.GetProjector()(part.company_id), std::move(name));
+    }
+  }
+}
+
 void Builder::DrawRouterCover() {
   Svg::Rect rect;
   
@@ -163,12 +214,16 @@ void Builder::DrawStop(const Stop& stop) {
 }
 
 void Builder::DrawStopName(const Stop& stop) {
+  Builder::DrawStopName(mapper_.GetProjector()(stop), string(stop.name));
+}
+
+void Builder::DrawStopName(Svg::Point point, std::string name) {
   Svg::Text t;
-  t.SetPoint(mapper_.GetProjector()(stop));
+  t.SetPoint(std::move(point));
   t.SetOffset(mapper_.GetSettings().stop_label_offset);
   t.SetFontSize(mapper_.GetSettings().stop_label_font_size);
   t.SetFontFamily("Verdana");
-  t.SetData(string(stop.name));
+  t.SetData(std::move(name));
   Svg::Text underlayer = t;
 
   underlayer.SetFillColor(mapper_.GetSettings().underlayer_color);

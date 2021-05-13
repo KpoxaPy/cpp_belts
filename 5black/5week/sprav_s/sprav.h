@@ -45,7 +45,7 @@ class Sprav {
     RoutePartType type;
     double time;
     std::string_view name;
-    std::string_view company_name;
+    size_t company_id;
     size_t span_count = 0;
 
     std::list<size_t> stops = {};

@@ -102,6 +102,16 @@ const std::string& Pages::GetCompanyMainName(size_t id) const {
   throw runtime_error(err_ss.str());
 }
 
+std::string Pages::GetCompanyFullName(size_t id) const {
+  auto& c = db_.companies()[id];
+  ostringstream ss;
+  if (c.rubrics().size() > 0) {
+    ss << db_.rubrics().at(c.rubrics()[0]).name() << " ";
+  }
+  ss << GetCompanyMainName(id);
+  return ss.str();
+}
+
 Pages::Companies Pages::Process(const YellowPages::Query& query) const {
   deque<size_t> queried_rubrics;
   for (auto& r : query.rubrics()) {

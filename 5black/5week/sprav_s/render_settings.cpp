@@ -45,6 +45,9 @@ RenderSettings::RenderSettings(const Json::Dict& dict) {
   stop_radius = dict.at("stop_radius").AsInt();
   line_width = dict.at("line_width").AsDouble();
 
+  company_radius = dict.at("company_radius").AsDouble();
+  company_line_width = dict.at("company_line_width").AsDouble();
+
   underlayer_color = ColorFromJson(dict.at("underlayer_color"));
   underlayer_width = dict.at("underlayer_width").AsDouble();
 
@@ -73,6 +76,12 @@ RenderSettings::RenderSettings(const Json::Dict& dict) {
       t = MapLayerType::STOP_POINTS;
     } else if (s == "stop_labels") {
       t = MapLayerType::STOP_LABELS;
+    } else if (s == "company_lines") {
+      t = MapLayerType::COMPANY_LINES;
+    } else if (s == "company_points") {
+      t = MapLayerType::COMPANY_POINTS;
+    } else if (s == "company_labels") {
+      t = MapLayerType::COMPANY_LABELS;
     }
     layers.push_back(t);
   }
@@ -87,6 +96,9 @@ RenderSettings::RenderSettings(const SpravSerialize::RenderSettings& m) {
 
   stop_radius = m.stop_radius();
   line_width = m.line_width();
+
+  company_radius = m.company_radius();
+  company_line_width = m.company_line_width();
 
   underlayer_color = Svg::Color(m.underlayer_color());
   underlayer_width = m.underlayer_width();
@@ -115,6 +127,12 @@ RenderSettings::RenderSettings(const SpravSerialize::RenderSettings& m) {
       t = MapLayerType::STOP_LABELS; break;
     case SpravSerialize::MapLayerType::STOP_POINTS:
       t = MapLayerType::STOP_POINTS; break;
+    case SpravSerialize::MapLayerType::COMPANY_LINES:
+      t = MapLayerType::COMPANY_LINES; break;
+    case SpravSerialize::MapLayerType::COMPANY_POINTS:
+      t = MapLayerType::COMPANY_POINTS; break;
+    case SpravSerialize::MapLayerType::COMPANY_LABELS:
+      t = MapLayerType::COMPANY_LABELS; break;
     
     case SpravSerialize::MapLayerType::UNKNOWN:
     default:
@@ -133,6 +151,9 @@ void RenderSettings::Serialize(SpravSerialize::RenderSettings& m) const {
 
   m.set_stop_radius(stop_radius);
   m.set_line_width(line_width);
+
+  m.set_company_radius(company_radius);
+  m.set_company_line_width(company_line_width);
 
   underlayer_color.Serialize(*m.mutable_underlayer_color());
   m.set_underlayer_width(underlayer_width);
@@ -159,6 +180,12 @@ void RenderSettings::Serialize(SpravSerialize::RenderSettings& m) const {
       t = SpravSerialize::MapLayerType::STOP_LABELS; break;
     case MapLayerType::STOP_POINTS:
       t = SpravSerialize::MapLayerType::STOP_POINTS; break;
+    case MapLayerType::COMPANY_LINES:
+      t = SpravSerialize::MapLayerType::COMPANY_LINES; break;
+    case MapLayerType::COMPANY_POINTS:
+      t = SpravSerialize::MapLayerType::COMPANY_POINTS; break;
+    case MapLayerType::COMPANY_LABELS:
+      t = SpravSerialize::MapLayerType::COMPANY_LABELS; break;
     
     default:
       t = SpravSerialize::MapLayerType::UNKNOWN;

@@ -55,9 +55,8 @@ RouteToCompanyRequest::RouteToCompanyRequest(const Json::Dict& dict)
 
 ResponsePtr RouteToCompanyRequest::Process(SpravPtr sprav) const {
   auto route = sprav->FindRouteToCompany(from_, query_);
-  // auto map = sprav->GetRouteMap(route);
-  // return make_shared<RouteResponse>(type_, id_, std::move(route), std::move(map));
-  return make_shared<RouteToCompanyResponse>(type_, id_, std::move(route), "");
+  auto map = sprav->GetRouteMap(route);
+  return make_shared<RouteToCompanyResponse>(type_, id_, std::move(route), std::move(map));
 }
 
 Json::Node RouteToCompanyRequest::AsJson() const {
