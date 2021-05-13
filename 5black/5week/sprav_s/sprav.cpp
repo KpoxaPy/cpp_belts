@@ -102,6 +102,9 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
         case RoutePartType::WALK_TO_COMPANY:
           if (!last_bus.empty()) {
             push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, {}, bus_span_count, bus_stops});
+            last_bus = {};
+            bus_total_time = 0;
+            bus_span_count = 0;
           }
           push_back({
             RoutePartType::WALK_TO_COMPANY,
