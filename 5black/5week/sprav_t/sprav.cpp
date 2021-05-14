@@ -56,7 +56,7 @@ Sprav::RouteExtra Sprav::RouteExtra::ParseFrom(const SerializedExtra& m) {
   return e;
 }
 
-Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
+Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt, const Time& current_time)
   : sprav_(sprav)
   , info_opt_(move(info_opt))
 {
@@ -66,6 +66,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
     double bus_total_time = 0;
     size_t bus_span_count = 0;
     std::list<size_t> bus_stops;
+    optional<size_t> company_id;
     for (size_t idx = 0; idx < info.edge_count; ++idx) {
       auto edge = sprav_.GetRouter()->GetRouteEdge(info.id, idx);
       switch (edge.extra.type) {
@@ -108,6 +109,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
             bus_span_count = 0;
             bus_stops.clear();
           }
+          company_id = edge.extra.company_id;
           push_back({
             RoutePartType::WALK_TO_COMPANY,
             edge.weight,
@@ -120,6 +122,18 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt)
     if (!last_bus.empty()) {
       push_back({RoutePartType::RIDE_BUS, bus_total_time, last_bus, 0, bus_span_count, bus_stops});
     }
+
+    if (company_id) {
+      if (auto wait_opt = sprav_.GetPages()->GetWaitTime(company_id.value(), current_time + info.weight); wait_opt) {
+        push_back({
+          RoutePartType::WAIT_COMPANY,
+          wait_opt.value(),
+          {},
+          company_id.value()
+        });
+      }
+    }
+
     sprav_.GetRouter()->ReleaseRoute(info.id);
   }
 }
@@ -153,6 +167,10 @@ Json::Node Sprav::Route::AsJson() const {
       item_dict["type"] = "WalkToCompany";
       item_dict["time"] = part.time;
       item_dict["stop_name"] = string(part.name);
+      item_dict["company"] = sprav_.GetPages()->GetCompanyMainName(part.company_id);
+    } else if (part.type == RoutePartType::WAIT_COMPANY) {
+      item_dict["type"] = "WaitCompany";
+      item_dict["time"] = part.time;
       item_dict["company"] = sprav_.GetPages()->GetCompanyMainName(part.company_id);
     }
     items.push_back(move(item_dict));

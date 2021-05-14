@@ -20,7 +20,8 @@ enum class RoutePartType {
   NOOP,
   RIDE_BUS,
   WAIT_BUS,
-  WALK_TO_COMPANY
+  WALK_TO_COMPANY,
+  WAIT_COMPANY
 };
 
 class Sprav {
@@ -55,7 +56,7 @@ class Sprav {
   class Route : public std::list<RouteItem> {
    private:
     friend class Sprav;
-    Route(const Sprav& sprav, RouteInfoOpt info);
+    Route(const Sprav& sprav, RouteInfoOpt info, const Time& current_time);
 
    public:
     double GetTotalTime() const;

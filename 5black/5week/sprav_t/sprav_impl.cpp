@@ -278,7 +278,7 @@ Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
   }
 
   auto route = router_->BuildRoute(FindStop(from)->id * 2 + 1, FindStop(to)->id * 2 + 1);
-  return {*sprav_, std::move(route)};
+  return {*sprav_, std::move(route), Time()};
 }
 
 Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const YellowPages::Query& query, const Time& time) const {
@@ -290,7 +290,7 @@ Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const Yello
 
   const auto companies = pages_->Process(query);
   if (companies.empty()) {
-    return {*sprav_, {}};
+    return {*sprav_, {}, time};
   }
 
   deque<Info> route_candidates;
@@ -300,7 +300,7 @@ Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const Yello
     const size_t company_vid = stop_names_.size() * 2 + id;
     auto route_opt = router_->BuildRoute(stop_vid, company_vid);
     if (route_opt) {
-      auto wait_opt = pages_->GetWaitTime(id, time);
+      auto wait_opt = pages_->GetWaitTime(id, time + route_opt->weight);
       route_times.push_back({route_candidates.size(), route_opt->weight + wait_opt.value_or(0)});
       route_candidates.push_back(std::move(route_opt.value()));
     }
@@ -308,7 +308,7 @@ Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const Yello
   assert(route_times.size() == route_candidates.size());
 
   if (route_candidates.empty()) {
-    return {*sprav_, {}};
+    return {*sprav_, {}, time};
   }
 
   auto it = std::min_element(begin(route_times), end(route_times),
@@ -324,7 +324,7 @@ Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const Yello
     }
   }
 
-  return {*sprav_, std::move(winner)};
+  return {*sprav_, std::move(winner), time};
 }
 
 std::string Sprav::PImpl::GetMap() const {
