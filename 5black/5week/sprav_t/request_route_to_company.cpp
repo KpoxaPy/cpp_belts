@@ -52,7 +52,7 @@ RouteToCompanyRequest::RouteToCompanyRequest(const Json::Dict& dict)
     throw runtime_error(err_ss.str());
   }
 
-  time_ = Time(dict.at("datetime"));
+  time_ = Time::From(dict.at("datetime"));
 }
 
 ResponsePtr RouteToCompanyRequest::Process(SpravPtr sprav) const {

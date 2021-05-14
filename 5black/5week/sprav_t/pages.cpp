@@ -75,6 +75,12 @@ void Pages::BuildIndex() {
   for (auto& r : db_.rubrics()) {
     rubrics_projection_[r.second.name()] = r.first;
   }
+
+  size_t companies_size = db_.companies_size();
+  for (size_t id = 0; id < companies_size; ++id) {
+    auto& c = db_.companies()[id];
+    company_working_times_.emplace(id, WorkingTime(c.working_time()));
+  }
 }
 
 const YellowPages::Company& Pages::operator[](size_t id) const {
@@ -112,8 +118,8 @@ std::string Pages::GetCompanyFullName(size_t id) const {
   return ss.str();
 }
 
-std::optional<double> Pages::GetWaitTime(size_t /* id */, const Time& /* current_time */) const {
-  return {};
+std::optional<double> Pages::GetWaitTime(size_t id, const Time& current_time) const {
+  return company_working_times_.at(id).GetWaitTime(current_time);
 }
 
 Pages::Companies Pages::Process(const YellowPages::Query& query) const {

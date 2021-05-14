@@ -17,6 +17,7 @@ class Pages {
 
  private:
   using RubricsProjection = std::unordered_map<std::string, size_t>;
+  using CompanyWorkingTimes = std::unordered_map<size_t, WorkingTime>;
 
  public:
   Pages() = default;
@@ -40,6 +41,7 @@ class Pages {
 
   Companies all_companies_;
   RubricsProjection rubrics_projection_;
+  CompanyWorkingTimes company_working_times_;
 
   void ParseFrom(const YellowPages::Database& m);
 };
