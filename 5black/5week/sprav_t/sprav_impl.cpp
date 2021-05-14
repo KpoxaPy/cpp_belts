@@ -282,49 +282,38 @@ Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
 }
 
 Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const YellowPages::Query& query, const Time& time) const {
-  using Info = Sprav::Router::RouteInfo;
-
   if (!router_) {
     throw runtime_error("Failed to find route: no router");
   }
 
-  const auto companies = pages_->Process(query);
-  if (companies.empty()) {
-    return {*sprav_, {}, time};
-  }
-
-  deque<Info> route_candidates;
-  deque<pair<size_t, double>> route_times;
+  RouteInfoOpt winner;
+  double winner_time = 0;
   const size_t stop_vid = FindStop(from)->id * 2 + 1;
-  for (size_t id : companies) {
+  for (size_t id : pages_->Process(query)) {
     const size_t company_vid = stop_names_.size() * 2 + id;
     auto route_opt = router_->BuildRoute(stop_vid, company_vid);
-    if (route_opt) {
-      auto wait_opt = pages_->GetWaitTime(id, time + route_opt->weight);
-      route_times.push_back({route_candidates.size(), route_opt->weight + wait_opt.value_or(0)});
-      route_candidates.push_back(std::move(route_opt.value()));
+
+    if (!route_opt) {
+      continue;
     }
-  }
-  assert(route_times.size() == route_candidates.size());
 
-  if (route_candidates.empty()) {
-    return {*sprav_, {}, time};
-  }
-
-  auto it = std::min_element(begin(route_times), end(route_times),
-    [](const auto& lhs, const auto& rhs){
-      return lhs.second < rhs.second;
-    }
-  );
-
-  Info& winner = route_candidates[it->first];
-  for (auto& c : route_candidates) {
-    if (c.id != winner.id) {
-      sprav_->GetRouter()->ReleaseRoute(c.id);
+    if (!winner) {
+      winner_time = route_opt->weight + pages_->GetWaitTime(id, time + route_opt->weight).value_or(0);
+      winner = std::move(route_opt);
+    } else if (route_opt->weight < winner_time) {
+      const double candidate_time = route_opt->weight + pages_->GetWaitTime(id, time + route_opt->weight).value_or(0);
+      if (candidate_time < winner_time) {
+        winner_time = candidate_time;
+        router_->ReleaseRoute(winner->id);
+        winner = std::move(route_opt);
+      }
     }
   }
 
-  return {*sprav_, std::move(winner), time};
+  if (winner) {
+    return {*sprav_, std::move(winner.value()), time};
+  }
+  return {*sprav_, {}, time};
 }
 
 std::string Sprav::PImpl::GetMap() const {
