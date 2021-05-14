@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <tuple>
+#include <algorithm>
 
 using namespace std;;
 
@@ -10,6 +11,32 @@ Time Time::From(const Json::Node& m) {
   uint8_t day = a[0].AsInt();
   double min = a[1].AsInt() * 60 + a[2].AsInt();
   return {Type::NONE, day, min};
+}
+
+Time Time::From(const SpravSerialize::WorkingTime::Time& m) {
+  using MType = SpravSerialize::WorkingTime::Time::Type;
+  Type t = Type::NONE;
+  if (m.type() == MType::WorkingTime_Time_Type_FROM) {
+    t = Type::FROM;
+  } else if (m.type() == MType::WorkingTime_Time_Type_TO) {
+    t = Type::TO;
+  }
+
+  return {t, static_cast<uint8_t>(m.day()), m.min()};
+}
+
+void Time::Serialize(SpravSerialize::WorkingTime::Time& m) {
+  using MType = SpravSerialize::WorkingTime::Time::Type;
+  MType t = MType::WorkingTime_Time_Type_NONE;
+  if (type == Type::FROM) {
+    t = MType::WorkingTime_Time_Type_FROM;
+  } else if (type == Type::TO) {
+    t = MType::WorkingTime_Time_Type_TO;
+  }
+
+  m.set_type(t);
+  m.set_day(day);
+  m.set_min(min);
 }
 
 void Time::Add(double additional_min) {
@@ -42,14 +69,29 @@ WorkingTime::WorkingTime(const YellowPages::WorkingTime& m) {
   for (auto& interval : m.intervals()) {
     if (interval.day() == YellowPages::WorkingTimeInterval_Day_EVERYDAY) {
       for (uint8_t day = 0; day < 7; ++day) {
-        intervals_.insert({Time::Type::FROM, day, static_cast<double>(interval.minutes_from())});
-        intervals_.insert({Time::Type::TO, day, static_cast<double>(interval.minutes_to())});
+        intervals_.push_back({Time::Type::FROM, day, static_cast<double>(interval.minutes_from())});
+        intervals_.push_back({Time::Type::TO, day, static_cast<double>(interval.minutes_to())});
       }
     } else {
       const uint8_t day = static_cast<uint8_t>(interval.day()) - 1;
-      intervals_.insert({Time::Type::FROM, day, static_cast<double>(interval.minutes_from())});
-      intervals_.insert({Time::Type::TO, day, static_cast<double>(interval.minutes_to())});
+      intervals_.push_back({Time::Type::FROM, day, static_cast<double>(interval.minutes_from())});
+      intervals_.push_back({Time::Type::TO, day, static_cast<double>(interval.minutes_to())});
     }
+  }
+
+  sort(begin(intervals_), end(intervals_));
+}
+
+WorkingTime::WorkingTime(const SpravSerialize::WorkingTime& m) {
+  intervals_.reserve(m.intervals().size());
+  for (auto& m_time : m.intervals()) {
+    intervals_.push_back(Time::From(m_time));
+  }
+}
+
+void WorkingTime::Serialize(SpravSerialize::WorkingTime& m) {
+  for (auto& time : intervals_) {
+    time.Serialize(*m.add_intervals());
   }
 }
 
@@ -58,7 +100,7 @@ std::optional<double> WorkingTime::GetWaitTime(const Time& current_time) const {
     return {};
   }
 
-  auto [l_bound, u_bound] = intervals_.equal_range(current_time);
+  auto [l_bound, u_bound] = equal_range(begin(intervals_), end(intervals_), current_time);
 
   if (u_bound == intervals_.end() || l_bound == intervals_.end()) {
     return 7*1440 + (*intervals_.begin() - current_time);

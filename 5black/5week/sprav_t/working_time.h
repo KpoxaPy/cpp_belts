@@ -1,9 +1,10 @@
 #pragma once
 
-#include <set>
 #include <optional>
+#include <vector>
 
 #include "json.h"
+#include "pages.pb.h"
 #include "working_time.pb.h"
 
 struct Time {
@@ -14,6 +15,8 @@ struct Time {
   };
 
   static Time From(const Json::Node& m);
+  static Time From(const SpravSerialize::WorkingTime::Time& m);
+  void Serialize(SpravSerialize::WorkingTime::Time& m);
 
   void Add(double additional_min);
 
@@ -31,9 +34,12 @@ class WorkingTime {
  public:
   WorkingTime() = default;
   WorkingTime(const YellowPages::WorkingTime& m);
+  WorkingTime(const SpravSerialize::WorkingTime& m);
+
+  void Serialize(SpravSerialize::WorkingTime& m);
 
   std::optional<double> GetWaitTime(const Time& current_time) const;
 
  private:
-  std::set<Time> intervals_;
+  std::vector<Time> intervals_;
 };

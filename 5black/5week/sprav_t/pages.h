@@ -6,6 +6,7 @@
 #include <unordered_set>
 
 #include "database.pb.h"
+#include "pages.pb.h"
 #include "database_queries.pb.h"
 #include "hash_extra.h"
 #include "json.h"
@@ -22,8 +23,8 @@ class Pages {
  public:
   Pages() = default;
   Pages(const Json::Dict& dict);
-  Pages(const YellowPages::Database& m);
-  void Serialize(YellowPages::Database& m);
+  Pages(const SpravSerialize::Pages& m);
+  void Serialize(SpravSerialize::Pages& m);
 
   void BuildIndex();
 
@@ -39,10 +40,9 @@ class Pages {
  private:
   YellowPages::Database db_;
 
-  Companies all_companies_;
   RubricsProjection rubrics_projection_;
   CompanyWorkingTimes company_working_times_;
 
-  void ParseFrom(const YellowPages::Database& m);
+  void ParseFrom(const SpravSerialize::Pages& m);
 };
 using PagesPtr = std::shared_ptr<Pages>;

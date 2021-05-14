@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "database.proto";
+
+package SpravSerialize;
+
+message WorkingTime {
+  message Time {
+    enum Type {
+      NONE = 0;
+      FROM = 1;
+      TO = 2;
+    }
+
+    Type type = 1;
+    uint32 day = 2;
+    double min = 3;
+  }
+
+  repeated Time intervals = 1;
+}
+
+message Pages {
+  YellowPages.Database db = 1;
+  map<string, uint64> rubrics_projection = 2;
+  map<uint64, WorkingTime> company_working_times = 3;
+}

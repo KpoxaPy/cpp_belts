@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-import "render_settings.proto";
 import "mapper.proto";
-import "database.proto";
+import "pages.proto";
+import "render_settings.proto";
 
 package SpravSerialize;
 
@@ -72,5 +72,5 @@ message TransportCatalog {
   Router router = 4;
   RenderSettings render_settings = 5;
   Mapper mapper = 6;
-  YellowPages.Database pages = 7;
+  Pages pages = 7;
 }

@@ -57,16 +57,33 @@ Pages::Pages(const Json::Dict& dict) {
     err_ss << "Failed to parse " << quoted(ss.str()) << " as yellow pages database: " << status.ToString();
     throw runtime_error(err_ss.str());
   }
-  ParseFrom(db);
-}
+  db_.CopyFrom(db);
 
-Pages::Pages(const YellowPages::Database& m) {
-  ParseFrom(m);
   BuildIndex();
 }
 
-void Pages::Serialize(YellowPages::Database& m) {
-  m.CopyFrom(db_);
+Pages::Pages(const SpravSerialize::Pages& m) {
+  db_.CopyFrom(m.db());
+
+  for (auto& [name, id] : m.rubrics_projection()) {
+    rubrics_projection_.insert({name, id});
+  }
+
+  for (auto& [id, wtime] : m.company_working_times()) {
+    company_working_times_.emplace(id, wtime);
+  }
+}
+
+void Pages::Serialize(SpravSerialize::Pages& m) {
+  m.mutable_db()->CopyFrom(db_);
+
+  for (auto& [name, id] : rubrics_projection_) {
+    m.mutable_rubrics_projection()->insert({name, id});
+  }
+
+  for (auto& [id, wtime] : company_working_times_) {
+    wtime.Serialize(m.mutable_company_working_times()->operator[](id));
+  }
 }
 
 void Pages::BuildIndex() {
@@ -200,8 +217,4 @@ Pages::Companies Pages::Process(const YellowPages::Query& query) const {
   }
 
   return result;
-}
-
-void Pages::ParseFrom(const YellowPages::Database& m) {
-  db_.CopyFrom(m);
 }

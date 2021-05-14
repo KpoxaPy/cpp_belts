@@ -90,6 +90,7 @@ set(PROTOS
   database_queries.proto
   mapper.proto
   name.proto
+  pages.proto
   phone.proto
   render_settings.proto
   rubric.proto
