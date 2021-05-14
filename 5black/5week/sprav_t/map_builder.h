@@ -12,7 +12,7 @@ class Bus;
 
 class Builder {
  public:
-  Builder(const SpravMapper& mapper);
+  Builder(const SpravMapper& mapper, std::optional<Svg::Document> doc = {});
 
   void DrawBusLines(const Sprav::Route* route = nullptr);
   void DrawStops(const Sprav::Route* route = nullptr);
@@ -24,6 +24,7 @@ class Builder {
 
   void DrawRouterCover();
 
+  const Svg::Document& GetDocument() const;
   std::string Render();
 
  public:

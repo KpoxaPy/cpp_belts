@@ -13,10 +13,14 @@ const unordered_map<MapLayerType, void (Builder::*)(const Sprav::Route*)> Builde
     {MapLayerType::COMPANY_POINTS, &Builder::DrawCompanyPoints},
     {MapLayerType::COMPANY_LABELS, &Builder::DrawCompanyLabels}};
 
-Builder::Builder(const SpravMapper& mapper)
+Builder::Builder(const SpravMapper& mapper, std::optional<Svg::Document> doc)
   : mapper_(mapper)
 {
   BuildBusLinesPalette();
+
+  if (doc) {
+    doc_ = std::move(doc.value());
+  }
 }
 
 void Builder::DrawBusLines(const Sprav::Route* route) {
@@ -169,6 +173,10 @@ void Builder::DrawRouterCover() {
   rect.SetFillColor(mapper_.GetSettings().underlayer_color);
 
   doc_.Add(rect);
+}
+
+const Svg::Document& Builder::GetDocument() const {
+  return doc_;
 }
 
 std::string Builder::Render() {

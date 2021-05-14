@@ -8,6 +8,26 @@
 
 using namespace std;
 
+namespace {
+
+Builder GetMainMapBuilder(const SpravMapper& mapper, optional<Svg::Document>& doc_cache) {
+  LOG_DURATION("GetMainMapBuilder");
+
+  if (doc_cache) {
+    return Builder(mapper, doc_cache);
+  }
+
+  Builder b(mapper);
+
+  for (auto layer_type : mapper.GetSprav()->GetRenderSettings().layers) {
+    (b.*Builder::DRAW_ACTIONS.at(layer_type))(nullptr);
+  }
+
+  return b;
+}
+
+} // namespace
+
 SpravMapper::SpravMapper(const Sprav* sprav)
   : settings_(sprav->GetRenderSettings())
   , sprav_(sprav)
@@ -61,21 +81,11 @@ const PointProjector& SpravMapper::GetProjector() const {
 }
 
 std::string SpravMapper::Render() {
-  Builder b(*this);
-
-  for (auto layer_type : settings_.layers) {
-    (b.*Builder::DRAW_ACTIONS.at(layer_type))(nullptr);
-  }
-
-  return b.Render();
+  return GetMainMapBuilder(*this, main_map_).Render();
 }
 
 std::string SpravMapper::RenderForRoute(const Sprav::Route& route) {
-  Builder b(*this);
-
-  for (auto layer_type : settings_.layers) {
-    (b.*Builder::DRAW_ACTIONS.at(layer_type))(nullptr);
-  }
+  auto b = GetMainMapBuilder(*this, main_map_);
   b.DrawRouterCover();
   for (auto layer_type : settings_.layers) {
     (b.*Builder::DRAW_ACTIONS.at(layer_type))(&route);

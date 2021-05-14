@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <optional>
 
 #include "mapper.pb.h"
 #include "render_settings.h"
@@ -42,4 +43,6 @@ class SpravMapper {
   std::set<std::string_view> sorted_bus_names_;
 
   std::shared_ptr<PointProjector> projector_;
+
+  std::optional<Svg::Document> main_map_;
 };
