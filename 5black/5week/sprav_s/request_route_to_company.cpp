@@ -45,7 +45,7 @@ RouteToCompanyRequest::RouteToCompanyRequest(const Json::Dict& dict)
   from_ = dict.at("from").AsString();
 
   ostringstream ss;
-  Json::PrintNode(dict, ss);
+  Json::PrintNode(dict.at("companies").AsDict(), ss);
   if (auto status = JsonStringToMessage(ss.str(), &query_, JSON_PARSE_OPTIONS); status != Status::OK) {
     ostringstream err_ss;
     err_ss << "Failed to parse " << quoted(ss.str()) << " as find companies request: " << status.ToString();
