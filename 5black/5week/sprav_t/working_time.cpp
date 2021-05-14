@@ -1,5 +1,7 @@
 #include "working_time.h"
 
+#include <cmath>
+
 Time::Time(const Json::Node& m) {
   auto& a = m.AsArray();
   day = a[0].AsInt();
@@ -7,11 +9,9 @@ Time::Time(const Json::Node& m) {
 }
 
 void Time::Add(double additional_min) {
-  uint64_t total_min = min + additional_min;
-  if (total_min >= 1440) {
-    min = total_min % 1440;
-  }
-  day = (day + total_min / 1440) % 7;
+  const double total_min = min + additional_min;
+  min = fmod(total_min, 1440);
+  day = (day + static_cast<int64_t>(floor(total_min / 1440))) % 7;
 }
 
 Time Time::operator+(double additional_min) const {

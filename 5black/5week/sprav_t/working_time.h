@@ -11,5 +11,5 @@ struct Time {
   Time operator+(double additional_min) const;
 
   uint8_t day = 0;
-  uint16_t min = 0; 
+  double min = 0; 
 };
