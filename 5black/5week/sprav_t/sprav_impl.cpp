@@ -305,6 +305,7 @@ Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const Yello
       route_candidates.push_back(std::move(route_opt.value()));
     }
   }
+  assert(route_times.size() == route_candidates.size());
 
   if (route_candidates.empty()) {
     return {*sprav_, {}};
@@ -316,13 +317,14 @@ Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const Yello
     }
   );
 
+  Info& winner = route_candidates[it->first];
   for (auto& c : route_candidates) {
-    if (c.id != it->first) {
+    if (c.id != winner.id) {
       sprav_->GetRouter()->ReleaseRoute(c.id);
     }
   }
 
-  return {*sprav_, std::move(route_candidates[it->first])};
+  return {*sprav_, std::move(winner)};
 }
 
 std::string Sprav::PImpl::GetMap() const {
