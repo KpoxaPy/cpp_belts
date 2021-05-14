@@ -5,13 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Current File",
-      "type": "python",
-      "request": "launch",
-      "program": "${file}",
-      "console": "integratedTerminal"
-    },
-    {
       "name": "Make base",
       "type": "cppdbg",
       "request": "launch",
@@ -68,7 +61,7 @@
           "ignoreFailures": true
         }
       ],
-      "postDebugTask": "Make Svg"
+      "postDebugTask": "Present output"
     }
   ]
 }

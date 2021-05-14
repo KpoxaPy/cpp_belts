@@ -14,7 +14,7 @@
             }
         },
         {
-            "label": "Make Svg",
+            "label": "Present output",
             "type": "shell",
             "presentation": {
                 "echo": true,
@@ -24,7 +24,7 @@
                 "showReuseMessage": true,
                 "clear": false
             },
-            "command": "chcp 65001; jq -r '[.[] | select(.map?).map] | .[0]' ${env:TMP}/output.json | out-file ${env:TMP}/output.svg -encoding utf8"
+            "command": "python present_output.py ${env:TMP}/output.json"
         }
     ]
 }
