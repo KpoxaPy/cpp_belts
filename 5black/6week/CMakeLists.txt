@@ -1,9 +1,23 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+project(spreadsheet)
 
-project(main)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
-set(ADDITIONAL_HDRS
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Werror -Wno-unused-parameter -Wno-implicit-fallthrough")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+
+set(ANTLR_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/antlr-4.7.2-complete.jar)
+include(${CMAKE_CURRENT_SOURCE_DIR}/FindANTLR.cmake)
+
+set(ADDITIONAL
   test_runner.h
+  common.h
+  formula.h
+  main.cpp
 )
 
 set(PROJECT_HDRS
@@ -21,45 +35,42 @@ set(PROJECT_SRCS
   string_view_utils.cpp
 )
 
-set(PROTOS
+add_definitions(
+  -DANTLR4CPP_STATIC
+  -D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 )
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
+set(WITH_STATIC_CRT OFF CACHE BOOL "Visual C++ static CRT for ANTLR" FORCE)
+add_subdirectory(antlr4_runtime)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+antlr_target(FormulaParser Formula.g4 LEXER PARSER LISTENER)
 
-find_package(Protobuf REQUIRED)
+include_directories(
+  ${CMAKE_SOURCE_DIR}
+  ${ANTLR4_INCLUDE_DIRS}
+  ${ANTLR_FormulaParser_OUTPUT_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/antlr4_runtime/runtime/src)
 
-protobuf_generate_cpp(
-  PROTO_SRCS
-  PROTO_HDRS
-  ${PROTOS}
-)
-
-include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${Protobuf_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-add_executable(main
+add_executable(spreadsheet
+  ${ADDITIONAL}
+  ${PROJECT_HDRS}
   ${PROJECT_SRCS}
-  ${PROTO_SRCS}
+  ${ANTLR_FormulaParser_CXX_OUTPUTS}
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads)
 
-target_compile_features(main PUBLIC cxx_std_17)
-target_link_libraries(main Threads::Threads)
-target_link_libraries(main ${Protobuf_LIBRARIES})
+target_compile_features(spreadsheet PUBLIC cxx_std_17)
+target_link_libraries(
+  spreadsheet
+  Threads::Threads
+  antlr4_static
+)
 
 install(FILES
   ${PROJECT_HDRS}
   ${PROJECT_SRCS}
-  ${PROTOS}
   DESTINATION .
 )
 
@@ -68,3 +79,5 @@ set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 set(CPACK_VERBATIM_VARIABLES YES)
 include(CPack)
+
+set_directory_properties(PROPERTIES VS_STARTUP_PROJECT spreadsheet)
