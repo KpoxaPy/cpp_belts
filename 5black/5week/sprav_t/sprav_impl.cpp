@@ -281,7 +281,7 @@ Sprav::Route Sprav::PImpl::FindRoute(string_view from, string_view to) const {
   return {*sprav_, std::move(route)};
 }
 
-Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const YellowPages::Query& query) const {
+Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const YellowPages::Query& query, const Time& time) const {
   using Info = Sprav::Router::RouteInfo;
 
   if (!router_) {
@@ -294,11 +294,14 @@ Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const Yello
   }
 
   deque<Info> route_candidates;
+  deque<pair<size_t, double>> route_times;
   const size_t stop_vid = FindStop(from)->id * 2 + 1;
   for (size_t id : companies) {
     const size_t company_vid = stop_names_.size() * 2 + id;
     auto route_opt = router_->BuildRoute(stop_vid, company_vid);
     if (route_opt) {
+      auto wait_opt = pages_->GetWaitTime(id, time);
+      route_times.push_back({route_candidates.size(), route_opt->weight + wait_opt.value_or(0)});
       route_candidates.push_back(std::move(route_opt.value()));
     }
   }
@@ -307,19 +310,19 @@ Sprav::Route Sprav::PImpl::FindRouteToCompany(std::string_view from, const Yello
     return {*sprav_, {}};
   }
 
-  auto it = std::min_element(begin(route_candidates), end(route_candidates),
-    [](const Info& lhs, const Info& rhs){
-      return lhs.weight < rhs.weight;
+  auto it = std::min_element(begin(route_times), end(route_times),
+    [](const auto& lhs, const auto& rhs){
+      return lhs.second < rhs.second;
     }
   );
 
   for (auto& c : route_candidates) {
-    if (c.id != it->id) {
+    if (c.id != it->first) {
       sprav_->GetRouter()->ReleaseRoute(c.id);
     }
   }
 
-  return {*sprav_, std::move(*it)};
+  return {*sprav_, std::move(route_candidates[it->first])};
 }
 
 std::string Sprav::PImpl::GetMap() const {

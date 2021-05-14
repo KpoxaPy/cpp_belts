@@ -2,6 +2,7 @@
 
 #include "database_queries.pb.h"
 #include "request.h"
+#include "working_time.h"
 
 class RouteToCompanyResponse : public Response {
  public:
@@ -26,4 +27,5 @@ class RouteToCompanyRequest : public Request {
   size_t id_ = 0;
   string from_;
   YellowPages::Query query_;
+  Time time_;
 };

@@ -9,6 +9,7 @@
 #include "database_queries.pb.h"
 #include "hash_extra.h"
 #include "json.h"
+#include "working_time.h"
 
 class Pages {
  public:
@@ -30,6 +31,7 @@ class Pages {
   size_t Size() const;
   const std::string& GetCompanyMainName(size_t id) const;
   std::string GetCompanyFullName(size_t id) const;
+  std::optional<double> GetWaitTime(size_t id, const Time& current_time) const;
 
   Companies Process(const YellowPages::Query& query) const;
 

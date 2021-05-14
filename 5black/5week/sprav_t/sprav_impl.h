@@ -2,6 +2,7 @@
 
 #include "sprav.h"
 #include "sprav_mapper.h"
+#include "working_time.h"
 
 class Sprav::PImpl {
  private:
@@ -46,7 +47,7 @@ class Sprav::PImpl {
 
   Router* GetRouter() const;
   Route FindRoute(std::string_view from, std::string_view to) const;
-  Route FindRouteToCompany(std::string_view from, const YellowPages::Query& query) const;
+  Route FindRouteToCompany(std::string_view from, const YellowPages::Query& query, const Time& time) const;
 
   std::string GetMap() const;
   std::string GetRouteMap(const Route& route) const;

@@ -112,6 +112,10 @@ std::string Pages::GetCompanyFullName(size_t id) const {
   return ss.str();
 }
 
+std::optional<double> Pages::GetWaitTime(size_t /* id */, const Time& /* current_time */) const {
+  return {};
+}
+
 Pages::Companies Pages::Process(const YellowPages::Query& query) const {
   deque<size_t> queried_rubrics;
   for (auto& r : query.rubrics()) {

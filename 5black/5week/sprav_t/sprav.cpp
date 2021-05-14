@@ -241,8 +241,8 @@ Sprav::Route Sprav::FindRoute(std::string_view from, std::string_view to) const 
   return Pimpl()->FindRoute(from, to);
 }
 
-Sprav::Route Sprav::FindRouteToCompany(std::string_view from, const YellowPages::Query& query) const {
-  return Pimpl()->FindRouteToCompany(from, query);
+Sprav::Route Sprav::FindRouteToCompany(std::string_view from, const YellowPages::Query& query, const Time& time) const {
+  return Pimpl()->FindRouteToCompany(from, query, time);
 }
 
 std::string Sprav::GetMap() const {

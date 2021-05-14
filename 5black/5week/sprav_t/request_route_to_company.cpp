@@ -51,10 +51,12 @@ RouteToCompanyRequest::RouteToCompanyRequest(const Json::Dict& dict)
     err_ss << "Failed to parse " << quoted(ss.str()) << " as find companies request: " << status.ToString();
     throw runtime_error(err_ss.str());
   }
+
+  time_ = Time(dict.at("datetime"));
 }
 
 ResponsePtr RouteToCompanyRequest::Process(SpravPtr sprav) const {
-  auto route = sprav->FindRouteToCompany(from_, query_);
+  auto route = sprav->FindRouteToCompany(from_, query_, time_);
   auto map = sprav->GetRouteMap(route);
   return make_shared<RouteToCompanyResponse>(type_, id_, std::move(route), std::move(map));
 }

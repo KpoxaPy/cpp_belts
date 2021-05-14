@@ -45,6 +45,7 @@ set(PROJECT_HDRS
   string_view_utils.h
   svg.h
   tests.h
+  working_time.h
 )
 
 set(PROJECT_SRCS
@@ -79,6 +80,7 @@ set(PROJECT_SRCS
   string_view_utils.cpp
   svg.cpp
   tests.cpp
+  working_time.cpp
 )
 
 set(PROTOS
