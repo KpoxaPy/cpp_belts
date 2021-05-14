@@ -59,9 +59,11 @@ Sprav::RouteExtra Sprav::RouteExtra::ParseFrom(const SerializedExtra& m) {
 Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt, const Time& current_time)
   : sprav_(sprav)
   , info_opt_(move(info_opt))
+  , total_time_(0.0)
 {
   if (info_opt_.has_value()) {
     typename RouteInfoOpt::value_type& info = info_opt_.value();
+    total_time_ = info.weight;
     std::string_view last_bus = {};
     double bus_total_time = 0;
     size_t bus_span_count = 0;
@@ -125,6 +127,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt, const Time& curre
 
     if (company_id) {
       if (auto wait_opt = sprav_.GetPages()->GetWaitTime(company_id.value(), current_time + info.weight); wait_opt) {
+        total_time_ += wait_opt.value();
         push_back({
           RoutePartType::WAIT_COMPANY,
           wait_opt.value(),
@@ -139,7 +142,7 @@ Sprav::Route::Route(const Sprav& sprav, RouteInfoOpt info_opt, const Time& curre
 }
 
 double Sprav::Route::GetTotalTime() const {
-  return info_opt_.has_value() ? info_opt_.value().weight : 0;
+  return total_time_;
 }
 
 Sprav::Route::operator bool() const {

@@ -67,6 +67,7 @@ class Sprav {
    private:
     const Sprav& sprav_;
     RouteInfoOpt info_opt_;
+    double total_time_;
   };
 
   using StopNames = std::deque<std::string>;
