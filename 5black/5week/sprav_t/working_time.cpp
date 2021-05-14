@@ -46,7 +46,7 @@ WorkingTime::WorkingTime(const YellowPages::WorkingTime& m) {
         intervals_.insert({Time::Type::TO, day, static_cast<double>(interval.minutes_to())});
       }
     } else {
-      const uint8_t day = static_cast<uint8_t>(interval.day());
+      const uint8_t day = static_cast<uint8_t>(interval.day()) - 1;
       intervals_.insert({Time::Type::FROM, day, static_cast<double>(interval.minutes_from())});
       intervals_.insert({Time::Type::TO, day, static_cast<double>(interval.minutes_to())});
     }
