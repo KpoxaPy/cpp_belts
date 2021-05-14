@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+import "render_settings.proto";
+import "mapper.proto";
+import "database.proto";
+
+package SpravSerialize;
+
+option cc_enable_arenas = true;
+
+message Bus {
+  uint32 id = 1;
+  string name = 2;
+  repeated uint32 stop_id = 3;
+  bool is_roundtrip = 4;
+
+  uint32 stops_count = 5;
+  uint32 unique_stops_count = 6;
+  uint32 length = 7;
+  float curvature = 8;
+}
+
+message Stop {
+  uint32 id = 1;
+  string name = 2;
+
+  repeated uint32 bus = 3;
+}
+
+message Graph {
+  message Edge {
+    enum Type {
+      NOOP = 0;
+      RIDE_BUS = 1;
+      WAIT_BUS = 2;
+      WALK_TO_COMPANY = 3;
+    }
+
+    uint32 from = 1;
+    uint32 to = 2;
+    float weight = 3;
+    Type type = 4;
+    uint32 id = 5;
+    uint32 company_id = 6;
+    uint32 span_count = 7;
+    repeated uint32 stops = 8;
+  }
+
+  repeated Edge edge = 1;
+  uint32 vertex_count = 2;
+}
+
+message Router {
+  message Data {
+    bool is_defined = 1;
+    float weight = 2;
+    bool has_prev_edge = 3;
+    uint32 prev_edge = 4;
+  }
+
+  message Row {
+    repeated Data data = 1;
+  }
+
+  repeated Row row = 1;
+}
+
+message TransportCatalog {
+  repeated Bus bus = 1;
+  repeated Stop stop = 2;
+  Graph graph = 3;
+  Router router = 4;
+  RenderSettings render_settings = 5;
+  Mapper mapper = 6;
+  YellowPages.Database pages = 7;
+}

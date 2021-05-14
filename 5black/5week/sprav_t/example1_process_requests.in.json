@@ -1,0 +1,49 @@
+{
+    "serialization_settings": {
+        "file": "data1.bin"
+    },
+    "stat_requests": [
+        {
+            "id": 463508520,
+            "type": "FindCompanies",
+            "rubrics": [
+                "Сквер"
+            ]
+        },
+        {
+            "id": 1457284289,
+            "type": "FindCompanies",
+            "names": [
+                "Комсомольский",
+                "Кооперативный"
+            ],
+            "rubrics": [
+                "Сквер"
+            ]
+        },
+        {
+            "id": 638533243,
+            "type": "RouteToCompany",
+            "from": "Параллельная улица",
+            "companies": {
+                "rubrics": [
+                    "Сквер"
+                ]
+            }
+        },
+        {
+            "id": 774281590,
+            "type": "RouteToCompany",
+            "from": "Морской вокзал",
+            "companies": {
+                "names": [
+                    "Комсомольский",
+                    "Кооперативный"
+                ],
+                "rubrics": [
+                    "Сквер"
+                ]
+            }
+        }
+    ]
+}

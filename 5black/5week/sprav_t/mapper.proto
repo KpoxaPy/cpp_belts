@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package SpravSerialize;
+
+message ProjectIdToTag {
+  uint32 id = 1;
+  uint32 tag = 2;
+}
+
+message PointProjector {
+  uint64 stops_id_bound = 1;
+  double x_step = 2;
+  double y_step = 3;
+  repeated ProjectIdToTag x_map = 4;
+  repeated ProjectIdToTag y_map = 5;
+}
+
+message Mapper {
+  PointProjector point_projector = 1;
+}
