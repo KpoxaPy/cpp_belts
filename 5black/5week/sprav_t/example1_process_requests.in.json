@@ -4,14 +4,14 @@
     },
     "stat_requests": [
         {
-            "id": 463508520,
+            "id": 832750872,
             "type": "FindCompanies",
             "rubrics": [
                 "Сквер"
             ]
         },
         {
-            "id": 1457284289,
+            "id": 418346118,
             "type": "FindCompanies",
             "names": [
                 "Комсомольский",
@@ -22,17 +22,67 @@
             ]
         },
         {
-            "id": 638533243,
+            "id": 1432155602,
             "type": "RouteToCompany",
             "from": "Параллельная улица",
             "companies": {
                 "rubrics": [
                     "Сквер"
                 ]
-            }
+            },
+            "datetime": [
+                0,
+                0,
+                0
+            ]
         },
         {
-            "id": 774281590,
+            "id": 1415390029,
+            "type": "RouteToCompany",
+            "from": "Параллельная улица",
+            "companies": {
+                "rubrics": [
+                    "Сквер"
+                ]
+            },
+            "datetime": [
+                2,
+                12,
+                0
+            ]
+        },
+        {
+            "id": 38380221,
+            "type": "RouteToCompany",
+            "from": "Параллельная улица",
+            "companies": {
+                "rubrics": [
+                    "Сквер"
+                ]
+            },
+            "datetime": [
+                2,
+                16,
+                47
+            ]
+        },
+        {
+            "id": 1199638138,
+            "type": "RouteToCompany",
+            "from": "Параллельная улица",
+            "companies": {
+                "rubrics": [
+                    "Сквер"
+                ]
+            },
+            "datetime": [
+                2,
+                16,
+                48
+            ]
+        },
+        {
+            "id": 193771898,
             "type": "RouteToCompany",
             "from": "Морской вокзал",
             "companies": {
@@ -43,7 +93,50 @@
                 "rubrics": [
                     "Сквер"
                 ]
-            }
+            },
+            "datetime": [
+                1,
+                7,
+                45
+            ]
+        },
+        {
+            "id": 464638028,
+            "type": "RouteToCompany",
+            "from": "Морской вокзал",
+            "companies": {
+                "names": [
+                    "Комсомольский",
+                    "Кооперативный"
+                ],
+                "rubrics": [
+                    "Сквер"
+                ]
+            },
+            "datetime": [
+                1,
+                9,
+                0
+            ]
+        },
+        {
+            "id": 1317455601,
+            "type": "RouteToCompany",
+            "from": "Морской вокзал",
+            "companies": {
+                "names": [
+                    "Комсомольский",
+                    "Кооперативный"
+                ],
+                "rubrics": [
+                    "Сквер"
+                ]
+            },
+            "datetime": [
+                1,
+                15,
+                0
+            ]
         }
     ]
 }
