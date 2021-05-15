@@ -14,23 +14,30 @@ set(ANTLR_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/antlr-4.7.2-complete.jar)
 include(${CMAKE_CURRENT_SOURCE_DIR}/FindANTLR.cmake)
 
 set(ADDITIONAL
-  test_runner.h
   common.h
   formula.h
   main.cpp
+  test_runner.h
 )
 
 set(PROJECT_HDRS
+  cell.h
+  exception.h
+  formula_error.h
   hashing.h
   macro.h
   paginator.h
+  position.h
   profile.h
+  sheet.h
+  size.h
   string_stream_utils.h
   string_view_utils.h
   utils_it.h
 )
 
 set(PROJECT_SRCS
+  position.cpp
   profile.cpp
   string_view_utils.cpp
 )
