@@ -37,8 +37,13 @@ set(PROJECT_HDRS
 )
 
 set(PROJECT_SRCS
+  formula.cpp
+  formula_error.cpp
+  position.cpp
   position.cpp
   profile.cpp
+  sheet.cpp
+  size.cpp
   string_view_utils.cpp
 )
 

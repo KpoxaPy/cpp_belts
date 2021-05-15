@@ -1,9 +1,11 @@
 #pragma once
 
-#include "common.h"
-
 #include <memory>
+#include <variant>
 #include <vector>
+
+#include "formula_error.h"
+#include "sheet.h"
 
 // Формула, позволяющая вычислять и обновлять арифметическое выражение.
 // Поддерживаемые возможности:
