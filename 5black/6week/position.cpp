@@ -1,7 +1,10 @@
 #include "position.h"
 
-#include <stdexcept>
+#include <sstream>
 #include <tuple>
+#include <list>
+
+#include "exception.h"
 
 using namespace std;
 
@@ -10,11 +13,11 @@ bool Position::operator==(const Position& rhs) const {
 }
 
 bool Position::IsValid() const {
-  if (col < 0 || kMaxCols < col) {
+  if (col < 0 || kMaxCols <= col) {
     return false;
   }
 
-  if (row < 0 || kMaxRows < row) {
+  if (row < 0 || kMaxRows <= row) {
     return false;
   }
 
@@ -22,9 +25,39 @@ bool Position::IsValid() const {
 }
 
 std::string Position::ToString() const {
-  throw runtime_error("unimplemented");
+  ostringstream ss;
+  
+  if (IsValid()) {
+    list<char> c;
+    int cc = col;
+
+    while (cc >= 0) {
+      c.push_front('A' + cc % 26);
+      cc = cc / 26 - 1;
+    }
+
+    ss << string(begin(c), end(c)) << row + 1;
+  }
+
+  return ss.str();
 }
 
 Position Position::FromString(std::string_view str) {
-  throw runtime_error("unimplemented");
+  std::string_view ss = str;
+  Position res = {0, -1};
+  while (!ss.empty() && 'A' <= ss[0] && ss[0] <= 'Z') {
+    res.col = ss[0] - 'A' + (res.col + 1) * 26;
+    ss.remove_prefix(1);
+  }
+  while (!ss.empty() && '0' <= ss[0] && ss[0] <= '9') {
+    res.row = ss[0] - '0' + res.row * 10;
+    ss.remove_prefix(1);
+  }
+
+  if (!ss.empty()) {
+    return {-1, -1};
+  }
+
+  res.row -= 1;
+  return res;
 }

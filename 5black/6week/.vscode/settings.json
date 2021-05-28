@@ -18,6 +18,7 @@
         "sstream": "cpp",
         "mutex": "cpp",
         "thread": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "stdexcept": "cpp"
     }
 }
