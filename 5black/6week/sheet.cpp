@@ -1,9 +1,10 @@
 #include "sheet.h"
+#include "sheet_impl.h"
 
 #include <stdexcept>
 
 using namespace std;
 
 std::unique_ptr<ISheet> CreateSheet() {
-  throw runtime_error("unimplemented");
+  return make_unique<Sheet>();
 }

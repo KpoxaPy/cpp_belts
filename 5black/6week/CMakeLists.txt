@@ -30,6 +30,7 @@ set(PROJECT_HDRS
   position.h
   profile.h
   sheet.h
+  sheet_impl.h
   size.h
   string_stream_utils.h
   string_view_utils.h
@@ -43,6 +44,7 @@ set(PROJECT_SRCS
   position.cpp
   profile.cpp
   sheet.cpp
+  sheet_impl.cpp
   size.cpp
   string_view_utils.cpp
 )
