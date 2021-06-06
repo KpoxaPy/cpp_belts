@@ -1,7 +1,14 @@
+#include <memory>
+#include <unordered_map>
+
+#include "cell_impl.h"
 #include "sheet.h"
 
 class Sheet : public ISheet {
  public:
+  Sheet();
+  ~Sheet();
+
   void SetCell(Position pos, std::string text) override;
   const ICell* GetCell(Position pos) const override;
   ICell* GetCell(Position pos) override;
@@ -17,4 +24,10 @@ class Sheet : public ISheet {
 
   void PrintValues(std::ostream& output) const override;
   void PrintTexts(std::ostream& output) const override;
+
+ private:
+  Position printable_start_;
+  Size printable_size_;
+
+  std::unordered_map<Position, std::unique_ptr<Cell>> cells_;
 };

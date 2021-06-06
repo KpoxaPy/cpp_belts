@@ -22,8 +22,10 @@ set(ADDITIONAL
 
 set(PROJECT_HDRS
   cell.h
+  cell_impl.h
   exception.h
   formula_error.h
+  hash_extra.h
   hashing.h
   macro.h
   paginator.h
@@ -38,6 +40,7 @@ set(PROJECT_HDRS
 )
 
 set(PROJECT_SRCS
+  cell_impl.cpp
   formula.cpp
   formula_error.cpp
   position.cpp

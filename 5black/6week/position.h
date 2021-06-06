@@ -19,3 +19,14 @@ struct Position {
   static const int kMaxRows = 16384;
   static const int kMaxCols = 16384;
 };
+
+namespace std {
+
+template <>
+struct hash<Position> {
+  std::size_t operator()(const Position& pos) const noexcept;
+
+  hash<int> int_hasher;
+};
+
+} // namespace std

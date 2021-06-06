@@ -1,10 +1,11 @@
 #include "position.h"
 
+#include <list>
 #include <sstream>
 #include <tuple>
-#include <list>
 
 #include "exception.h"
+#include "hashing.h"
 
 using namespace std;
 
@@ -60,4 +61,11 @@ Position Position::FromString(std::string_view str) {
 
   res.row -= 1;
   return res;
+}
+
+std::size_t std::hash<Position>::operator()(const Position& pos) const noexcept {
+  size_t seed = 0;
+  HashCombine(seed, int_hasher(pos.col));
+  HashCombine(seed, int_hasher(pos.row));
+  return seed;
 }
