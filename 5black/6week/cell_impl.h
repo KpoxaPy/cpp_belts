@@ -1,20 +1,41 @@
 #pragma once
 
+#include <memory>
+#include <optional>
+#include <unordered_set>
+
 #include "cell.h"
+#include "formula.h"
+
+class Sheet;
 
 class Cell : public ICell {
+  using RefsTo = std::unordered_set<Cell*>;
+
  public:
+  Cell(Sheet& sheet);
+
   Value GetValue() const override;
   std::string GetText() const override;
 
   std::vector<Position> GetReferencedCells() const override;
+  const RefsTo& GetReferencingCells() const;
 
   void SetText(std::string text);
 
  private:
-  std::string text_;
-  mutable std::string cached_text_;
-  mutable Cell::Value cached_value_ = "";
+  Sheet& sheet_;
+  Position pos_;
 
-  void CalculateValue() const;
+  std::string text_;
+  std::optional<std::unique_ptr<IFormula>> formula_;
+  RefsTo refs_to_;
+
+  mutable std::optional<Value> value_;
+
+  void PropagadeRefsTo(bool add);
+  void AddRefTo(Cell* cell_ptr);
+  void ClearRefTo(Cell* cell_ptr);
+
+  RefsTo GetAllReferencingCells();
 };

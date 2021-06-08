@@ -8,9 +8,39 @@
 using namespace std;
 
 Sheet::Sheet() {
+  table_.reserve(Position::kMaxCols);
 }
 
-Sheet::~Sheet() {
+const Cell* Sheet::GetSpecificCell(Position pos) const {
+  if (!pos.IsValid()) {
+    throw InvalidPositionException("GetCell: invalid position");
+  }
+
+  if (static_cast<size_t>(pos.col) < table_.size() && static_cast<size_t>(pos.row) < table_[pos.col].size()) {
+    return table_[pos.col][pos.row].get();
+  }
+
+  return nullptr;
+}
+
+Cell* Sheet::GetSpecificCell(Position pos) {
+  if (!pos.IsValid()) {
+    throw InvalidPositionException("GetCell: invalid position");
+  }
+
+  if (static_cast<size_t>(pos.col) < table_.size() && static_cast<size_t>(pos.row) < table_[pos.col].size()) {
+    return table_[pos.col][pos.row].get();
+  }
+
+  return nullptr;
+}
+
+Cell& Sheet::GetReferencedCell(Position pos) {
+  if (!pos.IsValid()) {
+    throw InvalidPositionException("GetCell: invalid position");
+  }
+
+  return InsertCell(pos);
 }
 
 void Sheet::SetCell(Position pos, std::string text) {
@@ -18,36 +48,16 @@ void Sheet::SetCell(Position pos, std::string text) {
     throw InvalidPositionException("SetCell: invalid position");
   }
 
-  auto& cell_ptr = cells_[pos];
-  // adjust printable
-
-  if (!cell_ptr) {
-    cell_ptr = make_unique<Cell>();
-  }
-
-  cell_ptr->SetText(std::move(text));
+  AddCellToPrintable(pos);
+  InsertCell(pos).SetText(text);
 }
 
 const ICell* Sheet::GetCell(Position pos) const {
-  if (!pos.IsValid()) {
-    throw InvalidPositionException("const GetCell: invalid position");
-  }
-
-  if (auto it = cells_.find(pos); it != cells_.end()) {
-    return it->second.get();
-  }
-  return nullptr;
+  return GetSpecificCell(pos);
 }
 
 ICell* Sheet::GetCell(Position pos) {
-  if (!pos.IsValid()) {
-    throw InvalidPositionException("GetCell: invalid position");
-  }
-
-  if (auto it = cells_.find(pos); it != cells_.end()) {
-    return it->second.get();
-  }
-  return nullptr;
+  return GetSpecificCell(pos);
 }
 
 void Sheet::ClearCell(Position pos) {
@@ -55,7 +65,15 @@ void Sheet::ClearCell(Position pos) {
     throw InvalidPositionException("ClearCell: invalid position");
   }
 
-  cells_.erase(pos);
+  if (static_cast<size_t>(pos.col) < table_.size() && static_cast<size_t>(pos.row) < table_[pos.col].size()) {
+    auto& cell_ptr = table_[pos.col][pos.row];
+    if (cell_ptr) {
+      cell_ptr->SetText("");
+      if (cell_ptr->GetReferencingCells().empty()) {
+        cell_ptr.reset();
+      }
+    }
+  }
 }
 
 void Sheet::InsertRows(int before, int count) {
@@ -75,7 +93,7 @@ void Sheet::DeleteCols(int first, int count) {
 }
 
 Size Sheet::GetPrintableSize() const {
-  return printable_size_;
+  return size_;
 }
 
 void Sheet::PrintValues(std::ostream& output) const {
@@ -84,4 +102,35 @@ void Sheet::PrintValues(std::ostream& output) const {
 
 void Sheet::PrintTexts(std::ostream& output) const {
   throw runtime_error("unimplemented");
+}
+
+void Sheet::AddCellToPrintable(Position pos) {
+  if (pos.col >= size_.cols) {
+    size_.cols = pos.col + 1;
+  }
+  if (pos.row >= size_.rows) {
+    size_.rows = pos.row + 1;
+  }
+}
+
+Cell& Sheet::InsertCell(Position pos) {
+  if (static_cast<size_t>(pos.col) >= table_.size()) {
+    size_t i = table_.size();
+    table_.resize(pos.col + 1);
+    for (; i < table_.size(); ++i) {
+      table_[i].reserve(Position::kMaxRows);
+    }
+  }
+
+  if (static_cast<size_t>(pos.row) >= table_[pos.col].size()) {
+    table_[pos.col].resize(pos.row + 1);
+  }
+
+  auto& cell_ref = table_[pos.col][pos.row];
+
+  if (!cell_ref) {
+    cell_ref = make_unique<Cell>(*this);
+  }
+
+  return *cell_ref.get();
 }

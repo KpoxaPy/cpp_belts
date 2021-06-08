@@ -13,6 +13,10 @@ bool Position::operator==(const Position& rhs) const {
   return tie(col, row) == tie(rhs.col, rhs.row);
 }
 
+bool Position::operator<(const Position& rhs) const {
+  return tie(col, row) < tie(rhs.col, rhs.row);
+}
+
 bool Position::IsValid() const {
   if (col < 0 || kMaxCols <= col) {
     return false;

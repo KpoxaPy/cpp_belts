@@ -19,6 +19,7 @@
         "mutex": "cpp",
         "thread": "cpp",
         "*.inc": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "system_error": "cpp"
     }
 }
