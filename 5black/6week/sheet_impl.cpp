@@ -82,7 +82,28 @@ void Sheet::InsertRows(int before, int count) {
     throw TableTooBigException("");
   }
 
-  throw runtime_error("unimplemented");
+  for (int col = 0; col < size_.cols; ++col) {
+    if (before < static_cast<int>(table_[col].size())) {
+      table_[col].insert(table_[col].begin() + before, count, {});
+    }
+  }
+
+  if (before < size_.rows) {
+    size_.rows += count;
+  } else {
+    size_.rows = before + count;
+  }
+
+  for (auto& col : table_) {
+    for (auto& cell_ptr : col) {
+      if (cell_ptr && cell_ptr.get()) {
+        Cell& cell = *cell_ptr.get();
+        if (auto formula = cell.GetFormula(); formula) {
+          formula->HandleInsertedRows(before, count);
+        }
+      }
+    }
+  }
 }
 
 void Sheet::InsertCols(int before, int count) {
@@ -90,15 +111,94 @@ void Sheet::InsertCols(int before, int count) {
     throw TableTooBigException("");
   }
 
-  throw runtime_error("unimplemented");
+  if (before < size_.cols) {
+    size_.cols += count;
+    table_.insert(table_.begin() + before, count, {});
+    for (int col = before; col < before + count; ++col) {
+      table_[col].reserve(Position::kMaxRows);
+    }
+  } else {
+    size_t old_size = size_.cols;
+    size_.cols = before + count;
+    table_.resize(size_.cols);
+    for (int col = old_size; col < size_.cols; ++col) {
+      table_[col].reserve(Position::kMaxRows);
+    } 
+  }
+
+  for (auto& col : table_) {
+    for (auto& cell_ptr : col) {
+      if (cell_ptr && cell_ptr.get()) {
+        Cell& cell = *cell_ptr.get();
+        if (auto formula = cell.GetFormula(); formula) {
+          formula->HandleInsertedCols(before, count);
+        }
+      }
+    }
+  }
 }
 
 void Sheet::DeleteRows(int first, int count) {
-  throw runtime_error("unimplemented");
+  if (first >= size_.rows) {
+    return;
+  }
+
+  for (int col = 0; col < size_.cols; ++col) {
+    if (first < static_cast<int>(table_[col].size())) {
+      const int actual_count = std::min(count, static_cast<int>(table_[col].size()) - first);
+      for (int row = first; row < first + actual_count; ++row) {
+        auto& cell_ptr = table_[col][row];
+        if (cell_ptr && cell_ptr.get()) {
+          cell_ptr.get()->PropagadeRefsTo(false);
+        }
+      }
+      table_[col].erase(table_[col].begin() + first, table_[col].begin() + first + actual_count);
+    }
+  }
+
+  size_.rows -= std::min(count, size_.rows - first);
+
+  for (auto& col : table_) {
+    for (auto& cell_ptr : col) {
+      if (cell_ptr && cell_ptr.get()) {
+        Cell& cell = *cell_ptr.get();
+        if (auto formula = cell.GetFormula(); formula) {
+          formula->HandleDeletedRows(first, count);
+        }
+      }
+    }
+  }
 }
 
 void Sheet::DeleteCols(int first, int count) {
-  throw runtime_error("unimplemented");
+  if (first >= size_.cols) {
+    return;
+  }
+
+  const int actual_count = std::min(count, size_.cols - first);
+
+  for (int col = first; col < first + actual_count; ++col) {
+    for (size_t row = 0; row < table_[col].size(); ++row) {
+      auto& cell_ptr = table_[col][row];
+      if (cell_ptr && cell_ptr.get()) {
+        cell_ptr.get()->PropagadeRefsTo(false);
+      }
+    }
+  }
+  table_.erase(table_.begin() + first, table_.begin() + first + actual_count);
+
+  size_.cols -= actual_count;
+
+  for (auto& col : table_) {
+    for (auto& cell_ptr : col) {
+      if (cell_ptr && cell_ptr.get()) {
+        Cell& cell = *cell_ptr.get();
+        if (auto formula = cell.GetFormula(); formula) {
+          formula->HandleDeletedCols(first, count);
+        }
+      }
+    }
+  }
 }
 
 Size Sheet::GetPrintableSize() const {
@@ -162,7 +262,7 @@ Cell& Sheet::InsertCell(Position pos) {
   auto& cell_ref = table_[pos.col][pos.row];
 
   if (!cell_ref) {
-    cell_ref = make_unique<Cell>(*this);
+    cell_ref = make_shared<Cell>(*this);
   }
 
   return *cell_ref.get();

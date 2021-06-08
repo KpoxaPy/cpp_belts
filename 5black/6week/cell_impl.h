@@ -17,15 +17,16 @@ class Cell : public ICell {
 
   Value GetValue() const override;
   std::string GetText() const override;
+  IFormula* GetFormula();
 
   std::vector<Position> GetReferencedCells() const override;
   const RefsTo& GetReferencingCells() const;
 
   void SetText(std::string text);
+  void PropagadeRefsTo(bool add);
 
  private:
   Sheet& sheet_;
-  Position pos_;
 
   std::string text_;
   std::optional<std::unique_ptr<IFormula>> formula_;
@@ -33,7 +34,6 @@ class Cell : public ICell {
 
   mutable std::optional<Value> value_;
 
-  void PropagadeRefsTo(bool add);
   void AddRefTo(Cell* cell_ptr);
   void ClearRefTo(Cell* cell_ptr);
 

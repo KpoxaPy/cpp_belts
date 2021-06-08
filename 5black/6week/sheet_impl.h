@@ -5,7 +5,7 @@
 #include "sheet.h"
 
 class Sheet : public ISheet {
-  using Column = std::vector<std::unique_ptr<Cell>>;
+  using Column = std::vector<std::shared_ptr<Cell>>;
   using Table = std::vector<Column>;
 
  public:

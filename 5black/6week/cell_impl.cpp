@@ -48,6 +48,13 @@ std::string Cell::GetText() const {
   }
 }
 
+IFormula* Cell::GetFormula() {
+  if (formula_ && formula_.value()) {
+    return formula_.value().get();
+  }
+  return nullptr;
+}
+
 std::vector<Position> Cell::GetReferencedCells() const {
   if (formula_) {
     return formula_.value()->GetReferencedCells();
