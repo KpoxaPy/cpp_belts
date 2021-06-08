@@ -97,11 +97,35 @@ Size Sheet::GetPrintableSize() const {
 }
 
 void Sheet::PrintValues(std::ostream& output) const {
-  throw runtime_error("unimplemented");
+  for (int row = 0; row < size_.rows; ++row) {
+    for (int col = 0; col < size_.cols; ++col) {
+      if (col > 0) {
+        output << '\t';
+      }
+      auto cell_ptr = GetCell({row, col});
+      if (cell_ptr) {
+        visit([&output](auto&& arg) {
+            output << arg;
+          }, cell_ptr->GetValue());
+      }
+    }
+    output << '\n';
+  }
 }
 
 void Sheet::PrintTexts(std::ostream& output) const {
-  throw runtime_error("unimplemented");
+  for (int row = 0; row < size_.rows; ++row) {
+    for (int col = 0; col < size_.cols; ++col) {
+      if (col > 0) {
+        output << '\t';
+      }
+      auto cell_ptr = GetCell({row, col});
+      if (cell_ptr) {
+        output << cell_ptr->GetText();
+      }
+    }
+    output << '\n';
+  }
 }
 
 void Sheet::AddCellToPrintable(Position pos) {
