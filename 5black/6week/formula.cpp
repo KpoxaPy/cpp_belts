@@ -66,27 +66,44 @@ class Formula : public IFormula {
     for (auto& e : poliz_) {
       if (holds_alternative<double>(e)) {
         memory.push(get<double>(e));
-      } else if (holds_alternative<Position>(e)) {
+        continue;
+      }
+      
+      if (holds_alternative<Position>(e)) {
         auto pos = get<Position>(e);
         auto cell_ptr = sheet.GetCell(pos);
         if (!cell_ptr) {
           memory.push(0.0);
-        } else {
-          auto value = cell_ptr->GetValue();
-          if (holds_alternative<double>(value)) {
-            memory.push(get<double>(value));
-          } else if (holds_alternative<string>(value)) {
-            if (get<string>(value).empty()) {
-              memory.push(0.0);
-            } else {
-              return FormulaError(FormulaError::Category::Value);
-            }
-          } else if (holds_alternative<FormulaError>(value)) {
-            return get<FormulaError>(value);
+          continue;
+        }
+
+        auto value = cell_ptr->GetValue();
+        if (holds_alternative<double>(value)) {
+          memory.push(get<double>(value));
+          continue;
+        }
+        
+        if (holds_alternative<string>(value)) {
+          string& text = get<string>(value);
+          if (text.empty()) {
+            memory.push(0.0);
+            continue;
+          }
+
+          try {
+            memory.push(stod(text));
+            continue;
+          } catch (...) {
+            return FormulaError(FormulaError::Category::Value);
           }
         }
-        throw runtime_error("undecidable cell value");
-      } else if (holds_alternative<BinaryOp>(e)) {
+        
+        if (holds_alternative<FormulaError>(value)) {
+          return get<FormulaError>(value);
+        }
+      }
+      
+      if (holds_alternative<BinaryOp>(e)) {
         auto rhs = memory.top();
         memory.pop();
         auto lhs = memory.top();
@@ -95,20 +112,26 @@ class Formula : public IFormula {
 
         if (holds_alternative<double>(result)) {
           memory.push(get<double>(result));
+          continue;
         } else {
           return result;
         }
-      } else if (holds_alternative<UnaryOp>(e)) {
+      }
+      
+      if (holds_alternative<UnaryOp>(e)) {
         auto arg = memory.top();
         memory.pop();
         auto result = get<UnaryOp>(e)(arg);
 
         if (holds_alternative<double>(result)) {
           memory.push(get<double>(result));
+          continue;
         } else {
           return result;
         }
       }
+
+      throw runtime_error("undecidable cell value");
     }
     return memory.top();
   }
