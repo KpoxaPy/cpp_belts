@@ -4,6 +4,14 @@
 
 using namespace std;
 
+namespace {
+
+const string RefStr = "#REF!";
+const string RefValue = "#VALUE!";
+const string RefDiv0 = "#DIV/0!";
+
+}
+
 FormulaError::FormulaError(Category category)
   : category_(category)
 {}
@@ -17,9 +25,18 @@ bool FormulaError::operator==(FormulaError rhs) const {
 }
 
 std::string_view FormulaError::ToString() const {
-  throw runtime_error("unimplemented");
+  switch (category_) {
+  case Category::Ref:
+    return RefStr;
+  case Category::Value:
+    return RefValue;
+  case Category::Div0:
+    return RefDiv0;
+  }
+  return "";
 }
 
 std::ostream& operator<<(std::ostream& output, FormulaError fe) {
-  throw runtime_error("unimplemented");
+  output << fe.ToString();
+  return output;
 }
