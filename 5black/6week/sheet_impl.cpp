@@ -40,6 +40,7 @@ Cell& Sheet::GetReferencedCell(Position pos) {
     throw InvalidPositionException("GetCell: invalid position");
   }
 
+  AddCellToPrintable(pos);
   return InsertCell(pos);
 }
 
@@ -77,10 +78,18 @@ void Sheet::ClearCell(Position pos) {
 }
 
 void Sheet::InsertRows(int before, int count) {
+  if (size_.rows + count > Position::kMaxRows) {
+    throw TableTooBigException("");
+  }
+
   throw runtime_error("unimplemented");
 }
 
 void Sheet::InsertCols(int before, int count) {
+  if (size_.cols + count > Position::kMaxCols) {
+    throw TableTooBigException("");
+  }
+
   throw runtime_error("unimplemented");
 }
 
