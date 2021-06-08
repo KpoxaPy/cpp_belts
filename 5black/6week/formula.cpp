@@ -1,5 +1,6 @@
 #include "formula.h"
 
+#include <cmath>
 #include <list>
 #include <set>
 #include <sstream>
@@ -7,145 +8,34 @@
 #include <stdexcept>
 #include <variant>
 #include <vector>
-#include <cmath>
 
 #include "FormulaLexer.h"
 #include "FormulaListener.h"
 #include "FormulaParser.h"
 #include "antlr4-runtime.h"
 #include "exception.h"
+#include "formula_node_full.h"
 
 using namespace std;
 
-struct BinaryOp {
-  char op;
-  IFormula::Value operator()(double lhs, double rhs) const {
-    double result;
-    if (op == '*') {
-      result = lhs * rhs;
-    } else if (op == '/') {
-      result = lhs / rhs;
-    } else if (op == '+') {
-      result = lhs + rhs;
-    } else if (op == '-') {
-      result = lhs - rhs;
-    } else {
-      throw runtime_error("unknown op");
-    }
-
-    if (isfinite(result)) {
-      return result;
-    } else {
-      return FormulaError(FormulaError::Category::Div0);
-    }
-  }
-};
-
-struct UnaryOp {
-  char op;
-  IFormula::Value operator()(double arg) const {
-    if (op == '+') {
-      return arg;
-    } else if (op == '-') {
-      return - arg;
-    }
-    throw runtime_error("unknown op");
-  }
-};
-
-using FormulaNode = variant<double, BinaryOp, UnaryOp, Position>;
-
 class Formula : public IFormula {
  public:
-  void AddNode(FormulaNode node) {
-    poliz_.push_back(std::move(node));
-  }
-
   void SetReferencedCells(vector<Position> refs) {
     referenced_cells_ = std::move(refs);
   }
 
+  void SetRootNode(FormulaNode root) {
+    root_ = std::move(root);
+  }
+
   Value Evaluate(const ISheet& sheet) const override {
-    stack<double> memory;
-    for (auto& e : poliz_) {
-      if (holds_alternative<double>(e)) {
-        memory.push(get<double>(e));
-        continue;
-      }
-      
-      if (holds_alternative<Position>(e)) {
-        auto pos = get<Position>(e);
-        auto cell_ptr = sheet.GetCell(pos);
-        if (!cell_ptr) {
-          memory.push(0.0);
-          continue;
-        }
-
-        auto value = cell_ptr->GetValue();
-        if (holds_alternative<double>(value)) {
-          memory.push(get<double>(value));
-          continue;
-        }
-        
-        if (holds_alternative<string>(value)) {
-          string& text = get<string>(value);
-          if (text.empty()) {
-            memory.push(0.0);
-            continue;
-          }
-
-          try {
-            size_t pos;
-            memory.push(stod(text, &pos));
-            if (pos != text.size()) {
-              return FormulaError(FormulaError::Category::Value);
-            }
-            continue;
-          } catch (...) {
-            return FormulaError(FormulaError::Category::Value);
-          }
-        }
-        
-        if (holds_alternative<FormulaError>(value)) {
-          return get<FormulaError>(value);
-        }
-      }
-      
-      if (holds_alternative<BinaryOp>(e)) {
-        auto rhs = memory.top();
-        memory.pop();
-        auto lhs = memory.top();
-        memory.pop();
-        auto result = get<BinaryOp>(e)(lhs, rhs);
-
-        if (holds_alternative<double>(result)) {
-          memory.push(get<double>(result));
-          continue;
-        } else {
-          return result;
-        }
-      }
-      
-      if (holds_alternative<UnaryOp>(e)) {
-        auto arg = memory.top();
-        memory.pop();
-        auto result = get<UnaryOp>(e)(arg);
-
-        if (holds_alternative<double>(result)) {
-          memory.push(get<double>(result));
-          continue;
-        } else {
-          return result;
-        }
-      }
-
-      throw runtime_error("undecidable cell value");
-    }
-    return memory.top();
+    return EvaluateNode(root_, sheet);
   }
 
   std::string GetExpression() const override {
-    return "=";
+    ostringstream ss;
+    ss << root_;
+    return ss.str();
   }
 
   std::vector<Position> GetReferencedCells() const override {
@@ -169,8 +59,8 @@ class Formula : public IFormula {
   }
 
  private:
-  list<FormulaNode> poliz_;
   vector<Position> referenced_cells_;
+  FormulaNode root_;
 };
 
 class BailErrorListener : public antlr4::BaseErrorListener {
@@ -186,9 +76,6 @@ class BailErrorListener : public antlr4::BaseErrorListener {
 
 class MyFormulaListener : public FormulaListener {
  public:
-  MyFormulaListener() {
-    formula_ = make_unique<Formula>();
-  }
   void visitTerminal(antlr4::tree::TerminalNode *node) override {}
   void visitErrorNode(antlr4::tree::ErrorNode *node) override {}
   void enterEveryRule(antlr4::ParserRuleContext *ctx) override {}
@@ -200,10 +87,11 @@ class MyFormulaListener : public FormulaListener {
   void enterUnaryOp(FormulaParser::UnaryOpContext *ctx) override {}
   void exitUnaryOp(FormulaParser::UnaryOpContext *ctx) override {
     if (ctx->ADD()) {
-      formula_->AddNode(UnaryOp{'+'});
+      memory_.push(UnaryOp{'+', make_unique<FormulaNode>(std::move(memory_.top()))});
     } else if (ctx->SUB()) {
-      formula_->AddNode(UnaryOp{'-'});
+      memory_.push(UnaryOp{'-', make_unique<FormulaNode>(std::move(memory_.top()))});
     }
+    memory_.pop();
   }
 
   void enterParens(FormulaParser::ParensContext *ctx) override {}
@@ -211,7 +99,7 @@ class MyFormulaListener : public FormulaListener {
 
   void enterLiteral(FormulaParser::LiteralContext *ctx) override {}
   void exitLiteral(FormulaParser::LiteralContext *ctx) override {
-    formula_->AddNode(stod(ctx->NUMBER()->getText()));
+    memory_.push(stod(ctx->NUMBER()->getText()));
   }
 
   void enterCell(FormulaParser::CellContext *ctx) override {}
@@ -221,31 +109,48 @@ class MyFormulaListener : public FormulaListener {
       throw FormulaException("Wrong cell ref");
     }
     refs_.insert(pos);
-    formula_->AddNode(pos);
+    memory_.push(pos);
   }
 
   void enterBinaryOp(FormulaParser::BinaryOpContext *ctx) override {}
   void exitBinaryOp(FormulaParser::BinaryOpContext *ctx) override {
+    auto rhs = std::move(memory_.top());
+    memory_.pop();
+    auto lhs = std::move(memory_.top());
+    memory_.pop();
+
     if (ctx->MUL()) {
-      formula_->AddNode(BinaryOp{'*'});
+      memory_.push(BinaryOp{'*',
+        make_unique<FormulaNode>(std::move(lhs)),
+        make_unique<FormulaNode>(std::move(rhs))});
     } else if (ctx->DIV()) {
-      formula_->AddNode(BinaryOp{'/'});
+      memory_.push(BinaryOp{'/',
+        make_unique<FormulaNode>(std::move(lhs)),
+        make_unique<FormulaNode>(std::move(rhs))});
     } else if (ctx->ADD()) {
-      formula_->AddNode(BinaryOp{'+'});
+      memory_.push(BinaryOp{'+',
+        make_unique<FormulaNode>(std::move(lhs)),
+        make_unique<FormulaNode>(std::move(rhs))});
     } else if (ctx->SUB()) {
-      formula_->AddNode(BinaryOp{'-'});
+      memory_.push(BinaryOp{'-',
+        make_unique<FormulaNode>(std::move(lhs)),
+        make_unique<FormulaNode>(std::move(rhs))});
     }
   }
 
   unique_ptr<IFormula> FlushResult() {
+    auto formula = make_unique<Formula>();
+
     vector<Position> refs(refs_.begin(), refs_.end());
-    formula_->SetReferencedCells(std::move(refs));
-    return std::move(formula_);
+    formula->SetReferencedCells(std::move(refs));
+    formula->SetRootNode(std::move(memory_.top()));
+
+    return formula;
   }
 
  private:
   set<Position> refs_;
-  unique_ptr<Formula> formula_;
+  stack<FormulaNode> memory_;
 };
 
 unique_ptr<IFormula> ParseFormula(string expression) {

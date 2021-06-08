@@ -1,10 +1,11 @@
 #include "cell_impl.h"
 
 #include <queue>
+#include <sstream>
 #include <string_view>
 
-#include "sheet_impl.h"
 #include "exception.h"
+#include "sheet_impl.h"
 
 using namespace std;
 
@@ -39,7 +40,9 @@ ICell::Value Cell::GetValue() const {
 
 std::string Cell::GetText() const {
   if (formula_ && formula_.value()) {
-    return formula_.value()->GetExpression();
+    ostringstream ss;
+    ss << "=" << formula_.value()->GetExpression();
+    return ss.str();
   } else {
     return text_;
   }

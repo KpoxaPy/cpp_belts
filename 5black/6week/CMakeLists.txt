@@ -21,10 +21,14 @@ set(ADDITIONAL
 )
 
 set(PROJECT_HDRS
+  binary_op.h
   cell.h
   cell_impl.h
   exception.h
   formula_error.h
+  formula_node.h
+  formula_node_full.h
+  formula_node_part.h
   hash_extra.h
   hashing.h
   macro.h
@@ -36,13 +40,16 @@ set(PROJECT_HDRS
   size.h
   string_stream_utils.h
   string_view_utils.h
+  unary_op.h
   utils_it.h
 )
 
 set(PROJECT_SRCS
+  binary_op.cpp
   cell_impl.cpp
   formula.cpp
   formula_error.cpp
+  formula_node.cpp
   position.cpp
   position.cpp
   profile.cpp
@@ -50,6 +57,7 @@ set(PROJECT_SRCS
   sheet_impl.cpp
   size.cpp
   string_view_utils.cpp
+  unary_op.cpp
 )
 
 add_definitions(
