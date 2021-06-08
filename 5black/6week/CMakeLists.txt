@@ -26,6 +26,7 @@ set(PROJECT_HDRS
   cell_impl.h
   exception.h
   formula_error.h
+  formula_impl.h
   formula_node.h
   formula_node_full.h
   formula_node_part.h
@@ -47,9 +48,10 @@ set(PROJECT_HDRS
 set(PROJECT_SRCS
   binary_op.cpp
   cell_impl.cpp
-  formula.cpp
   formula_error.cpp
+  formula_impl.cpp
   formula_node.cpp
+  formula_parser.cpp
   position.cpp
   position.cpp
   profile.cpp

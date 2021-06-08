@@ -1,67 +1,19 @@
-#include "formula.h"
-
 #include <cmath>
-#include <list>
 #include <set>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
-#include <variant>
-#include <vector>
 
 #include "FormulaLexer.h"
 #include "FormulaListener.h"
 #include "FormulaParser.h"
 #include "antlr4-runtime.h"
 #include "exception.h"
+#include "formula.h"
+#include "formula_impl.h"
 #include "formula_node_full.h"
 
 using namespace std;
-
-class Formula : public IFormula {
- public:
-  void SetReferencedCells(vector<Position> refs) {
-    referenced_cells_ = std::move(refs);
-  }
-
-  void SetRootNode(FormulaNode root) {
-    root_ = std::move(root);
-  }
-
-  Value Evaluate(const ISheet& sheet) const override {
-    return EvaluateNode(root_, sheet);
-  }
-
-  std::string GetExpression() const override {
-    ostringstream ss;
-    ss << root_;
-    return ss.str();
-  }
-
-  std::vector<Position> GetReferencedCells() const override {
-    return referenced_cells_;
-  }
-
-  HandlingResult HandleInsertedRows(int before, int count) override {
-    return HandlingResult::NothingChanged;
-  }
-
-  HandlingResult HandleInsertedCols(int before, int count) override {
-    return HandlingResult::NothingChanged;
-  }
-
-  HandlingResult HandleDeletedRows(int first, int count) override {
-    return HandlingResult::NothingChanged;
-  }
-
-  HandlingResult HandleDeletedCols(int first, int count) override {
-    return HandlingResult::NothingChanged;
-  }
-
- private:
-  vector<Position> referenced_cells_;
-  FormulaNode root_;
-};
 
 class BailErrorListener : public antlr4::BaseErrorListener {
  public:
