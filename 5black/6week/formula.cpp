@@ -20,20 +20,24 @@ using namespace std;
 struct BinaryOp {
   char op;
   IFormula::Value operator()(double lhs, double rhs) const {
+    double result;
     if (op == '*') {
-      return lhs * rhs;
+      result = lhs * rhs;
     } else if (op == '/') {
-      if (!isfinite(rhs)) {
-        return FormulaError(FormulaError::Category::Div0);
-      } else {
-        return lhs / rhs;
-      }
+      result = lhs / rhs;
     } else if (op == '+') {
-      return lhs + rhs;
+      result = lhs + rhs;
     } else if (op == '-') {
-      return lhs - rhs;
+      result = lhs - rhs;
+    } else {
+      throw runtime_error("unknown op");
     }
-    throw runtime_error("unknown op");
+
+    if (isfinite(result)) {
+      return result;
+    } else {
+      return FormulaError(FormulaError::Category::Div0);
+    }
   }
 };
 
