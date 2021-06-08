@@ -91,7 +91,11 @@ class Formula : public IFormula {
           }
 
           try {
-            memory.push(stod(text));
+            size_t pos;
+            memory.push(stod(text, &pos));
+            if (pos != text.size()) {
+              return FormulaError(FormulaError::Category::Value);
+            }
             continue;
           } catch (...) {
             return FormulaError(FormulaError::Category::Value);

@@ -20,9 +20,15 @@ ICell::Value Cell::GetValue() const {
       string_view view = text_;
       view.remove_prefix(1);
       value_ = string(view);
-    } else if (formula_) {
-      // formula logic
-      value_ = 0.0;
+    } else if (formula_ && formula_.value()) {
+      auto result = formula_.value()->Evaluate(sheet_);
+      if (holds_alternative<double>(result)) {
+        value_ = get<double>(result);
+      } else if (holds_alternative<FormulaError>(result)) {
+        value_ = get<FormulaError>(result);
+      } else {
+        value_ = 0.0;
+      }
     } else {
       value_ = text_;
     }
