@@ -4,8 +4,7 @@
 #include <optional>
 #include <unordered_set>
 
-#include "cell.h"
-#include "formula.h"
+#include "common_etc.h"
 
 class Sheet;
 

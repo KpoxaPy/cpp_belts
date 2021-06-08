@@ -22,10 +22,8 @@ set(ADDITIONAL
 
 set(PROJECT_HDRS
   binary_op.h
-  cell.h
   cell_impl.h
-  exception.h
-  formula_error.h
+  common_etc.h
   formula_impl.h
   formula_node.h
   formula_node_full.h
@@ -34,11 +32,8 @@ set(PROJECT_HDRS
   hashing.h
   macro.h
   paginator.h
-  position.h
   profile.h
-  sheet.h
   sheet_impl.h
-  size.h
   string_stream_utils.h
   string_view_utils.h
   unary_op.h

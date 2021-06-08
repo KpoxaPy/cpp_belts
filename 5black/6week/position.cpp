@@ -1,10 +1,8 @@
-#include "position.h"
-
 #include <list>
 #include <sstream>
 #include <tuple>
 
-#include "exception.h"
+#include "common_etc.h"
 #include "hashing.h"
 
 using namespace std;

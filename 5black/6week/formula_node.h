@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-#include "formula.h"
+#include "common_etc.h"
 #include "formula_node_part.h"
 
 std::ostream& operator<<(std::ostream& o, const FormulaNode& node);

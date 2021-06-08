@@ -4,8 +4,7 @@
 #include <variant>
 #include <vector>
 
-#include "formula_error.h"
-#include "sheet.h"
+#include "common_etc.h"
 
 // Формула, позволяющая вычислять и обновлять арифметическое выражение.
 // Поддерживаемые возможности:

@@ -1,11 +1,10 @@
 #pragma once
 
-#include <vector>
 #include <functional>
+#include <vector>
 
-#include "formula.h"
+#include "common_etc.h"
 #include "formula_node_full.h"
-#include "position.h"
 
 class Formula : public IFormula {
  public:

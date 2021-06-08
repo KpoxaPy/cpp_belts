@@ -8,10 +8,9 @@
 #include "FormulaListener.h"
 #include "FormulaParser.h"
 #include "antlr4-runtime.h"
-#include "exception.h"
-#include "formula.h"
 #include "formula_impl.h"
 #include "formula_node_full.h"
+#include "common_etc.h"
 
 using namespace std;
 

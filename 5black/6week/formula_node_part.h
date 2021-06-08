@@ -2,8 +2,7 @@
 
 #include <variant>
 
-#include "formula_error.h"
-#include "position.h"
+#include "common_etc.h"
 
 class BinaryOp;
 class UnaryOp;

@@ -1,9 +1,9 @@
 #include "sheet_impl.h"
 
 #include <stdexcept>
+#include <ostream>
 
 #include "cell_impl.h"
-#include "exception.h"
 
 using namespace std;
 

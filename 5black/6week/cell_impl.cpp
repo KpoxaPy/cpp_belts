@@ -4,7 +4,6 @@
 #include <sstream>
 #include <string_view>
 
-#include "exception.h"
 #include "sheet_impl.h"
 
 using namespace std;

@@ -1,7 +1,7 @@
-#include "sheet.h"
-#include "sheet_impl.h"
-
 #include <stdexcept>
+
+#include "common_etc.h"
+#include "sheet_impl.h"
 
 using namespace std;
 

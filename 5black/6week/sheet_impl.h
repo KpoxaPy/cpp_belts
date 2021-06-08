@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "cell_impl.h"
-#include "sheet.h"
+#include "common_etc.h"
 
 class Sheet : public ISheet {
   using Column = std::vector<std::shared_ptr<Cell>>;
