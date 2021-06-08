@@ -86,12 +86,13 @@ class MyFormulaListener : public FormulaListener {
 
   void enterUnaryOp(FormulaParser::UnaryOpContext *ctx) override {}
   void exitUnaryOp(FormulaParser::UnaryOpContext *ctx) override {
-    if (ctx->ADD()) {
-      memory_.push(UnaryOp{'+', make_unique<FormulaNode>(std::move(memory_.top()))});
-    } else if (ctx->SUB()) {
-      memory_.push(UnaryOp{'-', make_unique<FormulaNode>(std::move(memory_.top()))});
-    }
+    auto arg = std::move(memory_.top());
     memory_.pop();
+    if (ctx->ADD()) {
+      memory_.push(UnaryOp{'+', make_unique<FormulaNode>(std::move(arg))});
+    } else if (ctx->SUB()) {
+      memory_.push(UnaryOp{'-', make_unique<FormulaNode>(std::move(arg))});
+    }
   }
 
   void enterParens(FormulaParser::ParensContext *ctx) override {}
