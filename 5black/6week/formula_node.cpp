@@ -6,19 +6,6 @@ std::ostream& operator<<(std::ostream& o, const Position& p) {
   return o << p.ToString();
 }
 
-ostream& operator<<(ostream& o, const FormulaNode& node) {
-  visit([&o](auto&& val) {
-    o << val;
-  }, node);
-  return o;
-}
-
-IFormula::Value EvaluateNode(const FormulaNode& node, const ISheet& sheet) {
-  return visit([&sheet](auto&& val) {
-    return EvaluateNode(val, sheet);
-  }, node);
-}
-
 IFormula::Value EvaluateNode(double val, const ISheet& sheet) {
   return val;
 }
@@ -58,3 +45,19 @@ IFormula::Value EvaluateNode(const Position& pos, const ISheet& sheet) {
   throw runtime_error("undecideable value");
 }
 
+IFormula::Value EvaluateNode(const FormulaError& error, const ISheet& sheet) {
+  return error;
+}
+
+ostream& operator<<(ostream& o, const FormulaNode& node) {
+  visit([&o](auto&& val) {
+    o << val;
+  }, node);
+  return o;
+}
+
+IFormula::Value EvaluateNode(const FormulaNode& node, const ISheet& sheet) {
+  return visit([&sheet](auto&& val) {
+    return EvaluateNode(val, sheet);
+  }, node);
+}

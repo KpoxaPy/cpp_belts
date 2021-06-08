@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 
 #include "formula.h"
 #include "formula_node_full.h"
@@ -22,10 +23,16 @@ class Formula : public IFormula {
   HandlingResult HandleInsertedCols(int before, int count) override;
 
   HandlingResult HandleDeletedRows(int first, int count) override;
-
   HandlingResult HandleDeletedCols(int first, int count) override;
 
  private:
   std::vector<Position> referenced_cells_;
   FormulaNode root_;
+
+  using CellTraverser = std::function<std::pair<Position, IFormula::HandlingResult>(Position)>;
+
+  HandlingResult TraverseChangedCells(CellTraverser f);
+  HandlingResult TraverseChangedCellsForRefs(CellTraverser f);
+  void TraverseChangedCellsForFormula(CellTraverser f);
+
 };
