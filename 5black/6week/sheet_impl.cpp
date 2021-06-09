@@ -202,7 +202,21 @@ void Sheet::DeleteCols(int first, int count) {
 }
 
 Size Sheet::GetPrintableSize() const {
-  return size_;
+  Size s = {0, 0};
+  for (size_t col = 0; col < table_.size(); ++col) {
+    for (size_t row = 0; row < table_[col].size(); ++row) {
+      const Cell* cell = table_[col][row].get();
+      if (cell && !cell->GetText().empty()) {
+        if (col + 1 > static_cast<size_t>(s.cols)) {
+          s.cols = col + 1;
+        }
+        if (row + 1 > static_cast<size_t>(s.rows)) {
+          s.rows = row + 1;
+        }
+      }
+    }
+  }
+  return s;
 }
 
 void Sheet::PrintValues(std::ostream& output) const {
