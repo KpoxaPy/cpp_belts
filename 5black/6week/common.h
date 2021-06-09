@@ -126,17 +126,17 @@ public:
   // * Если текст начинается с символа "'" (апостроф), то при выводе значения
   // ячейки методом GetValue() он опускается. Можно использовать, если нужно
   // начать текст со знака "=", но чтобы он не интерпретировался как формула.
-  virtual void SetCell(Position pos, std::string text) = 0;
+  virtual void SetCell(Position pos, std::string text) = 0; // O(K), O(1) для повтора
 
   // Возвращает значение ячейки.
   // Если ячейка пуста, может вернуть nullptr.
-  virtual const ICell* GetCell(Position pos) const = 0;
-  virtual ICell* GetCell(Position pos) = 0;
+  virtual const ICell* GetCell(Position pos) const = 0; // O(1)
+  virtual ICell* GetCell(Position pos) = 0; // O(1)
 
   // Очищает ячейку.
   // Последующий вызов GetCell() для этой ячейки вернёт либо nullptr, либо
   // объект с пустым текстом.
-  virtual void ClearCell(Position pos) = 0;
+  virtual void ClearCell(Position pos) = 0; // O(K)
 
   // Вставляет заданное число пустых строк/столбцов перед строкой/столбцом с
   // заданным индексом. Все ссылки из формул обновляются таким образом, чтобы
@@ -145,26 +145,26 @@ public:
   // максимальной, или индексы ячеек в каких-то формулах вылезут за максимально
   // допустимые, то бросается исключение TableTooBigException и содержимое
   // таблицы не изменяется.
-  virtual void InsertRows(int before, int count = 1) = 0;
-  virtual void InsertCols(int before, int count = 1) = 0;
+  virtual void InsertRows(int before, int count = 1) = 0; // O(K)
+  virtual void InsertCols(int before, int count = 1) = 0; // O(K)
 
   // Удаляет заданное число пустых строк/столбцов, начиная со строки/столбца с
   // заданным индексом. Все ссылки из формул обновляются таким образом, чтобы
   // указывать на те же ячейки, что и до удаления.
-  virtual void DeleteRows(int first, int count = 1) = 0;
-  virtual void DeleteCols(int first, int count = 1) = 0;
+  virtual void DeleteRows(int first, int count = 1) = 0; // O(K)
+  virtual void DeleteCols(int first, int count = 1) = 0; // O(K)
 
   // Вычисляет размер области, которая участвует в печати.
   // Определяется как ограничивающий прямоугольник всех ячеек с непустым
   // текстом.
-  virtual Size GetPrintableSize() const = 0;
+  virtual Size GetPrintableSize() const = 0; // O(K)
 
   // Выводит всю таблицу в переданный поток. Столбцы разделяются знаком
   // табуляции. После каждой строки выводится символ перевода строки. Для
   // преобразования ячеек в строку используются методы GetValue() или GetText()
   // соответственно. Пустая ячейка представляется пустой строкой в любом случае.
-  virtual void PrintValues(std::ostream& output) const = 0;
-  virtual void PrintTexts(std::ostream& output) const = 0;
+  virtual void PrintValues(std::ostream& output) const = 0; // O(K)
+  virtual void PrintTexts(std::ostream& output) const = 0; // O(K)
 };
 
 // Создаёт готовую к работе пустую таблицу.
