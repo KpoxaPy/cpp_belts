@@ -33,6 +33,7 @@ set(PROJECT_HDRS
   macro.h
   paginator.h
   profile.h
+  set_utils.h
   sheet_impl.h
   string_stream_utils.h
   string_view_utils.h

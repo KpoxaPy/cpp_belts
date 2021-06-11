@@ -1,23 +1,22 @@
+#include <functional>
 #include <memory>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "cell_impl.h"
 #include "common_etc.h"
 
 class Sheet : public ISheet {
-  using Column = std::vector<std::shared_ptr<Cell>>;
+  using CellPtr = std::shared_ptr<Cell>;
+  using Column = std::vector<CellPtr>;
   using Table = std::vector<Column>;
 
  public:
-  Sheet();
-
-  const Cell* GetSpecificCell(Position pos) const;
-  Cell* GetSpecificCell(Position pos);
-  Cell& GetReferencedCell(Position pos);
-
   void SetCell(Position pos, std::string text) override;
   const ICell* GetCell(Position pos) const override;
   ICell* GetCell(Position pos) override;
+  Cell& InsertCell(Position pos);
   void ClearCell(Position pos) override;
 
   void InsertRows(int before, int count = 1) override;
@@ -32,9 +31,8 @@ class Sheet : public ISheet {
   void PrintTexts(std::ostream& output) const override;
 
  private:
-  Size size_ = {0, 0};
   Table table_;
 
-  void AddCellToPrintable(Position pos);
-  Cell& InsertCell(Position pos);
+  void ProcessNonEmptyCells(std::function<void(Position, Cell&)> f) const;
+  Size GetSize() const;
 };

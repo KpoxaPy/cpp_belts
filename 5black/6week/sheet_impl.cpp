@@ -7,58 +7,49 @@
 
 using namespace std;
 
-Sheet::Sheet() {
-  table_.reserve(Position::kMaxCols);
-}
-
-const Cell* Sheet::GetSpecificCell(Position pos) const {
-  if (!pos.IsValid()) {
-    throw InvalidPositionException("GetCell: invalid position");
-  }
-
-  if (static_cast<size_t>(pos.col) < table_.size() && static_cast<size_t>(pos.row) < table_[pos.col].size()) {
-    return table_[pos.col][pos.row].get();
-  }
-
-  return nullptr;
-}
-
-Cell* Sheet::GetSpecificCell(Position pos) {
-  if (!pos.IsValid()) {
-    throw InvalidPositionException("GetCell: invalid position");
-  }
-
-  if (static_cast<size_t>(pos.col) < table_.size() && static_cast<size_t>(pos.row) < table_[pos.col].size()) {
-    return table_[pos.col][pos.row].get();
-  }
-
-  return nullptr;
-}
-
-Cell& Sheet::GetReferencedCell(Position pos) {
-  if (!pos.IsValid()) {
-    throw InvalidPositionException("GetCell: invalid position");
-  }
-
-  AddCellToPrintable(pos);
-  return InsertCell(pos);
-}
-
 void Sheet::SetCell(Position pos, std::string text) {
   if (!pos.IsValid()) {
     throw InvalidPositionException("SetCell: invalid position");
   }
 
-  AddCellToPrintable(pos);
   InsertCell(pos).SetText(text);
 }
 
 const ICell* Sheet::GetCell(Position pos) const {
-  return GetSpecificCell(pos);
+  if (!pos.IsValid()) {
+    throw InvalidPositionException("GetCell: invalid position");
+  }
+
+  if (pos.col < static_cast<int>(table_.size()) && pos.row < static_cast<int>(table_[pos.col].size())) {
+    return table_[pos.col][pos.row].get();
+  }
+  return nullptr;
 }
 
 ICell* Sheet::GetCell(Position pos) {
-  return GetSpecificCell(pos);
+  if (!pos.IsValid()) {
+    throw InvalidPositionException("GetCell: invalid position");
+  }
+
+  if (pos.col < static_cast<int>(table_.size()) && pos.row < static_cast<int>(table_[pos.col].size())) {
+    return table_[pos.col][pos.row].get();
+  }
+  return nullptr;
+}
+
+Cell& Sheet::InsertCell(Position pos) {
+  if (static_cast<size_t>(pos.col) >= table_.size()) {
+    table_.resize(pos.col + 1);
+  }
+  if (static_cast<size_t>(pos.row) >= table_[pos.col].size()) {
+    table_[pos.col].resize(pos.row + 1);
+  }
+
+  auto& cell_ref = table_[pos.col][pos.row];
+  if (!cell_ref) {
+    cell_ref = make_shared<Cell>(*this);
+  }
+  return *cell_ref.get();
 }
 
 void Sheet::ClearCell(Position pos) {
@@ -66,167 +57,142 @@ void Sheet::ClearCell(Position pos) {
     throw InvalidPositionException("ClearCell: invalid position");
   }
 
-  if (static_cast<size_t>(pos.col) < table_.size() && static_cast<size_t>(pos.row) < table_[pos.col].size()) {
-    auto& cell_ptr = table_[pos.col][pos.row];
-    if (cell_ptr) {
-      cell_ptr->SetText("");
-      if (cell_ptr->GetReferencingCells().empty()) {
-        cell_ptr.reset();
-      }
+  if (!(pos.col < static_cast<int>(table_.size())) || !(pos.row < static_cast<int>(table_[pos.col].size()))) {
+    return;
+  }
+
+  bool need_fit = false;
+  if (auto& cell_ptr = table_[pos.col][pos.row]; cell_ptr) {
+    cell_ptr->SetText("");
+    if (cell_ptr->IsFree()) {
+      cell_ptr.reset();
+      need_fit = true;
+    }
+  }
+
+  // Если у нас была удалена логическая ячейка, то
+  // приводим реальный размер таблицы с соответствием с логическим
+  // при этом ёмкость векторов остаётся строго в диапазоне максимальных позиций
+  if (need_fit) {
+    auto s = GetSize();
+    if (pos.col >= s.cols) {
+      table_.resize(s.cols);
+    } else if (pos.row >= s.rows) {
+      table_[pos.col].resize(s.rows);
     }
   }
 }
 
 void Sheet::InsertRows(int before, int count) {
-  if (size_.rows + count > Position::kMaxRows) {
+  const auto s = GetSize();
+  if (s.rows + count > Position::kMaxRows) {
     throw TableTooBigException("");
   }
 
-  for (int col = 0; col < size_.cols; ++col) {
+  // Вставка после области с ячейками ничего не меняет
+  if (before >= s.rows) {
+    return;
+  }
+
+  for (int col = 0; col < s.cols; ++col) {
     if (before < static_cast<int>(table_[col].size())) {
       table_[col].insert(table_[col].begin() + before, count, {});
     }
   }
 
-  if (before < size_.rows) {
-    size_.rows += count;
-  } else {
-    size_.rows = before + count;
-  }
-
-  for (auto& col : table_) {
-    for (auto& cell_ptr : col) {
-      if (cell_ptr && cell_ptr.get()) {
-        Cell& cell = *cell_ptr.get();
-        if (auto formula = cell.GetFormula(); formula) {
-          formula->HandleInsertedRows(before, count);
-        }
-      }
-    }
-  }
+  ProcessNonEmptyCells([before, count](Position, Cell& cell) {
+    cell.HandleInsertedRows(before, count);
+  });
 }
 
 void Sheet::InsertCols(int before, int count) {
-  if (size_.cols + count > Position::kMaxCols) {
+  const auto s = GetSize();
+  if (s.cols + count > Position::kMaxCols) {
     throw TableTooBigException("");
   }
 
-  if (before < size_.cols) {
-    size_.cols += count;
-    table_.insert(table_.begin() + before, count, {});
-    for (int col = before; col < before + count; ++col) {
-      table_[col].reserve(Position::kMaxRows);
-    }
-  } else {
-    size_t old_size = size_.cols;
-    size_.cols = before + count;
-    table_.resize(size_.cols);
-    for (int col = old_size; col < size_.cols; ++col) {
-      table_[col].reserve(Position::kMaxRows);
-    } 
+  // Вставка после области с ячейками ничего не меняет
+  if (before >= s.cols) {
+    return;
   }
+  table_.insert(table_.begin() + before, count, {});
 
-  for (auto& col : table_) {
-    for (auto& cell_ptr : col) {
-      if (cell_ptr && cell_ptr.get()) {
-        Cell& cell = *cell_ptr.get();
-        if (auto formula = cell.GetFormula(); formula) {
-          formula->HandleInsertedCols(before, count);
-        }
-      }
-    }
-  }
+  ProcessNonEmptyCells([before, count](Position, Cell& cell) {
+    cell.HandleInsertedCols(before, count);
+  });
 }
 
 void Sheet::DeleteRows(int first, int count) {
-  if (first >= size_.rows) {
+  const auto s = GetSize();
+
+  // Удаление после области с ячейками ничего не меняет
+  if (first >= s.rows) {
     return;
   }
 
-  for (int col = 0; col < size_.cols; ++col) {
+  for (int col = 0; col < s.cols; ++col) {
     if (first < static_cast<int>(table_[col].size())) {
       const int actual_count = std::min(count, static_cast<int>(table_[col].size()) - first);
       for (int row = first; row < first + actual_count; ++row) {
-        auto& cell_ptr = table_[col][row];
-        if (cell_ptr && cell_ptr.get()) {
-          cell_ptr.get()->PropagadeRefsTo(false);
+        if (auto& cell_ptr = table_[col][row]; cell_ptr) {
+          cell_ptr->PrepareToDelete();
         }
       }
       table_[col].erase(table_[col].begin() + first, table_[col].begin() + first + actual_count);
     }
   }
 
-  size_.rows -= std::min(count, size_.rows - first);
-
-  for (auto& col : table_) {
-    for (auto& cell_ptr : col) {
-      if (cell_ptr && cell_ptr.get()) {
-        Cell& cell = *cell_ptr.get();
-        if (auto formula = cell.GetFormula(); formula) {
-          formula->HandleDeletedRows(first, count);
-        }
-      }
-    }
-  }
+  ProcessNonEmptyCells([first, count](Position, Cell& cell) {
+    cell.HandleDeletedRows(first, count);
+  });
 }
 
 void Sheet::DeleteCols(int first, int count) {
-  if (first >= size_.cols) {
+  const auto s = GetSize();
+
+  // Удаление после конца области с ячейками ничего не меняет
+  if (first >= s.cols) {
     return;
   }
 
-  const int actual_count = std::min(count, size_.cols - first);
-
+  const int actual_count = std::min(count, s.cols - first);
   for (int col = first; col < first + actual_count; ++col) {
     for (size_t row = 0; row < table_[col].size(); ++row) {
-      auto& cell_ptr = table_[col][row];
-      if (cell_ptr && cell_ptr.get()) {
-        cell_ptr.get()->PropagadeRefsTo(false);
+      if (auto& cell_ptr = table_[col][row]; cell_ptr) {
+        cell_ptr->PrepareToDelete();
       }
     }
   }
   table_.erase(table_.begin() + first, table_.begin() + first + actual_count);
 
-  size_.cols -= actual_count;
-
-  for (auto& col : table_) {
-    for (auto& cell_ptr : col) {
-      if (cell_ptr && cell_ptr.get()) {
-        Cell& cell = *cell_ptr.get();
-        if (auto formula = cell.GetFormula(); formula) {
-          formula->HandleDeletedCols(first, count);
-        }
-      }
-    }
-  }
+  ProcessNonEmptyCells([first, count](Position, Cell& cell) {
+    cell.HandleDeletedCols(first, count);
+  });
 }
 
 Size Sheet::GetPrintableSize() const {
   Size s = {0, 0};
-  for (size_t col = 0; col < table_.size(); ++col) {
-    for (size_t row = 0; row < table_[col].size(); ++row) {
-      const Cell* cell = table_[col][row].get();
-      if (cell && !cell->GetText().empty()) {
-        if (col + 1 > static_cast<size_t>(s.cols)) {
-          s.cols = col + 1;
-        }
-        if (row + 1 > static_cast<size_t>(s.rows)) {
-          s.rows = row + 1;
-        }
+  ProcessNonEmptyCells([&s](Position p, Cell& cell) {
+    if (!cell.GetText().empty()) {
+      if (p.col + 1 > s.cols) {
+        s.cols = p.col + 1;
+      }
+      if (p.row + 1 > s.rows) {
+        s.rows = p.row + 1;
       }
     }
-  }
+  });
   return s;
 }
 
 void Sheet::PrintValues(std::ostream& output) const {
-  for (int row = 0; row < size_.rows; ++row) {
-    for (int col = 0; col < size_.cols; ++col) {
+  auto s = GetPrintableSize();
+  for (int row = 0; row < s.rows; ++row) {
+    for (int col = 0; col < s.cols; ++col) {
       if (col > 0) {
         output << '\t';
       }
-      auto cell_ptr = GetCell({row, col});
-      if (cell_ptr) {
+      if (auto cell_ptr = GetCell({row, col}); cell_ptr) {
         visit([&output](auto&& arg) {
             output << arg;
           }, cell_ptr->GetValue());
@@ -237,13 +203,13 @@ void Sheet::PrintValues(std::ostream& output) const {
 }
 
 void Sheet::PrintTexts(std::ostream& output) const {
-  for (int row = 0; row < size_.rows; ++row) {
-    for (int col = 0; col < size_.cols; ++col) {
+  auto s = GetPrintableSize();
+  for (int row = 0; row < s.rows; ++row) {
+    for (int col = 0; col < s.cols; ++col) {
       if (col > 0) {
         output << '\t';
       }
-      auto cell_ptr = GetCell({row, col});
-      if (cell_ptr) {
+      if (auto cell_ptr = GetCell({row, col}); cell_ptr) {
         output << cell_ptr->GetText();
       }
     }
@@ -251,33 +217,25 @@ void Sheet::PrintTexts(std::ostream& output) const {
   }
 }
 
-void Sheet::AddCellToPrintable(Position pos) {
-  if (pos.col >= size_.cols) {
-    size_.cols = pos.col + 1;
-  }
-  if (pos.row >= size_.rows) {
-    size_.rows = pos.row + 1;
+void Sheet::ProcessNonEmptyCells(std::function<void(Position, Cell&)> f) const {
+  for (int col = 0; col < static_cast<int>(table_.size()); ++col) {
+    for (int row = 0; row < static_cast<int>(table_[col].size()); ++row) {
+      if (auto ptr = table_[col][row].get(); ptr) {
+        f({row, col}, *ptr);
+      }
+    }
   }
 }
 
-Cell& Sheet::InsertCell(Position pos) {
-  if (static_cast<size_t>(pos.col) >= table_.size()) {
-    size_t i = table_.size();
-    table_.resize(pos.col + 1);
-    for (; i < table_.size(); ++i) {
-      table_[i].reserve(Position::kMaxRows);
+Size Sheet::GetSize() const {
+  Size s = {0, 0};
+  ProcessNonEmptyCells([&s](Position p, Cell& cell) {
+    if (p.col + 1 > s.cols) {
+      s.cols = p.col + 1;
     }
-  }
-
-  if (static_cast<size_t>(pos.row) >= table_[pos.col].size()) {
-    table_[pos.col].resize(pos.row + 1);
-  }
-
-  auto& cell_ref = table_[pos.col][pos.row];
-
-  if (!cell_ref) {
-    cell_ref = make_shared<Cell>(*this);
-  }
-
-  return *cell_ref.get();
+    if (p.row + 1 > s.rows) {
+      s.rows = p.row + 1;
+    }
+  });
+  return s;
 }

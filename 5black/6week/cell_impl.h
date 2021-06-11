@@ -9,32 +9,37 @@
 class Sheet;
 
 class Cell : public ICell {
-  using RefsTo = std::unordered_set<Cell*>;
+  using Refs = std::unordered_set<Cell*>;
 
  public:
   Cell(Sheet& sheet);
 
   Value GetValue() const override;
   std::string GetText() const override;
-  IFormula* GetFormula();
 
   std::vector<Position> GetReferencedCells() const override;
-  const RefsTo& GetReferencingCells() const;
-
+  bool IsFree() const;
   void SetText(std::string text);
-  void PropagadeRefsTo(bool add);
+  void PrepareToDelete();
+
+  void HandleInsertedRows(int before, int count = 1);
+  void HandleInsertedCols(int before, int count = 1);
+
+  void HandleDeletedRows(int first, int count = 1);
+  void HandleDeletedCols(int first, int count = 1);
 
  private:
   Sheet& sheet_;
+  Refs refs_to_;
+  Refs refs_from_;
 
   std::string text_;
-  std::optional<std::unique_ptr<IFormula>> formula_;
-  RefsTo refs_to_;
+  std::unique_ptr<IFormula> formula_;
 
   mutable std::optional<Value> value_;
 
-  void AddRefTo(Cell* cell_ptr);
-  void ClearRefTo(Cell* cell_ptr);
-
-  RefsTo GetAllReferencingCells();
+  Refs ProjectRefs(std::vector<Position> positions);
+  void ProcessRefs(IFormula* new_formula);
+  void CheckCircular(const Refs& refs) const;
+  void InvalidateCache();
 };
