@@ -1,4 +1,7 @@
+#include <sstream>
+
 #include "common.h"
+#include "profile.h"
 #include "formula.h"
 #include "test_runner.h"
 
@@ -581,6 +584,89 @@ void TestCellSelfCircularReference() {
   ASSERT(caught);
 }
 
+std::vector<double> BuildBinCoef(int grade) {
+  std::vector<double> result;
+  result.resize(grade, 0);
+  result[0] = 1;
+
+  for (int i = 1; i < grade; ++i) {
+    std::vector<double> next(grade);
+    next[0] = 1;
+    for (int j = 1; j < grade; ++j) {
+      next[j] = result[j - 1] + result[j];
+    }
+    result = std::move(next);
+  }
+
+  return result;
+}
+
+std::vector<double> ExtractLastPascalFromSheet(const ISheet& sheet, int grade) {
+  std::vector<double> result(grade);
+  for (int i = 0; i < grade; ++i) {
+    auto val = sheet.GetCell({grade - 1, i})->GetValue();
+    result[i] = get<double>(val);
+  }
+  return result;
+}
+
+void CheckPascal(const ISheet& sheet, int grade) {
+  ASSERT_EQUAL(BuildBinCoef(grade), ExtractLastPascalFromSheet(sheet, grade));
+}
+
+void TestPascalTrianglePart(int grade) {
+  cerr << "Pascal triangle grade = " << grade << "\n";
+  auto sheet = CreateSheet();
+  sheet->SetCell({0, 0}, "1");
+
+  auto f1 = [](Position pos) {
+    std::ostringstream ss;
+    ss << "=" << pos.ToString();
+    return ss.str();
+  };
+
+  auto f2 = [](Position pos1, Position pos2) {
+    std::ostringstream ss;
+    ss << "=" << pos1.ToString() << "+" << pos2.ToString();
+    return ss.str();
+  };
+
+  {
+    MaxMeter m_set_max("Pascal: Set max");
+    AvgMeter m_set_avg("Pascal: Set avg");
+    LOG_DURATION("Pascal: Fill");
+
+    for (int i = 1; i < grade; ++i) {
+      {
+        METER_DURATION(m_set_avg);
+        METER_DURATION(m_set_max);
+        sheet->SetCell({i, 0}, f1({i - 1, 0}));
+      }
+      for (int j = 1; j <= i; ++j) {
+        METER_DURATION(m_set_avg);
+        METER_DURATION(m_set_max);
+        sheet->SetCell({i, j}, f2({i - 1, j - 1}, {i - 1, j}));
+      }
+    }
+  }
+
+  {
+    LogDuration("Pascal: PrintTexts");
+    ostringstream ss;
+    sheet->PrintTexts(ss);
+  }
+  {
+    LogDuration("Pascal: PrintValues");
+    ostringstream ss;
+    sheet->PrintValues(ss);
+  }
+  CheckPascal(*sheet.get(), grade);
+}
+
+void TestPascalTriangle() {
+  TestPascalTrianglePart(100);
+}
+
 }  // namespace
 
 int main() {
@@ -612,5 +698,6 @@ int main() {
   RUN_TEST(tr, TestFormulaIncorrect);
   RUN_TEST(tr, TestCellCircularReferences);
   RUN_TEST(tr, TestCellSelfCircularReference);
+  RUN_TEST(tr, TestPascalTriangle);
   return 0;
 }

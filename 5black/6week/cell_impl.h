@@ -14,13 +14,13 @@ class Cell : public ICell {
  public:
   Cell(Sheet& sheet);
 
-  Value GetValue() const override;
-  std::string GetText() const override;
+  Value GetValue() const override; // O(K), O(1)
+  std::string GetText() const override; // O(1)
 
-  std::vector<Position> GetReferencedCells() const override;
-  bool IsFree() const;
-  void SetText(std::string text);
-  void PrepareToDelete();
+  std::vector<Position> GetReferencedCells() const override; // O(1)
+  bool IsFree() const; // O(1)
+  void SetText(std::string text); // O(K*R), O(1)
+  void PrepareToDelete(); // O(K*R)
 
   void HandleInsertedRows(int before, int count = 1);
   void HandleInsertedCols(int before, int count = 1);
@@ -39,7 +39,8 @@ class Cell : public ICell {
   mutable std::optional<Value> value_;
 
   Refs ProjectRefs(std::vector<Position> positions);
-  void ProcessRefs(IFormula* new_formula);
+  void ProcessRefs(IFormula* new_formula); // O(K*R)
   void CheckCircular(const Refs& refs) const;
-  void InvalidateCache();
+  void CheckCircularPart(const Cell* ref) const;
+  void InvalidateCache(); // O(K)
 };

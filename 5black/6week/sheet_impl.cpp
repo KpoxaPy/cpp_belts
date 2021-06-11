@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <ostream>
 
+#include "profile.h"
 #include "cell_impl.h"
 
 using namespace std;
@@ -12,7 +13,23 @@ void Sheet::SetCell(Position pos, std::string text) {
     throw InvalidPositionException("SetCell: invalid position");
   }
 
-  InsertCell(pos).SetText(text);
+  DurationMeter<microseconds> total;
+  DurationMeter<microseconds> dur;
+
+  dur.Start();
+  auto& cell = InsertCell(pos);
+  auto t_insert = dur.Get();
+
+  dur.Start();
+  cell.SetText(text);
+  auto t_set = dur.Get();
+
+  if (auto t = total.Get(); t > 50'000us) {
+    cerr << "Sheet::SetText long duration\n";
+    cerr << "\tTotal: " << t << "\n";
+    cerr << "\tInsert: " << t_insert << "\n";
+    cerr << "\tCell::SetText: " << t_set << "\n";
+  }
 }
 
 const ICell* Sheet::GetCell(Position pos) const {

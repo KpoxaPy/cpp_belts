@@ -4,8 +4,9 @@
 #include <sstream>
 #include <string_view>
 
-#include "sheet_impl.h"
+#include "profile.h"
 #include "set_utils.h"
+#include "sheet_impl.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ ICell::Value Cell::GetValue() const {
       view.remove_prefix(1);
       value_ = string(view);
     } else if (formula_) {
-      auto result = formula_->Evaluate(sheet_);
+      auto result = formula_->Evaluate(sheet_); // O(K)
       if (holds_alternative<double>(result)) {
         value_ = get<double>(result);
       } else if (holds_alternative<FormulaError>(result)) {
@@ -64,18 +65,35 @@ void Cell::SetText(std::string text) {
     return;
   }
 
+  DurationMeter<microseconds> total;
+  DurationMeter<microseconds> dur;
+
+  dur.Start();
   unique_ptr<IFormula> new_formula;
   if (text.size() > 1 && text[0] == kFormulaSign) {
     string_view view = text;
     view.remove_prefix(1);
     new_formula = ParseFormula(string(view));
   }
+  auto t_formula = dur.Get();
 
+  dur.Start();
   ProcessRefs(new_formula.get());
+  auto t_refs = dur.Get();
 
   formula_ = std::move(new_formula);
   text_ = std::move(text);
+  dur.Start();
   InvalidateCache();
+  auto t_invalidate = dur.Get();
+
+  if (auto t = total.Get(); t > 50'000us) {
+    cerr << "Cell::SetText long duration\n";
+    cerr << "\tTotal: " << t << "\n";
+    cerr << "\tFormula: " << t_formula << "\n";
+    cerr << "\tRefs: " << t_refs << "\n";
+    cerr << "\tCache: " << t_invalidate << "\n";
+  }
 }
 
 void Cell::PrepareToDelete() {
@@ -118,7 +136,11 @@ Cell::Refs Cell::ProjectRefs(std::vector<Position> positions) {
 }
 
 void Cell::ProcessRefs(IFormula* new_formula) {
-  auto [remove_refs, add_refs] = [this, new_formula](){
+  DurationMeter<microseconds> total;
+  DurationMeter<microseconds> dur;
+
+  dur.Start();
+  auto [remove_refs, add_refs] = [this, new_formula]() {
     Refs new_refs;
     if (new_formula) {
       new_refs = ProjectRefs(new_formula->GetReferencedCells());
@@ -131,9 +153,13 @@ void Cell::ProcessRefs(IFormula* new_formula) {
 
     return SetTwoSideDifference(old_refs, new_refs);
   }();
+  auto t_project = dur.Get();
 
+  dur.Start();
   CheckCircular(add_refs);
+  auto t_circ = dur.Get();
 
+  dur.Start();
   for (auto ref : remove_refs) {
     refs_to_.erase(ref);
     ref->refs_from_.erase(this);
@@ -143,13 +169,25 @@ void Cell::ProcessRefs(IFormula* new_formula) {
     refs_to_.insert(ref);
     ref->refs_from_.insert(this);
   }
+  auto t_graph = dur.Get();
+
+  if (auto t = total.Get(); t > 50'000us) {
+    cerr << "Cell::ProcessRefs long duration\n";
+    cerr << "\tTotal: " << t << "\n";
+    cerr << "\tProject: " << t_project << "\n";
+    cerr << "\tCheckCircular: " << t_circ << "\n";
+    cerr << "\tGraph: " << t_graph << "\n";
+  }
 }
 
 void Cell::CheckCircular(const Refs& refs) const {
+  DurationMeter<milliseconds> dur;
+
   Refs processed;
   queue<Cell *> q;
   for (auto ref : refs) {
     q.push(ref);
+    processed.insert(ref);
   }
 
   while (!q.empty()) {
@@ -160,10 +198,10 @@ void Cell::CheckCircular(const Refs& refs) const {
       throw CircularDependencyException("");
     }
 
-    processed.insert(ref);
     for (auto subref : ref->refs_to_) {
-      if (processed.count(subref) == 0) {
+      if (processed.find(subref) == processed.end()) {
         q.push(subref);
+        processed.insert(subref);
       }
     }
   }
@@ -171,16 +209,19 @@ void Cell::CheckCircular(const Refs& refs) const {
 
 void Cell::InvalidateCache() {
   queue<Cell *> q;
-  q.push(this);
+  if (value_.has_value()) {
+    q.push(this);
+    value_.reset();
+  }
 
   while (!q.empty()) {
     auto ref = q.front();
     q.pop();
 
-    ref->value_.reset();
     for (auto subref : ref->refs_from_) {
       if (subref->value_.has_value()) {
         q.push(subref);
+        subref->value_.reset();
       }
     }
   }

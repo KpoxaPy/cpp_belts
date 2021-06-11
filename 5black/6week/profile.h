@@ -64,6 +64,32 @@ private:
   Duration sum_ts;
 };
 
+template <typename Duration = microseconds>
+class MaxMeter {
+public:
+  using DurationType = Duration;
+
+  MaxMeter(const string& msg = "")
+    : message(msg)
+    , max_ts(0)
+  {}
+
+  ~MaxMeter() {
+    cerr << (message.empty() ? "" : message + ": ")
+       << max_ts << endl;
+  }
+
+  void AddTime(Duration time) {
+    if (max_ts < time) {
+      max_ts = time;
+    }
+  }
+
+private:
+  string message;
+  Duration max_ts;
+};
+
 template <typename OutputDuration = milliseconds, typename Duration = nanoseconds>
 class SumMeter {
 public:

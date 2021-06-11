@@ -13,11 +13,11 @@ class Sheet : public ISheet {
   using Table = std::vector<Column>;
 
  public:
-  void SetCell(Position pos, std::string text) override;
-  const ICell* GetCell(Position pos) const override;
-  ICell* GetCell(Position pos) override;
-  Cell& InsertCell(Position pos);
-  void ClearCell(Position pos) override;
+  void SetCell(Position pos, std::string text) override; // O(K*R), O(1)
+  const ICell* GetCell(Position pos) const override; // O(1)
+  ICell* GetCell(Position pos) override; // O(1)
+  Cell& InsertCell(Position pos); // O(K)
+  void ClearCell(Position pos) override; // O(K)
 
   void InsertRows(int before, int count = 1) override;
   void InsertCols(int before, int count = 1) override;
@@ -25,7 +25,7 @@ class Sheet : public ISheet {
   void DeleteRows(int first, int count = 1) override;
   void DeleteCols(int first, int count = 1) override;
 
-  Size GetPrintableSize() const override;
+  Size GetPrintableSize() const override; // O(K)
 
   void PrintValues(std::ostream& output) const override;
   void PrintTexts(std::ostream& output) const override;
@@ -33,6 +33,6 @@ class Sheet : public ISheet {
  private:
   Table table_;
 
-  void ProcessNonEmptyCells(std::function<void(Position, Cell&)> f) const;
-  Size GetSize() const;
+  void ProcessNonEmptyCells(std::function<void(Position, Cell&)> f) const; // O(K)
+  Size GetSize() const; // O(K)
 };
