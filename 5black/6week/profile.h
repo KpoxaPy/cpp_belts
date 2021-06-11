@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 using namespace std;
 using namespace std::chrono;
@@ -88,6 +89,45 @@ public:
 private:
   string message;
   Duration max_ts;
+};
+
+template <typename Duration = microseconds>
+class StatMeter {
+public:
+  using DurationType = Duration;
+
+  StatMeter(const string& msg = "")
+    : message(msg)
+  {}
+
+  string Get() {
+    ostringstream ss;
+    ss << (message.empty() ? "" : message + ": ")
+       << "total " << sum_ts
+       << " count " << count
+       << " avg " << (count > 0 ? sum_ts / count : Duration(0))
+       << " min " << min_ts
+       << " max " << max_ts;
+    return ss.str();
+  }
+
+  void AddTime(Duration time) {
+    ++count;
+    sum_ts += time;
+    if (min_ts > time) {
+      min_ts = time;
+    }
+    if (max_ts < time) {
+      max_ts = time;
+    }
+  }
+
+private:
+  string message;
+  Duration min_ts = Duration::max();
+  Duration max_ts = Duration(0);
+  Duration sum_ts = Duration(0);
+  int count = 0;
 };
 
 template <typename OutputDuration = milliseconds, typename Duration = nanoseconds>

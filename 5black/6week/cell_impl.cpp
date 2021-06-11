@@ -181,29 +181,66 @@ void Cell::ProcessRefs(IFormula* new_formula) {
 }
 
 void Cell::CheckCircular(const Refs& refs) const {
-  DurationMeter<milliseconds> dur;
+  DurationMeter<microseconds> total;
+  StatMeter<nanoseconds> m_processed_insert("Processed insert");
+  StatMeter<nanoseconds> m_processed_check("Processed check");
+  StatMeter<nanoseconds> m_queue_push("Queue push");
+  StatMeter<nanoseconds> m_queue_pop("Queue pop");
 
-  Refs processed;
+  unordered_set<uint64_t> processed;
   queue<Cell *> q;
   for (auto ref : refs) {
-    q.push(ref);
-    processed.insert(ref);
+    {
+      METER_DURATION(m_queue_push);
+      q.push(ref);
+    }
+
+    {
+      METER_DURATION(m_processed_insert);
+      processed.insert(reinterpret_cast<uint64_t>(ref) / 4);
+    }
   }
 
   while (!q.empty()) {
-    auto ref = q.front();
-    q.pop();
+    Cell* ref;
+    {
+      METER_DURATION(m_queue_pop);
+      ref = q.front();
+      q.pop();
+    }
 
     if (ref == this) {
       throw CircularDependencyException("");
     }
 
     for (auto subref : ref->refs_to_) {
-      if (processed.find(subref) == processed.end()) {
-        q.push(subref);
-        processed.insert(subref);
+      bool not_processed;
+      {
+        METER_DURATION(m_processed_check);
+        not_processed = processed.find(reinterpret_cast<uint64_t>(subref) / 4) == processed.end();
+      }
+
+      if (not_processed) {
+        {
+          METER_DURATION(m_queue_push);
+          q.push(subref);
+        }
+
+        {
+          METER_DURATION(m_processed_insert);
+          processed.insert(reinterpret_cast<uint64_t>(subref) / 4);
+        }
       }
     }
+  }
+
+  if (auto t = total.Get(); t > 50'000us) {
+    cerr << "Cell::CheckCircular long duration\n";
+    cerr << "\tTotal: " << t << "\n";
+    cerr << "\t" << m_queue_push.Get() << "\n";
+    cerr << "\t" << m_queue_pop.Get() << "\n";
+    cerr << "\t" << m_processed_insert.Get() << "\n";
+    cerr << "\t" << m_processed_check.Get() << "\n";
   }
 }
 
