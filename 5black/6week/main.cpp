@@ -565,7 +565,23 @@ namespace {
     ASSERT(caught);
     ASSERT_EQUAL(sheet->GetCell("M6"_pos)->GetText(), "Ready");
   }
+}  // namespace
+
+namespace {
+
+void TestCellSelfCircularReference() {
+  auto sheet = CreateSheet();
+
+  bool caught = false;
+  try {
+    sheet->SetCell("E2"_pos, "=E2");
+  } catch (const CircularDependencyException&) {
+    caught = true;
+  }
+  ASSERT(caught);
 }
+
+}  // namespace
 
 int main() {
   TestRunner tr;
@@ -595,5 +611,6 @@ int main() {
   RUN_TEST(tr, TestCellReferences);
   RUN_TEST(tr, TestFormulaIncorrect);
   RUN_TEST(tr, TestCellCircularReferences);
+  RUN_TEST(tr, TestCellSelfCircularReference);
   return 0;
 }

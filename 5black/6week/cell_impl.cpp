@@ -156,11 +156,12 @@ void Cell::CheckCircular(const Refs& refs) const {
     auto ref = q.front();
     q.pop();
 
+    if (ref == this) {
+      throw CircularDependencyException("");
+    }
+
     processed.insert(ref);
     for (auto subref : ref->refs_to_) {
-      if (subref == this) {
-        throw CircularDependencyException("");
-      }
       if (processed.count(subref) == 0) {
         q.push(subref);
       }
