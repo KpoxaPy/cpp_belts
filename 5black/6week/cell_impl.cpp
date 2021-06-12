@@ -12,6 +12,7 @@ using namespace std;
 
 Cell::Cell(Sheet& sheet)
   : sheet_(sheet)
+  , cc_epoch_(sheet.cc_epoch)
 {}
 
 ICell::Value Cell::GetValue() const {
