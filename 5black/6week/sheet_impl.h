@@ -39,11 +39,10 @@ class Sheet : public ISheet {
   StatMeter<microseconds> m_cell_refs;
   StatMeter<microseconds> m_cell_invalidate;
   StatMeter<microseconds> m_cell_check_circular;
-  StatMeter<microseconds> m_cell_check_circular_queue_push;
-  StatMeter<microseconds> m_cell_check_circular_queue_pop;
-  StatMeter<microseconds> m_cell_check_circular_proc_insert;
-  StatMeter<microseconds> m_cell_check_circular_proc_check;
+  StatMeter<microseconds> m_cell_set_formula_parsing;
   std::string GetStats() const;
+
+  size_t cc_epoch = 0;
 
  private:
   Table table_;

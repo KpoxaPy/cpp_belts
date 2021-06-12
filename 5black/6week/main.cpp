@@ -652,13 +652,33 @@ void TestPascalTrianglePart(int grade) {
     ostringstream ss;
     sheet->PrintValues(ss);
   }
+
+  {
+    LogDuration("Pascal: Reset values");
+    sheet->ClearCell({0, 0});
+    sheet->SetCell({0, 0}, "1");
+  }
+
+  {
+    LogDuration("Pascal: PrintValues2");
+    ostringstream ss;
+    sheet->PrintValues(ss);
+  }
+
   cerr << dynamic_cast<Sheet*>(sheet.get())->GetStats();
   CheckPascal(*sheet.get(), grade);
 }
 
 void TestPascalTriangle() {
-  TestPascalTrianglePart(50);
-  TestPascalTrianglePart(100);
+  TestPascalTrianglePart(200);
+}
+
+void TestInvalidate() {
+  auto sheet = CreateSheet();
+  sheet->SetCell("A1"_pos, "=A2");
+  ASSERT_EQUAL(get<double>(sheet->GetCell("A1"_pos)->GetValue()), 0.0);
+  sheet->SetCell("A2"_pos, "42");
+  ASSERT_EQUAL(get<double>(sheet->GetCell("A1"_pos)->GetValue()), 42.0);
 }
 
 }  // namespace
@@ -693,5 +713,6 @@ int main() {
   RUN_TEST(tr, TestCellCircularReferences);
   RUN_TEST(tr, TestCellSelfCircularReference);
   RUN_TEST(tr, TestPascalTriangle);
+  RUN_TEST(tr, TestInvalidate);
   return 0;
 }

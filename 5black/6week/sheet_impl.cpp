@@ -19,10 +19,7 @@ std::string Sheet::GetStats() const {
   ss << "Cell::Refs: " << m_cell_refs.Get() << "\n";
   ss << "Cell::CheckCircular: " << m_cell_check_circular.Get() << "\n";
   ss << "Cell::InvalidateCache: " << m_cell_invalidate.Get() << "\n";
-  ss << "Cell::CheckCircular::Queue::Push: " << m_cell_check_circular_queue_push.Get() << "\n";
-  ss << "Cell::CheckCircular::Queue::Pop: " << m_cell_check_circular_queue_pop.Get() << "\n";
-  ss << "Cell::CheckCircular::Proc::Insert: " << m_cell_check_circular_proc_insert.Get() << "\n";
-  ss << "Cell::CheckCircular::Proc::Check: " << m_cell_check_circular_proc_check.Get() << "\n";
+  ss << "Cell::FormulaParsing: " << m_cell_set_formula_parsing.Get() << "\n";
   return ss.str();
 }
 

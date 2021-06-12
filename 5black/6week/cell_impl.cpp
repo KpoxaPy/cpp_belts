@@ -69,6 +69,7 @@ void Cell::SetText(std::string text) {
 
   unique_ptr<IFormula> new_formula;
   if (text.size() > 1 && text[0] == kFormulaSign) {
+    METER_DURATION(sheet_.m_cell_set_formula_parsing);
     string_view view = text;
     view.remove_prefix(1);
     new_formula = ParseFormula(string(view));
@@ -150,77 +151,31 @@ void Cell::ProcessRefs(IFormula* new_formula) {
 }
 
 void Cell::CheckCircular(const Refs& refs) const {
-  DurationMeter<microseconds> total;
-  StatMeter<nanoseconds> m_processed_insert("Processed insert");
-  StatMeter<nanoseconds> m_processed_check("Processed check");
-  StatMeter<nanoseconds> m_queue_push("Queue push");
-  StatMeter<nanoseconds> m_queue_pop("Queue pop");
+  METER_DURATION(sheet_.m_cell_check_circular);
 
-  Refs processed;
+  ++sheet_.cc_epoch;
+  const size_t cc_epoch = sheet_.cc_epoch;
   queue<Cell*> q;
 
-  {
-    METER_DURATION(sheet_.m_cell_check_circular);
-    processed.reserve(2500);
-    for (auto ref : refs) {
-      {
-        METER_DURATION(sheet_.m_cell_check_circular_queue_push);
-        METER_DURATION(m_queue_push);
-        q.push(ref);
-      }
-
-      {
-        METER_DURATION(sheet_.m_cell_check_circular_proc_insert);
-        METER_DURATION(m_processed_insert);
-        processed.insert(ref);
-      }
-    }
-
-    while (!q.empty()) {
-      Cell* ref;
-      {
-        METER_DURATION(m_queue_pop);
-        ref = q.front();
-        q.pop();
-      }
-
-      if (ref == this) {
-        throw CircularDependencyException("");
-      }
-
-      for (auto subref : ref->refs_to_) {
-        bool not_processed;
-        {
-          METER_DURATION(sheet_.m_cell_check_circular_proc_check);
-          METER_DURATION(m_processed_check);
-          not_processed = processed.find(subref) == processed.end();
-        }
-
-        if (not_processed) {
-          {
-            METER_DURATION(sheet_.m_cell_check_circular_queue_push);
-            METER_DURATION(m_queue_push);
-            q.push(subref);
-          }
-
-          {
-            METER_DURATION(sheet_.m_cell_check_circular_proc_insert);
-            METER_DURATION(m_processed_insert);
-            processed.insert(subref);
-          }
-        }
-      }
-    }
+  for (auto ref : refs) {
+    q.push(ref);
+    ref->cc_epoch_ = cc_epoch;
   }
 
-  if (auto t = total.Get(); t > 35'000us) {
-    cerr << "Cell::CheckCircular long duration\n";
-    cerr << "\tTotal: " << t << "\n";
-    cerr << "\tProcessed: " << processed.size() << "\n";
-    cerr << "\t" << m_queue_push.Get() << "\n";
-    cerr << "\t" << m_queue_pop.Get() << "\n";
-    cerr << "\t" << m_processed_insert.Get() << "\n";
-    cerr << "\t" << m_processed_check.Get() << "\n";
+  while (!q.empty()) {
+    auto ref = q.front();
+    q.pop();
+
+    if (ref == this) {
+      throw CircularDependencyException("");
+    }
+
+    for (auto subref : ref->refs_to_) {
+      if (subref->cc_epoch_ < cc_epoch) {
+        q.push(subref);
+        subref->cc_epoch_ = cc_epoch;
+      }
+    }
   }
 }
 

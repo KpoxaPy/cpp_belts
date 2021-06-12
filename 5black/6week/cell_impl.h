@@ -32,6 +32,7 @@ class Cell : public ICell {
   Sheet& sheet_;
   Refs refs_to_;
   Refs refs_from_;
+  size_t cc_epoch_ = 0;
 
   std::string text_;
   std::unique_ptr<IFormula> formula_;
