@@ -15,6 +15,11 @@ std::string Sheet::GetStats() const {
   ss << "Value: " << m_value.Get() << "\n";
   ss << "Insert: " << m_insert.Get() << "\n";
   ss << "Clear: " << m_clear.Get() << "\n";
+  ss << "InsertRow: " << m_row_insert.Get() << "\n";
+  ss << "InsertCol: " << m_col_insert.Get() << "\n";
+  ss << "DeleteRow: " << m_row_delete.Get() << "\n";
+  ss << "DeleteCol: " << m_col_delete.Get() << "\n";
+
   ss << "Cell::Set: " << m_cell_set.Get() << "\n";
   ss << "Cell::Refs: " << m_cell_refs.Get() << "\n";
   ss << "Cell::CheckCircular: " << m_cell_check_circular.Get() << "\n";
@@ -103,6 +108,7 @@ void Sheet::ClearCell(Position pos) {
 }
 
 void Sheet::InsertRows(int before, int count) {
+  METER_DURATION(m_row_insert);
   const auto s = GetSize();
   if (s.rows + count > Position::kMaxRows) {
     throw TableTooBigException("");
@@ -125,6 +131,7 @@ void Sheet::InsertRows(int before, int count) {
 }
 
 void Sheet::InsertCols(int before, int count) {
+  METER_DURATION(m_col_insert);
   const auto s = GetSize();
   if (s.cols + count > Position::kMaxCols) {
     throw TableTooBigException("");
@@ -142,6 +149,7 @@ void Sheet::InsertCols(int before, int count) {
 }
 
 void Sheet::DeleteRows(int first, int count) {
+  METER_DURATION(m_row_delete);
   const auto s = GetSize();
 
   // Удаление после области с ячейками ничего не меняет
@@ -167,6 +175,7 @@ void Sheet::DeleteRows(int first, int count) {
 }
 
 void Sheet::DeleteCols(int first, int count) {
+  METER_DURATION(m_col_delete);
   const auto s = GetSize();
 
   // Удаление после конца области с ячейками ничего не меняет

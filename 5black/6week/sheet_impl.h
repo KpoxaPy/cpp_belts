@@ -35,6 +35,11 @@ class Sheet : public ISheet {
   StatMeter<microseconds> m_value;
   StatMeter<microseconds> m_clear;
   StatMeter<microseconds> m_insert;
+  StatMeter<microseconds> m_row_insert;
+  StatMeter<microseconds> m_row_delete;
+  StatMeter<microseconds> m_col_insert;
+  StatMeter<microseconds> m_col_delete;
+
   StatMeter<microseconds> m_cell_set;
   StatMeter<microseconds> m_cell_refs;
   StatMeter<microseconds> m_cell_invalidate;

@@ -573,6 +573,10 @@ namespace {
 
 namespace {
 
+void PrintSheetStats(const std::unique_ptr<ISheet>& sheet) {
+  cerr << reinterpret_cast<Sheet*>(sheet.get())->GetStats();
+}
+
 void TestCellSelfCircularReference() {
   auto sheet = CreateSheet();
 
@@ -583,6 +587,31 @@ void TestCellSelfCircularReference() {
     caught = true;
   }
   ASSERT(caught);
+}
+
+std::unique_ptr<ISheet> BuildPascal(int grade) {
+  auto sheet = CreateSheet();
+  sheet->SetCell({0, 0}, "1");
+
+  auto f1 = [](Position pos) {
+    std::ostringstream ss;
+    ss << "=" << pos.ToString();
+    return ss.str();
+  };
+
+  auto f2 = [](Position pos1, Position pos2) {
+    std::ostringstream ss;
+    ss << "=" << pos1.ToString() << "+" << pos2.ToString();
+    return ss.str();
+  };
+
+  for (int i = 1; i < grade; ++i) {
+    sheet->SetCell({i, 0}, f1({i - 1, 0}));
+    for (int j = 1; j <= i; ++j) {
+      sheet->SetCell({i, j}, f2({i - 1, j - 1}, {i - 1, j}));
+    }
+  }
+  return sheet;
 }
 
 std::vector<double> BuildBinCoef(int grade) {
@@ -617,27 +646,8 @@ void CheckPascal(const ISheet& sheet, int grade) {
 
 milliseconds TestPascalTrianglePart(int grade) {
   DurationMeter<milliseconds> dur;
-  auto sheet = CreateSheet();
-  sheet->SetCell({0, 0}, "1");
 
-  auto f1 = [](Position pos) {
-    std::ostringstream ss;
-    ss << "=" << pos.ToString();
-    return ss.str();
-  };
-
-  auto f2 = [](Position pos1, Position pos2) {
-    std::ostringstream ss;
-    ss << "=" << pos1.ToString() << "+" << pos2.ToString();
-    return ss.str();
-  };
-
-  for (int i = 1; i < grade; ++i) {
-    sheet->SetCell({i, 0}, f1({i - 1, 0}));
-    for (int j = 1; j <= i; ++j) {
-      sheet->SetCell({i, j}, f2({i - 1, j - 1}, {i - 1, j}));
-    }
-  }
+  auto sheet = BuildPascal(grade);
 
   ostringstream ss;
   sheet->PrintTexts(ss);
@@ -647,6 +657,7 @@ milliseconds TestPascalTrianglePart(int grade) {
   sheet->PrintValues(ss);
   
   auto ret = dur.Get();
+  PrintSheetStats(sheet);
 
   CheckPascal(*sheet.get(), grade);
   return ret;
@@ -662,6 +673,28 @@ void TestInvalidate() {
   ASSERT_EQUAL(get<double>(sheet->GetCell("A1"_pos)->GetValue()), 0.0);
   sheet->SetCell("A2"_pos, "42");
   ASSERT_EQUAL(get<double>(sheet->GetCell("A1"_pos)->GetValue()), 42.0);
+}
+
+void TestHeavyInserts() {
+  LOG_DURATION("Heavy inserts");
+  auto sheet = BuildPascal(100);
+
+  CheckPascal(*sheet.get(), 100);
+  for (int i = 0; i < 100; ++i) {
+    sheet->InsertRows(0);
+  }
+  for (int i = 0; i < 100; ++i) {
+    sheet->InsertCols(0);
+  }
+  for (int i = 0; i < 100; ++i) {
+    sheet->DeleteRows(0);
+  }
+  for (int i = 0; i < 100; ++i) {
+    sheet->DeleteCols(0);
+  }
+  CheckPascal(*sheet.get(), 100);
+
+  PrintSheetStats(sheet);
 }
 
 }  // namespace
@@ -697,5 +730,6 @@ int main() {
   RUN_TEST(tr, TestCellSelfCircularReference);
   RUN_TEST(tr, TestPascalTriangle);
   RUN_TEST(tr, TestInvalidate);
+  RUN_TEST(tr, TestHeavyInserts);
   return 0;
 }
