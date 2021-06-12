@@ -615,8 +615,8 @@ void CheckPascal(const ISheet& sheet, int grade) {
   ASSERT_EQUAL(BuildBinCoef(grade), ExtractLastPascalFromSheet(sheet, grade));
 }
 
-void TestPascalTrianglePart(int grade) {
-  cerr << "Pascal triangle grade = " << grade << "\n";
+milliseconds TestPascalTrianglePart(int grade) {
+  DurationMeter<milliseconds> dur;
   auto sheet = CreateSheet();
   sheet->SetCell({0, 0}, "1");
 
@@ -632,45 +632,28 @@ void TestPascalTrianglePart(int grade) {
     return ss.str();
   };
 
-  {
-    LOG_DURATION("Pascal: Fill");
-    for (int i = 1; i < grade; ++i) {
-      sheet->SetCell({i, 0}, f1({i - 1, 0}));
-      for (int j = 1; j <= i; ++j) {
-        sheet->SetCell({i, j}, f2({i - 1, j - 1}, {i - 1, j}));
-      }
+  for (int i = 1; i < grade; ++i) {
+    sheet->SetCell({i, 0}, f1({i - 1, 0}));
+    for (int j = 1; j <= i; ++j) {
+      sheet->SetCell({i, j}, f2({i - 1, j - 1}, {i - 1, j}));
     }
   }
 
-  {
-    LogDuration("Pascal: PrintTexts");
-    ostringstream ss;
-    sheet->PrintTexts(ss);
-  }
-  {
-    LogDuration("Pascal: PrintValues");
-    ostringstream ss;
-    sheet->PrintValues(ss);
-  }
+  ostringstream ss;
+  sheet->PrintTexts(ss);
+  sheet->PrintValues(ss);
+  sheet->ClearCell({0, 0});
+  sheet->SetCell({0, 0}, "1");
+  sheet->PrintValues(ss);
+  
+  auto ret = dur.Get();
 
-  {
-    LogDuration("Pascal: Reset values");
-    sheet->ClearCell({0, 0});
-    sheet->SetCell({0, 0}, "1");
-  }
-
-  {
-    LogDuration("Pascal: PrintValues2");
-    ostringstream ss;
-    sheet->PrintValues(ss);
-  }
-
-  cerr << dynamic_cast<Sheet*>(sheet.get())->GetStats();
   CheckPascal(*sheet.get(), grade);
+  return ret;
 }
 
 void TestPascalTriangle() {
-  TestPascalTrianglePart(200);
+  ASSERT(TestPascalTrianglePart(100) < 3000ms);
 }
 
 void TestInvalidate() {
