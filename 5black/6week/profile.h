@@ -100,13 +100,13 @@ public:
     : message(msg)
   {}
 
-  string Get() {
+  string Get() const {
     ostringstream ss;
     ss << (message.empty() ? "" : message + ": ")
        << "total " << sum_ts
        << " count " << count
        << " avg " << (count > 0 ? sum_ts / count : Duration(0))
-       << " min " << min_ts
+       << " min " << (count > 0 ? min_ts : Duration(0))
        << " max " << max_ts;
     return ss.str();
   }

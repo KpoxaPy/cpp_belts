@@ -2,34 +2,37 @@
 
 #include <stdexcept>
 #include <ostream>
+#include <sstream>
 
 #include "profile.h"
 #include "cell_impl.h"
 
 using namespace std;
 
+std::string Sheet::GetStats() const {
+  ostringstream ss;
+  ss << "Set: " << m_set.Get() << "\n";
+  ss << "Value: " << m_value.Get() << "\n";
+  ss << "Insert: " << m_insert.Get() << "\n";
+  ss << "Clear: " << m_clear.Get() << "\n";
+  ss << "Cell::Set: " << m_cell_set.Get() << "\n";
+  ss << "Cell::Refs: " << m_cell_refs.Get() << "\n";
+  ss << "Cell::CheckCircular: " << m_cell_check_circular.Get() << "\n";
+  ss << "Cell::InvalidateCache: " << m_cell_invalidate.Get() << "\n";
+  ss << "Cell::CheckCircular::Queue::Push: " << m_cell_check_circular_queue_push.Get() << "\n";
+  ss << "Cell::CheckCircular::Queue::Pop: " << m_cell_check_circular_queue_pop.Get() << "\n";
+  ss << "Cell::CheckCircular::Proc::Insert: " << m_cell_check_circular_proc_insert.Get() << "\n";
+  ss << "Cell::CheckCircular::Proc::Check: " << m_cell_check_circular_proc_check.Get() << "\n";
+  return ss.str();
+}
+
 void Sheet::SetCell(Position pos, std::string text) {
+  METER_DURATION(m_set);
   if (!pos.IsValid()) {
     throw InvalidPositionException("SetCell: invalid position");
   }
 
-  DurationMeter<microseconds> total;
-  DurationMeter<microseconds> dur;
-
-  dur.Start();
-  auto& cell = InsertCell(pos);
-  auto t_insert = dur.Get();
-
-  dur.Start();
-  cell.SetText(text);
-  auto t_set = dur.Get();
-
-  if (auto t = total.Get(); t > 50'000us) {
-    cerr << "Sheet::SetText long duration\n";
-    cerr << "\tTotal: " << t << "\n";
-    cerr << "\tInsert: " << t_insert << "\n";
-    cerr << "\tCell::SetText: " << t_set << "\n";
-  }
+  InsertCell(pos).SetText(text);
 }
 
 const ICell* Sheet::GetCell(Position pos) const {
@@ -55,6 +58,7 @@ ICell* Sheet::GetCell(Position pos) {
 }
 
 Cell& Sheet::InsertCell(Position pos) {
+  METER_DURATION(m_insert);
   if (static_cast<size_t>(pos.col) >= table_.size()) {
     table_.resize(pos.col + 1);
   }
@@ -70,6 +74,7 @@ Cell& Sheet::InsertCell(Position pos) {
 }
 
 void Sheet::ClearCell(Position pos) {
+  METER_DURATION(m_clear);
   if (!pos.IsValid()) {
     throw InvalidPositionException("ClearCell: invalid position");
   }

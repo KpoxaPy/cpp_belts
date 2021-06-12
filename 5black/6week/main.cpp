@@ -4,6 +4,7 @@
 #include "profile.h"
 #include "formula.h"
 #include "test_runner.h"
+#include "sheet_impl.h"
 
 std::ostream& operator<<(std::ostream& output, Position pos) {
   return output << "(" << pos.row << ", " << pos.col << ")";
@@ -632,19 +633,10 @@ void TestPascalTrianglePart(int grade) {
   };
 
   {
-    MaxMeter m_set_max("Pascal: Set max");
-    AvgMeter m_set_avg("Pascal: Set avg");
     LOG_DURATION("Pascal: Fill");
-
     for (int i = 1; i < grade; ++i) {
-      {
-        METER_DURATION(m_set_avg);
-        METER_DURATION(m_set_max);
-        sheet->SetCell({i, 0}, f1({i - 1, 0}));
-      }
+      sheet->SetCell({i, 0}, f1({i - 1, 0}));
       for (int j = 1; j <= i; ++j) {
-        METER_DURATION(m_set_avg);
-        METER_DURATION(m_set_max);
         sheet->SetCell({i, j}, f2({i - 1, j - 1}, {i - 1, j}));
       }
     }
@@ -660,10 +652,12 @@ void TestPascalTrianglePart(int grade) {
     ostringstream ss;
     sheet->PrintValues(ss);
   }
+  cerr << dynamic_cast<Sheet*>(sheet.get())->GetStats();
   CheckPascal(*sheet.get(), grade);
 }
 
 void TestPascalTriangle() {
+  TestPascalTrianglePart(50);
   TestPascalTrianglePart(100);
 }
 

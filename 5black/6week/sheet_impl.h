@@ -6,6 +6,7 @@
 
 #include "cell_impl.h"
 #include "common_etc.h"
+#include "profile.h"
 
 class Sheet : public ISheet {
   using CellPtr = std::shared_ptr<Cell>;
@@ -29,6 +30,20 @@ class Sheet : public ISheet {
 
   void PrintValues(std::ostream& output) const override;
   void PrintTexts(std::ostream& output) const override;
+
+  StatMeter<microseconds> m_set;
+  StatMeter<microseconds> m_value;
+  StatMeter<microseconds> m_clear;
+  StatMeter<microseconds> m_insert;
+  StatMeter<microseconds> m_cell_set;
+  StatMeter<microseconds> m_cell_refs;
+  StatMeter<microseconds> m_cell_invalidate;
+  StatMeter<microseconds> m_cell_check_circular;
+  StatMeter<microseconds> m_cell_check_circular_queue_push;
+  StatMeter<microseconds> m_cell_check_circular_queue_pop;
+  StatMeter<microseconds> m_cell_check_circular_proc_insert;
+  StatMeter<microseconds> m_cell_check_circular_proc_check;
+  std::string GetStats() const;
 
  private:
   Table table_;

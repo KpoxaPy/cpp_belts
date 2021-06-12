@@ -15,6 +15,7 @@ Cell::Cell(Sheet& sheet)
 {}
 
 ICell::Value Cell::GetValue() const {
+  METER_DURATION(sheet_.m_value);
   if (!value_) {
     if (text_.empty()) {
       value_ = "";
@@ -61,39 +62,23 @@ bool Cell::IsFree() const {
 }
 
 void Cell::SetText(std::string text) {
+  METER_DURATION(sheet_.m_cell_set);
   if (text == text_) {
     return;
   }
 
-  DurationMeter<microseconds> total;
-  DurationMeter<microseconds> dur;
-
-  dur.Start();
   unique_ptr<IFormula> new_formula;
   if (text.size() > 1 && text[0] == kFormulaSign) {
     string_view view = text;
     view.remove_prefix(1);
     new_formula = ParseFormula(string(view));
   }
-  auto t_formula = dur.Get();
 
-  dur.Start();
   ProcessRefs(new_formula.get());
-  auto t_refs = dur.Get();
 
   formula_ = std::move(new_formula);
   text_ = std::move(text);
-  dur.Start();
   InvalidateCache();
-  auto t_invalidate = dur.Get();
-
-  if (auto t = total.Get(); t > 50'000us) {
-    cerr << "Cell::SetText long duration\n";
-    cerr << "\tTotal: " << t << "\n";
-    cerr << "\tFormula: " << t_formula << "\n";
-    cerr << "\tRefs: " << t_refs << "\n";
-    cerr << "\tCache: " << t_invalidate << "\n";
-  }
 }
 
 void Cell::PrepareToDelete() {
@@ -136,10 +121,7 @@ Cell::Refs Cell::ProjectRefs(std::vector<Position> positions) {
 }
 
 void Cell::ProcessRefs(IFormula* new_formula) {
-  DurationMeter<microseconds> total;
-  DurationMeter<microseconds> dur;
-
-  dur.Start();
+  METER_DURATION(sheet_.m_cell_refs);
   auto [remove_refs, add_refs] = [this, new_formula]() {
     Refs new_refs;
     if (new_formula) {
@@ -153,13 +135,9 @@ void Cell::ProcessRefs(IFormula* new_formula) {
 
     return SetTwoSideDifference(old_refs, new_refs);
   }();
-  auto t_project = dur.Get();
 
-  dur.Start();
   CheckCircular(add_refs);
-  auto t_circ = dur.Get();
 
-  dur.Start();
   for (auto ref : remove_refs) {
     refs_to_.erase(ref);
     ref->refs_from_.erase(this);
@@ -168,15 +146,6 @@ void Cell::ProcessRefs(IFormula* new_formula) {
   for (auto ref : add_refs) {
     refs_to_.insert(ref);
     ref->refs_from_.insert(this);
-  }
-  auto t_graph = dur.Get();
-
-  if (auto t = total.Get(); t > 50'000us) {
-    cerr << "Cell::ProcessRefs long duration\n";
-    cerr << "\tTotal: " << t << "\n";
-    cerr << "\tProject: " << t_project << "\n";
-    cerr << "\tCheckCircular: " << t_circ << "\n";
-    cerr << "\tGraph: " << t_graph << "\n";
   }
 }
 
@@ -187,56 +156,67 @@ void Cell::CheckCircular(const Refs& refs) const {
   StatMeter<nanoseconds> m_queue_push("Queue push");
   StatMeter<nanoseconds> m_queue_pop("Queue pop");
 
-  unordered_set<uint64_t> processed;
-  queue<Cell *> q;
-  for (auto ref : refs) {
-    {
-      METER_DURATION(m_queue_push);
-      q.push(ref);
-    }
+  Refs processed;
+  queue<Cell*> q;
 
-    {
-      METER_DURATION(m_processed_insert);
-      processed.insert(reinterpret_cast<uint64_t>(ref) / 4);
-    }
-  }
-
-  while (!q.empty()) {
-    Cell* ref;
-    {
-      METER_DURATION(m_queue_pop);
-      ref = q.front();
-      q.pop();
-    }
-
-    if (ref == this) {
-      throw CircularDependencyException("");
-    }
-
-    for (auto subref : ref->refs_to_) {
-      bool not_processed;
+  {
+    METER_DURATION(sheet_.m_cell_check_circular);
+    processed.reserve(2500);
+    for (auto ref : refs) {
       {
-        METER_DURATION(m_processed_check);
-        not_processed = processed.find(reinterpret_cast<uint64_t>(subref) / 4) == processed.end();
+        METER_DURATION(sheet_.m_cell_check_circular_queue_push);
+        METER_DURATION(m_queue_push);
+        q.push(ref);
       }
 
-      if (not_processed) {
+      {
+        METER_DURATION(sheet_.m_cell_check_circular_proc_insert);
+        METER_DURATION(m_processed_insert);
+        processed.insert(ref);
+      }
+    }
+
+    while (!q.empty()) {
+      Cell* ref;
+      {
+        METER_DURATION(m_queue_pop);
+        ref = q.front();
+        q.pop();
+      }
+
+      if (ref == this) {
+        throw CircularDependencyException("");
+      }
+
+      for (auto subref : ref->refs_to_) {
+        bool not_processed;
         {
-          METER_DURATION(m_queue_push);
-          q.push(subref);
+          METER_DURATION(sheet_.m_cell_check_circular_proc_check);
+          METER_DURATION(m_processed_check);
+          not_processed = processed.find(subref) == processed.end();
         }
 
-        {
-          METER_DURATION(m_processed_insert);
-          processed.insert(reinterpret_cast<uint64_t>(subref) / 4);
+        if (not_processed) {
+          {
+            METER_DURATION(sheet_.m_cell_check_circular_queue_push);
+            METER_DURATION(m_queue_push);
+            q.push(subref);
+          }
+
+          {
+            METER_DURATION(sheet_.m_cell_check_circular_proc_insert);
+            METER_DURATION(m_processed_insert);
+            processed.insert(subref);
+          }
         }
       }
     }
   }
 
-  if (auto t = total.Get(); t > 50'000us) {
+  if (auto t = total.Get(); t > 35'000us) {
     cerr << "Cell::CheckCircular long duration\n";
     cerr << "\tTotal: " << t << "\n";
+    cerr << "\tProcessed: " << processed.size() << "\n";
     cerr << "\t" << m_queue_push.Get() << "\n";
     cerr << "\t" << m_queue_pop.Get() << "\n";
     cerr << "\t" << m_processed_insert.Get() << "\n";
@@ -245,6 +225,7 @@ void Cell::CheckCircular(const Refs& refs) const {
 }
 
 void Cell::InvalidateCache() {
+  METER_DURATION(sheet_.m_cell_invalidate);
   queue<Cell *> q;
   if (value_.has_value()) {
     q.push(this);
