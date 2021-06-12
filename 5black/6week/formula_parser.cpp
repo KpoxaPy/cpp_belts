@@ -5,12 +5,14 @@
 #include <stdexcept>
 
 #include "FormulaLexer.h"
-#include "FormulaListener.h"
+#include "FormulaBaseListener.h"
 #include "FormulaParser.h"
 #include "antlr4-runtime.h"
+#include "common_etc.h"
 #include "formula_impl.h"
 #include "formula_node_full.h"
-#include "common_etc.h"
+#include "profile.h"
+#include "sheet_impl.h"
 
 using namespace std;
 
@@ -25,18 +27,31 @@ class BailErrorListener : public antlr4::BaseErrorListener {
   }
 };
 
-class MyFormulaListener : public FormulaListener {
+class MyFormulaListener : public FormulaBaseListener {
  public:
-  void visitTerminal(antlr4::tree::TerminalNode *node) override {}
-  void visitErrorNode(antlr4::tree::ErrorNode *node) override {}
-  void enterEveryRule(antlr4::ParserRuleContext *ctx) override {}
-  void exitEveryRule(antlr4::ParserRuleContext *ctx) override {}
+  MyFormulaListener(Sheet& sheet)
+    : sheet_(sheet)
+  {}
 
-  void enterMain(FormulaParser::MainContext *ctx) override {}
-  void exitMain(FormulaParser::MainContext *ctx) override {}
+  void exitLiteral(FormulaParser::LiteralContext *ctx) override {
+    METER_DURATION(sheet_.m_fp_walk_lit);
+    memory_.push(stod(ctx->NUMBER()->getSymbol()->getText()));
+  }
 
-  void enterUnaryOp(FormulaParser::UnaryOpContext *ctx) override {}
+  void exitCell(FormulaParser::CellContext *ctx) override {
+    METER_DURATION(sheet_.m_fp_walk_cell);
+    auto pos = Position::FromString(ctx->CELL()->getSymbol()->getText());
+
+    if (!pos.IsValid()) {
+      throw FormulaException("Wrong cell ref");
+    }
+
+    refs_.insert(pos);
+    memory_.push(pos);
+  }
+
   void exitUnaryOp(FormulaParser::UnaryOpContext *ctx) override {
+    METER_DURATION(sheet_.m_fp_walk_op_1);
     auto arg = std::move(memory_.top());
     memory_.pop();
     if (ctx->ADD()) {
@@ -46,26 +61,8 @@ class MyFormulaListener : public FormulaListener {
     }
   }
 
-  void enterParens(FormulaParser::ParensContext *ctx) override {}
-  void exitParens(FormulaParser::ParensContext *ctx) override {}
-
-  void enterLiteral(FormulaParser::LiteralContext *ctx) override {}
-  void exitLiteral(FormulaParser::LiteralContext *ctx) override {
-    memory_.push(stod(ctx->NUMBER()->getText()));
-  }
-
-  void enterCell(FormulaParser::CellContext *ctx) override {}
-  void exitCell(FormulaParser::CellContext *ctx) override {
-    auto pos = Position::FromString(ctx->CELL()->getText());
-    if (!pos.IsValid()) {
-      throw FormulaException("Wrong cell ref");
-    }
-    refs_.insert(pos);
-    memory_.push(pos);
-  }
-
-  void enterBinaryOp(FormulaParser::BinaryOpContext *ctx) override {}
   void exitBinaryOp(FormulaParser::BinaryOpContext *ctx) override {
+    METER_DURATION(sheet_.m_fp_walk_op_2);
     auto rhs = std::move(memory_.top());
     memory_.pop();
     auto lhs = std::move(memory_.top());
@@ -91,21 +88,22 @@ class MyFormulaListener : public FormulaListener {
   }
 
   unique_ptr<IFormula> FlushResult() {
+    METER_DURATION(sheet_.m_fp_walk_flush);
     auto formula = make_unique<Formula>();
 
     vector<Position> refs(refs_.begin(), refs_.end());
     formula->SetReferencedCells(std::move(refs));
     formula->SetRootNode(std::move(memory_.top()));
-
     return formula;
   }
 
  private:
+  Sheet &sheet_;
   set<Position> refs_;
   stack<FormulaNode> memory_;
 };
 
-unique_ptr<IFormula> ParseFormula(string expression) {
+std::unique_ptr<IFormula> ParseFormula(std::string expression, Sheet& sheet) {
   istringstream ss(expression);
   antlr4::ANTLRInputStream input(ss);
 
@@ -122,16 +120,27 @@ unique_ptr<IFormula> ParseFormula(string expression) {
   parser.removeErrorListeners();
 
   antlr4::tree::ParseTree* tree = nullptr;
-  try {
-    tree = parser.main();
-  } catch (std::exception& e) {
-    ostringstream ess;
-    ess << "Error when parsing: " << e.what();
-    throw FormulaException(ess.str());
+  {
+    METER_DURATION(sheet.m_fp_get_tree);
+    try {
+      tree = parser.main();
+    } catch (std::exception &e) {
+      ostringstream ess;
+      ess << "Error when parsing: " << e.what();
+      throw FormulaException(ess.str());
+    }
   }
 
-  MyFormulaListener listener;
-  antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
+  MyFormulaListener listener(sheet);
+  {
+    METER_DURATION(sheet.m_fp_walk);
+    antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
+  }
 
   return listener.FlushResult();
+}
+
+unique_ptr<IFormula> ParseFormula(string expression) {
+  auto sheet = CreateSheet();
+  return ParseFormula(std::move(expression), *dynamic_cast<Sheet*>(sheet.get()));
 }

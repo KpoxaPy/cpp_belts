@@ -11,20 +11,34 @@ using namespace std;
 
 std::string Sheet::GetStats() const {
   ostringstream ss;
-  ss << "Set: " << m_set.Get() << "\n";
+  ss << "\nSet: " << m_set.Get() << "\n";
   ss << "Value: " << m_value.Get() << "\n";
   ss << "Insert: " << m_insert.Get() << "\n";
   ss << "Clear: " << m_clear.Get() << "\n";
   ss << "InsertRow: " << m_row_insert.Get() << "\n";
   ss << "InsertCol: " << m_col_insert.Get() << "\n";
   ss << "DeleteRow: " << m_row_delete.Get() << "\n";
-  ss << "DeleteCol: " << m_col_delete.Get() << "\n";
+  ss << "DeleteCol: " << m_col_delete.Get() << "\n\n";
 
   ss << "Cell::Set: " << m_cell_set.Get() << "\n";
   ss << "Cell::Refs: " << m_cell_refs.Get() << "\n";
   ss << "Cell::CheckCircular: " << m_cell_check_circular.Get() << "\n";
   ss << "Cell::InvalidateCache: " << m_cell_invalidate.Get() << "\n";
-  ss << "Cell::FormulaParsing: " << m_cell_set_formula_parsing.Get() << "\n";
+  ss << "Cell::FormulaParsing: " << m_cell_set_formula_parsing.Get() << "\n\n";
+
+  ss << "FormulaParsing::Prepare: " << m_fp_prepare.Get() << "\n";
+  ss << "FormulaParsing::Tree: " << m_fp_get_tree.Get() << "\n";
+  ss << "FormulaParsing::Walk: " << m_fp_walk.Get() << "\n";
+  ss << "FormulaParsing::Walk::Lit: " << m_fp_walk_lit.Get() << "\n";
+  ss << "FormulaParsing::Walk::Cell: " << m_fp_walk_cell.Get() << "\n";
+  ss << "FormulaParsing::Walk::Cell::Text: " << m_fp_walk_cell_text.Get() << "\n";
+  ss << "FormulaParsing::Walk::Cell::Pos: " << m_fp_walk_cell_pos.Get() << "\n";
+  ss << "FormulaParsing::Walk::Cell::Refs: " << m_fp_walk_cell_refs.Get() << "\n";
+  ss << "FormulaParsing::Walk::Cell::Mem: " << m_fp_walk_cell_mem.Get() << "\n";
+  ss << "FormulaParsing::Walk::UnaryOp: " << m_fp_walk_op_1.Get() << "\n";
+  ss << "FormulaParsing::Walk::BinaryOp: " << m_fp_walk_op_2.Get() << "\n";
+  ss << "FormulaParsing::Walk::Flush: " << m_fp_walk_flush.Get() << "\n\n";
+
   return ss.str();
 }
 

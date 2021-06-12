@@ -665,6 +665,7 @@ milliseconds TestPascalTrianglePart(int grade) {
 
 void TestPascalTriangle() {
   ASSERT(TestPascalTrianglePart(100) < 3000ms);
+  ASSERT(TestPascalTrianglePart(200) < 4000ms);
 }
 
 void TestInvalidate() {
@@ -675,27 +676,27 @@ void TestInvalidate() {
   ASSERT_EQUAL(get<double>(sheet->GetCell("A1"_pos)->GetValue()), 42.0);
 }
 
-void TestHeavyInserts() {
-  LOG_DURATION("Heavy inserts");
-  auto sheet = BuildPascal(100);
+// void TestHeavyInserts() {
+//   LOG_DURATION("Heavy inserts");
+//   auto sheet = BuildPascal(100);
 
-  CheckPascal(*sheet.get(), 100);
-  for (int i = 0; i < 100; ++i) {
-    sheet->InsertRows(0);
-  }
-  for (int i = 0; i < 100; ++i) {
-    sheet->InsertCols(0);
-  }
-  for (int i = 0; i < 100; ++i) {
-    sheet->DeleteRows(0);
-  }
-  for (int i = 0; i < 100; ++i) {
-    sheet->DeleteCols(0);
-  }
-  CheckPascal(*sheet.get(), 100);
+//   CheckPascal(*sheet.get(), 100);
+//   for (int i = 0; i < 100; ++i) {
+//     sheet->InsertRows(0);
+//   }
+//   for (int i = 0; i < 100; ++i) {
+//     sheet->InsertCols(0);
+//   }
+//   for (int i = 0; i < 100; ++i) {
+//     sheet->DeleteRows(0);
+//   }
+//   for (int i = 0; i < 100; ++i) {
+//     sheet->DeleteCols(0);
+//   }
+//   CheckPascal(*sheet.get(), 100);
 
-  PrintSheetStats(sheet);
-}
+//   PrintSheetStats(sheet);
+// }
 
 }  // namespace
 
@@ -730,6 +731,6 @@ int main() {
   RUN_TEST(tr, TestCellSelfCircularReference);
   RUN_TEST(tr, TestPascalTriangle);
   RUN_TEST(tr, TestInvalidate);
-  RUN_TEST(tr, TestHeavyInserts);
+  // RUN_TEST(tr, TestHeavyInserts);
   return 0;
 }

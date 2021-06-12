@@ -7,7 +7,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Werror -Wno-unused-parameter -Wno-implicit-fallthrough")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O2")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 set(ANTLR_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/antlr-4.7.2-complete.jar)

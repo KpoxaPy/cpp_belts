@@ -73,7 +73,7 @@ void Cell::SetText(std::string text) {
     METER_DURATION(sheet_.m_cell_set_formula_parsing);
     string_view view = text;
     view.remove_prefix(1);
-    new_formula = ParseFormula(string(view));
+    new_formula = ParseFormula(string(view), sheet_);
   }
 
   ProcessRefs(new_formula.get());
@@ -159,8 +159,16 @@ void Cell::CheckCircular(const Refs& refs) const {
   queue<Cell*> q;
 
   for (auto ref : refs) {
+    if (ref == this) {
+      throw CircularDependencyException("");
+    }
+
     q.push(ref);
     ref->cc_epoch_ = cc_epoch;
+  }
+
+  if (refs_from_.empty()) {
+    return;
   }
 
   while (!q.empty()) {

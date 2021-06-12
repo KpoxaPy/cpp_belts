@@ -45,6 +45,20 @@ class Sheet : public ISheet {
   StatMeter<microseconds> m_cell_invalidate;
   StatMeter<microseconds> m_cell_check_circular;
   StatMeter<microseconds> m_cell_set_formula_parsing;
+
+  StatMeter<microseconds> m_fp_prepare;
+  StatMeter<microseconds> m_fp_get_tree;
+  StatMeter<microseconds> m_fp_walk;
+  StatMeter<microseconds> m_fp_walk_lit;
+  StatMeter<microseconds> m_fp_walk_cell;
+  StatMeter<microseconds> m_fp_walk_cell_text;
+  StatMeter<microseconds> m_fp_walk_cell_pos;
+  StatMeter<microseconds> m_fp_walk_cell_refs;
+  StatMeter<microseconds> m_fp_walk_cell_mem;
+  StatMeter<microseconds> m_fp_walk_op_1;
+  StatMeter<microseconds> m_fp_walk_op_2;
+  StatMeter<microseconds> m_fp_walk_flush;
+
   std::string GetStats() const;
 
   size_t cc_epoch = 0;
@@ -55,3 +69,5 @@ class Sheet : public ISheet {
   void ProcessNonEmptyCells(std::function<void(Position, Cell&)> f) const; // O(K)
   Size GetSize() const; // O(K)
 };
+
+std::unique_ptr<IFormula> ParseFormula(std::string expression, Sheet& sheet);
